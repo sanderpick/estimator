@@ -1,0 +1,554 @@
+theESTIMATOR tables.
+
+author: sander pick
+host: localhost
+database: estimator101
+user: root
+pass: solarone
+
+#####################
+#### es_sessions ####
+#####################
+
+CREATE TABLE `es_sessions` (
+  	`ID` int(6) NOT NULL AUTO_INCREMENT,
+  	
+	`ses_rep` varchar(60) NOT NULL default '',
+  	`ses_id` varchar(60) NOT NULL default '',
+  	`ses_ip` varchar(60) NOT NULL default '',
+  	`ses_time` datetime,
+  	
+	PRIMARY KEY (ID)
+);
+
+#################### *** HAS FORM ***
+#### es_offices ####
+####################
+
+CREATE TABLE `es_offices` (
+	`ID` int(6) NOT NULL AUTO_INCREMENT,
+  	
+	`off_address` varchar(255) NOT NULL default '',
+	`off_city` varchar(20) NOT NULL default '',
+	`off_state` varchar(20) NOT NULL default '',
+	`off_zip` char(5) NOT NULL default '',
+	`off_phone` varchar(20) NOT NULL default '',
+	`off_email` varchar(60) NOT NULL default '',
+	
+	`off_labor_cost` decimal(10,2),
+	`off_labor_price` decimal(10,2),
+	
+	`off_inventory_up` decimal(10,2) NOT NULL default '0.0',
+	`off_non_inventory_up` decimal(10,2) NOT NULL default '0.0',
+	
+	`off_winter_up` decimal(10,2) NOT NULL default '5.0',
+	`off_others_up` decimal(10,2) NOT NULL default '7.5',
+	
+	`off_permit_up` decimal(10,2) NOT NULL default '5.0',
+	`off_sub_up` decimal(10,2) NOT NULL default '5.0',
+	`off_equip_up` decimal(10,2) NOT NULL default '5.0',
+	
+	`off_pvwatts` varchar(255) NOT NULL default '',
+	
+	`off_lat` decimal(10,2),
+	`off_long` decimal(10,2),
+	
+	`off_cover_letter` text NOT NULL default '',
+	
+	# `off_num_reps` int(4) NOT NULL default '0',
+	# 	`off_num_cus` int(4) NOT NULL default '0',
+	# 	`off_num_jobs` int(4) NOT NULL default '0',
+	# 	`off_num_props` int(4) NOT NULL default '0',
+	
+	PRIMARY KEY (ID)
+);
+
+################# *** HAS FORM ***
+#### es_reps ####
+#################
+
+CREATE TABLE `es_reps` (
+	`ID` int(6) NOT NULL AUTO_INCREMENT,
+	
+	`rep_login` varchar(60) NOT NULL default '',
+	`rep_pass` varchar(60) NOT NULL default '',
+	`rep_name_first` varchar(40) NOT NULL default '',
+	`rep_name_last` varchar(40) NOT NULL default '',
+	`rep_title` varchar(100) NOT NULL default 'Technical Sales Engineer',
+	`rep_phone` varchar(20) NOT NULL default '',
+	`rep_email` varchar(100) NOT NULL default '',
+	
+	`rep_registered` datetime,
+	`rep_key` varchar(60) NOT NULL default '',
+	`rep_role` int(1) NOT NULL default '2',
+	
+	# `rep_num_cus` int(4) NOT NULL default '0',
+	# 	`rep_num_jobs` int(4) NOT NULL default '0',
+	# 	`rep_num_props` int(4) NOT NULL default '0',
+	
+	`rep_officeID` int(6),
+	
+	PRIMARY KEY (ID)
+);
+
+
+###################### *** HAS FORM ***
+#### es_customers ####
+######################
+
+CREATE TABLE `es_customers` ( 
+	`ID` int(6) NOT NULL AUTO_INCREMENT,
+	
+	`cus_name_first` varchar(40) NOT NULL default '',
+	`cus_name_last` varchar(40) NOT NULL default '',
+	`cus_company` varchar(40) NOT NULL default '',
+	`cus_phone1` varchar(20) NOT NULL default '',
+	`cus_phone2` varchar(20) NOT NULL default '',
+	`cus_phone_mobile` varchar(20) NOT NULL default '',
+	`cus_fax` varchar(20) NOT NULL default '',
+	`cus_email1` varchar(40) NOT NULL default '',
+	`cus_email2` varchar(40) NOT NULL default '',
+	
+	`cus_address1` varchar(60) NOT NULL default '',
+	`cus_address2` varchar(60) NOT NULL default '',
+	`cus_city` varchar(40) NOT NULL default '',
+	`cus_state` varchar(20) NOT NULL default '',
+	`cus_zip` char(5) NOT NULL default '',
+	`cus_country` varchar(40) NOT NULL default 'United States',
+	`cus_lat` decimal(10,2),
+	`cus_long` decimal(10,2),
+	
+	# `cus_num_jobs` int(4) NOT NULL default '0',
+	# 	`cus_num_props` int(4) NOT NULL default '0',
+	
+	`cus_officeID` int(6),
+	`cus_repID` int(6),
+	
+	PRIMARY KEY (ID)
+);
+
+ALTER TABLE es_customers ADD FULLTEXT(cus_name_first, cus_name_last, cus_company, cus_phone1, cus_phone2, cus_phone_mobile, cus_fax, cus_email1, cus_email2, cus_address1, cus_address2, cus_city, cus_state, cus_zip, cus_country);
+
+################# *** HAS FORM ***
+#### es_jobs ####
+#################
+
+CREATE TABLE `es_jobs` (
+	`ID` int(6) NOT NULL AUTO_INCREMENT,
+	
+	`job_name` varchar(100) NOT NULL default '',
+	`job_company` varchar(255) NOT NULL default '',
+	`job_contact` varchar(100) NOT NULL default '',
+	`job_phone` varchar(20) NOT NULL default '',
+	
+	`job_fax` varchar(20) NOT NULL default '',
+	`job_email` varchar(40) NOT NULL default '',
+	
+	`job_drive_time` int(4) NOT NULL default '0',
+	`job_kwh_load` int(10),
+	
+	`job_address1` varchar(60) NOT NULL default '',
+	`job_address2` varchar(60) NOT NULL default '',
+	`job_city` varchar(40) NOT NULL default '',
+	`job_state` varchar(20) NOT NULL default '',
+	`job_zip` char(5) NOT NULL default '',
+	`job_country` varchar(40) NOT NULL default 'United States',
+	`job_lat` decimal(10,2),
+	`job_long` decimal(10,2),
+	
+	`job_bill_1` decimal(10,2) NOT NULL default '0',
+	`job_bill_2` decimal(10,2) NOT NULL default '0',
+	`job_bill_3` decimal(10,2) NOT NULL default '0',
+	`job_bill_4` decimal(10,2) NOT NULL default '0',
+	`job_bill_5` decimal(10,2) NOT NULL default '0',
+	`job_bill_6` decimal(10,2) NOT NULL default '0',
+	`job_bill_7` decimal(10,2) NOT NULL default '0',
+	`job_bill_8` decimal(10,2) NOT NULL default '0',
+	`job_bill_9` decimal(10,2) NOT NULL default '0',
+	`job_bill_10` decimal(10,2) NOT NULL default '0',
+	`job_bill_11` decimal(10,2) NOT NULL default '0',
+	`job_bill_12` decimal(10,2) NOT NULL default '0',
+	
+	# `job_num_zones` int(4) NOT NULL default '0',
+	# 	`job_num_props` int(4) NOT NULL default '0',
+	
+	`job_officeID` int(6),
+	`job_repID` int(6),
+	`job_customerID` int(6),
+	
+	PRIMARY KEY (ID)
+);
+
+ALTER TABLE es_jobs ADD FULLTEXT(job_name, job_contact, job_phone, job_address1, job_address2, job_city, job_state, job_zip, job_country);
+
+################## *** HAS FORM ***
+#### es_zones ####
+##################
+
+CREATE TABLE `es_zones` (
+	`ID` int(6) NOT NULL AUTO_INCREMENT,
+	
+	`zon_name` varchar(100) NOT NULL default '',
+	
+	`zon_type` varchar(20) NOT NULL default '',
+	`zon_size` decimal(10,2),
+	`zon_tilt` varchar(20) NOT NULL default '',
+	`zon_custom_tilt` decimal(10,2),
+	`zon_azimuth` int(3),
+	`zon_derate` decimal(2,2),
+	`zon_erate` decimal(10,2),
+	
+	`zon_module` varchar(20) NOT NULL default '',
+	`zon_num_modules` int(3),
+	`zon_racking` varchar(20) NOT NULL default '',
+	`zon_mounting_method` varchar(40) NOT NULL default '',
+	
+	`zon_pitch` varchar(20) NOT NULL default '',
+	`zon_custom_pitch` decimal(10,2),
+	`zon_mounting_medium` varchar(40) NOT NULL default '',
+	`zon_support_dist` int(4),
+	`zon_per_landscape` decimal(5,2),
+	`zon_num_cont_arrays` int(2),
+	
+	`zon_rebate` decimal(10,2),
+	`zon_rebate_desc` varchar(255) NOT NULL default '',
+	
+	`zon_pvwatts_m1` varchar(20) NOT NULL default '',
+	`zon_pvwatts_m2` varchar(20) NOT NULL default '',
+	`zon_pvwatts_m3` varchar(20) NOT NULL default '',
+	`zon_pvwatts_m4` varchar(20) NOT NULL default '',
+	`zon_pvwatts_m5` varchar(20) NOT NULL default '',
+	`zon_pvwatts_m6` varchar(20) NOT NULL default '',
+	`zon_pvwatts_m7` varchar(20) NOT NULL default '',
+	`zon_pvwatts_m8` varchar(20) NOT NULL default '',
+	`zon_pvwatts_m9` varchar(20) NOT NULL default '',
+	`zon_pvwatts_m10` varchar(20) NOT NULL default '',
+	`zon_pvwatts_m11` varchar(20) NOT NULL default '',
+	`zon_pvwatts_m12` varchar(20) NOT NULL default '',
+	`zon_pvwatts_mt` varchar(20) NOT NULL default '',
+	
+	`zon_racking_length` decimal(10,2),
+	`zon_production` decimal(10,2),
+	
+	`zon_install_labor_hrs` decimal(10,2),
+	`zon_install_labor_cost` decimal(10,2),
+	`zon_install_labor_price` decimal(10,2),
+	
+	`zon_module_cost` decimal(10,2),
+	`zon_module_price` decimal(10,2),
+	
+	`zon_racking_cost` decimal(10,2),
+	`zon_racking_price` decimal(10,2),
+	
+	`zon_connection_cost` decimal(10,2),
+	`zon_connection_price` decimal(10,2),
+	
+	`zon_layout` int(6) NOT NULL default '0',
+	
+	`zon_officeID` int(6),
+	`zon_repID` int(6),
+	`zon_customerID` int(6),
+	`zon_jobID` int(6),
+	
+	PRIMARY KEY (ID)
+);
+
+###################### *** HAS FORM ***
+#### es_proposals ####
+######################
+
+CREATE TABLE `es_proposals` (
+	`ID` int(6) NOT NULL AUTO_INCREMENT,
+	
+	`pro_name` varchar(100) NOT NULL default '',
+	`pro_date` datetime,
+	`pro_key` varchar(60) NOT NULL default '',
+	
+	`pro_winter` int(1),
+	`pro_others_involved` int(1),
+	`pro_num_trips` int(2),
+	`pro_num_installers` int(4),
+	`pro_zones` varchar(100) NOT NULL default '',
+	`pro_num_inter` int(3),
+	`pro_inter_method` text,
+	`pro_inverter` text,
+	`pro_conduit_out` int(6),
+	`pro_conduit_in` int(6),
+	`pro_conduit_under` int(6),
+	`pro_equip_rental` decimal(10,2),
+	`pro_extra_fee` decimal(10,2),
+	`pro_extra_desc` varchar(255) NOT NULL default '',
+	`pro_engin_fee` decimal(10,2),
+	`pro_permit_fee` decimal(10,2),
+	`pro_inspection` decimal(10,2),
+	`pro_fluctuation` decimal(10,2),
+	`pro_discount` decimal(10,2),
+	`pro_discount_desc` varchar(255) NOT NULL default '',
+	`pro_misc_materials` decimal(10,2) NOT NULL default '0.0',
+	`pro_misc_materials_up` decimal(10,2) NOT NULL default '0.0',
+	`pro_misc_materials_desc` varchar(255) NOT NULL default '',
+	`pro_taxrate` decimal(10,2),
+	
+	`pro_rebate_amnt` text NOT NULL default '',
+	`pro_rebate_desc` text NOT NULL default '',
+	`pro_rebate_type` text NOT NULL default '',
+	
+	`pro_credit` int(1) NOT NULL default '0',
+	`pro_incentive` int(1) NOT NULL default '0',
+	`pro_incentive_rate` decimal(2,2) NOT NULL default '0.0',
+	`pro_incentive_yrs` int(3) NOT NULL default '0',
+	
+	`pro_cover_letter` text,
+	
+	`pro_published` int(1) NOT NULL default '0',
+	`pro_published_date` datetime,
+	
+	`pro_delivered` int(1) NOT NULL default '0',
+	`pro_delivered_date` datetime,
+	
+	`pro_approved` int(1) NOT NULL default '0',
+	`pro_approved_date` datetime,
+	
+	`pro_officeID` int(6),
+	`pro_repID` int(6),
+	`pro_customerID` int(6),
+	`pro_jobID` int(6),
+	
+	PRIMARY KEY (ID)
+);
+
+#################### *** HAS FORM ***
+#### es_modules ####
+####################
+
+CREATE TABLE `es_modules` (
+	`ID` int(6) NOT NULL AUTO_INCREMENT,
+
+	`mod_model_num` varchar(40) NOT NULL default '',
+	`mod_desc` varchar(100) NOT NULL default '',
+	`mod_width` decimal(10,2),
+	`mod_length` decimal(10,2),
+	`mod_stc` decimal(10,2),
+	`mod_ptc` decimal(10,2),
+	`mod_labor` decimal(10,2),
+	`mod_unit` varchar(10) NOT NULL default '',
+	`mod_cost` decimal(10,2),
+	`mod_price` decimal(10,2),
+	
+	`mod_cutsheet_uri` varchar(255) NOT NULL default '',
+	`mod_cutsheet_t_uri` varchar(255) NOT NULL default '',
+	`mod_print_cutsheet_uri` text NOT NULL default '',
+	
+	`active` int(1) NOT NULL default '1',
+	
+	PRIMARY KEY (ID)
+);
+
+###################### *** HAS FORM ***
+#### es_inverters ####
+######################
+
+CREATE TABLE `es_inverters` (
+	`ID` int(6) NOT NULL AUTO_INCREMENT,
+
+	`inv_model_num` varchar(40) NOT NULL default '',
+	`inv_desc` varchar(100) NOT NULL default '',
+	`inv_type` varchar(20) NOT NULL default '',
+	`inv_unit` varchar(10) NOT NULL default '',
+	`inv_cost` decimal(10,2),
+	`inv_price` decimal(10,2),
+	
+	`inv_cutsheet_uri` varchar(255) NOT NULL default '',
+	`inv_cutsheet_t_uri` varchar(255) NOT NULL default '',
+	`inv_print_cutsheet_uri` text NOT NULL default '',
+	
+	`active` int(1) NOT NULL default '1',
+	
+	PRIMARY KEY (ID)
+);
+
+#################### *** HAS FORM ***
+#### es_racking ####
+####################
+
+CREATE TABLE `es_racking` (
+	`ID` int(6) NOT NULL AUTO_INCREMENT,
+
+	`rac_model_num` varchar(40) NOT NULL default '',
+	`rac_desc` varchar(100) NOT NULL default '',
+	`rac_unit` varchar(10) NOT NULL default '',
+	`rac_cost` decimal(10,2),
+	`rac_price` decimal(10,2),
+	
+	`active` int(1) NOT NULL default '1',
+	
+	PRIMARY KEY (ID)
+);
+
+####################### *** HAS FORM ***
+#### es_conn_comps ####
+#######################
+
+CREATE TABLE `es_conn_comps` (
+	`ID` int(6) NOT NULL AUTO_INCREMENT,
+
+	`con_model_num` varchar(40) NOT NULL default '',
+	`con_desc` varchar(100) NOT NULL default '',
+	`con_unit` varchar(10) NOT NULL default '',
+	`con_cost` decimal(10,2),
+	`con_price` decimal(10,2),
+	`con_labor` decimal(10,2),
+	
+	`active` int(1) NOT NULL default '1',
+	
+	PRIMARY KEY (ID)
+);
+
+######################## *** HAS FORM ***
+#### es_inter_comps ####
+########################
+
+CREATE TABLE `es_inter_comps` (
+	`ID` int(6) NOT NULL AUTO_INCREMENT,
+
+	`int_model_num` varchar(40) NOT NULL default '',
+	`int_desc` varchar(100) NOT NULL default '',
+	`int_unit` varchar(10) NOT NULL default '',
+	`int_cost` decimal(10,2),
+	`int_price` decimal(10,2),
+	`int_labor` decimal(10,2),
+	
+	`active` int(1) NOT NULL default '1',
+	
+	PRIMARY KEY (ID)
+);
+
+####################
+#### es_uploads ####
+####################
+
+CREATE TABLE `es_uploads` (
+	`ID` int(6) NOT NULL AUTO_INCREMENT,
+	
+	`up_handle` varchar(60) NOT NULL default '',
+	`up_root` varchar(60) NOT NULL default '',
+	`up_type` varchar(4) NOT NULL default '',
+	`up_caption` text,
+	`up_width_orig` int(4) NOT NULL default '0',
+  	`up_height_orig` int(4) NOT NULL default '0',
+  	`up_widths` varchar(100) NOT NULL default '',
+  	`up_heights` varchar(100) NOT NULL default '',
+	`up_time` datetime,
+	
+	`active` int(1) NOT NULL default '0',
+	
+	`up_officeID` int(6),
+	`up_repID` int(6),
+	`up_customerID` int(6),
+	`up_jobID` int(6),
+	`up_zoneID` int(6),
+
+	PRIMARY KEY (ID)
+);
+
+------------------------------------------------------------------------ hidden
+
+###################
+#### es_arrays ####
+###################
+
+CREATE TABLE `es_arrays` (
+	`ID` int(6) NOT NULL AUTO_INCREMENT,
+	
+	`arr_value` varchar(20) NOT NULL default '',
+	
+	`active` int(1) NOT NULL default '1',
+
+	PRIMARY KEY (ID)
+);
+
+INSERT INTO es_arrays (arr_value) VALUES ('Fixed Tilt');
+INSERT INTO es_arrays (arr_value) VALUES ('1-Axis Tracking');
+INSERT INTO es_arrays (arr_value) VALUES ('2-Axis Tracking');
+
+###################
+#### es_angles ####
+###################
+
+CREATE TABLE `es_angles` (
+	`ID` int(6) NOT NULL AUTO_INCREMENT,
+	
+	`ang_value` varchar(20) NOT NULL default '',
+	`ang_labor` decimal(10,2),
+	
+	`active` int(1) NOT NULL default '1',
+
+	PRIMARY KEY (ID)
+);
+
+INSERT INTO es_angles (ang_value, ang_labor) VALUES ('0:12 (0)','0');
+INSERT INTO es_angles (ang_value, ang_labor) VALUES ('1:12 (4.76)','0');
+INSERT INTO es_angles (ang_value, ang_labor) VALUES ('2:12 (9.46)','0');
+INSERT INTO es_angles (ang_value, ang_labor) VALUES ('3:12 (14.04)','0');
+INSERT INTO es_angles (ang_value, ang_labor) VALUES ('4:12 (18.43)','0');
+INSERT INTO es_angles (ang_value, ang_labor) VALUES ('5:12 (22.62)','0.5');
+INSERT INTO es_angles (ang_value, ang_labor) VALUES ('6:12 (26.57)','0.5');
+INSERT INTO es_angles (ang_value, ang_labor) VALUES ('7:12 (30.26)','0.5');
+INSERT INTO es_angles (ang_value, ang_labor) VALUES ('8:12 (33.69)','1');
+INSERT INTO es_angles (ang_value, ang_labor) VALUES ('9:12 (36.87)','1');
+INSERT INTO es_angles (ang_value, ang_labor) VALUES ('10:12 (39.81)','1');
+INSERT INTO es_angles (ang_value, ang_labor) VALUES ('11:12 (42.51)','1');
+INSERT INTO es_angles (ang_value, ang_labor) VALUES ('12:12 (45)','1');
+INSERT INTO es_angles (ang_value, ang_labor) VALUES ('13:12 (47.29)','1.5');
+INSERT INTO es_angles (ang_value, ang_labor) VALUES ('14:12 (49.40)','1.5');
+INSERT INTO es_angles (ang_value, ang_labor) VALUES ('custom','0');
+
+#############################
+#### es_mounting_methods ####
+#############################
+
+CREATE TABLE `es_mounting_methods` (
+	`ID` int(6) NOT NULL AUTO_INCREMENT,
+	
+	`met_value` varchar(20) NOT NULL default '',
+	`met_cost` decimal(10,2),
+	`met_price` decimal(10,2),
+	`met_labor` decimal(10,2),
+	
+	`active` int(1) NOT NULL default '1',
+
+	PRIMARY KEY (ID)
+);
+
+INSERT INTO es_mounting_methods (met_value, met_cost, met_price, met_labor) VALUES ('Flush Stand-Off', '6', '10', '0');
+INSERT INTO es_mounting_methods (met_value, met_cost, met_price, met_labor) VALUES ('S-5 w/ Racking', '7', '12', '0');
+INSERT INTO es_mounting_methods (met_value, met_cost, met_price, met_labor) VALUES ('S-5 Flush Mount', '7', '12', '0.5');
+INSERT INTO es_mounting_methods (met_value, met_cost, met_price, met_labor) VALUES ('Tilt-Up Kit', '6', '10', '1');
+INSERT INTO es_mounting_methods (met_value, met_cost, met_price, met_labor) VALUES ('Ground Mount', '0', '0', '1');
+INSERT INTO es_mounting_methods (met_value, met_cost, met_price, met_labor) VALUES ('Awning', '0', '0', '4');
+
+#############################
+#### es_mounting_mediums ####
+#############################
+
+CREATE TABLE `es_mounting_mediums` (
+	`ID` int(6) NOT NULL AUTO_INCREMENT,
+	
+	`med_value` varchar(20) NOT NULL default '',
+	`med_labor` decimal(10,2),
+	
+	`active` int(1) NOT NULL default '1',
+
+	PRIMARY KEY (ID)
+);
+
+INSERT INTO es_mounting_mediums (med_value, med_labor) VALUES ('Standard Asphalt', '0.25');
+INSERT INTO es_mounting_mediums (med_value, med_labor) VALUES ('Standing Seam', '0');
+INSERT INTO es_mounting_mediums (med_value, med_labor) VALUES ('No Roofing', '0');
+INSERT INTO es_mounting_mediums (med_value, med_labor) VALUES ('50 year Asphalt', '1');
+INSERT INTO es_mounting_mediums (med_value, med_labor) VALUES ('Pro Panel', '0.5');
+INSERT INTO es_mounting_mediums (med_value, med_labor) VALUES ('Membrane', '2');
+INSERT INTO es_mounting_mediums (med_value, med_labor) VALUES ('Corrugated', '3');
+INSERT INTO es_mounting_mediums (med_value, med_labor) VALUES ('Tile Roof', '3');
+INSERT INTO es_mounting_mediums (med_value, med_labor) VALUES ('Steel Structure', '0');
+INSERT INTO es_mounting_mediums (med_value, med_labor) VALUES ('Caissons', '2');

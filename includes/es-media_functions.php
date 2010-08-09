@@ -1,0 +1,156 @@
+<?php
+####################################
+# ROUND THE CORNERS ON A GD IMAGE #
+####################################
+function imageroundcorners($source_image,$source_width,$source_height,$radius,$colour="FFFFFF") {
+	imagealphablending($source_image,true);
+	//create mask for top-left corner in memory
+	$corner_image = imagecreatetruecolor($radius,$radius);
+	imagealphablending($corner_image,true);
+	$clear_colour = imagecolorallocate($corner_image,127,127,127);
+	$solid_colour = imagecolorallocate($corner_image,hexdec(substr($colour,0,2)),hexdec(substr($colour,2,2)),hexdec(substr($colour,4,2)));
+	imagecolortransparent($corner_image,$clear_colour);
+	imagefill($corner_image,0,0,$solid_colour);
+	//imagefilledellipse($corner_image,$radius,$radius,$radius*2,$radius*2,$clear_colour);
+	imageSmoothArc($corner_image,$radius,$radius+1,$radius*2,$radius*2,array(127,127,127,0),0,2*M_PI);
+	//render the top-left, bottom-left, bottom-right, top-right corners by rotating and copying the mask
+	imagecopymerge($source_image,$corner_image,0,0,0,0,$radius,$radius,100);
+	$corner_image = imagerotate($corner_image,90,0);
+	imagecopymerge($source_image,$corner_image,0,$source_height-$radius,0,0,$radius,$radius,100);
+	$corner_image = imagerotate($corner_image,90,0);
+	imagecopymerge($source_image,$corner_image,$source_width-$radius,$source_height-$radius,0,0,$radius,$radius,100);
+	$corner_image = imagerotate($corner_image,90,0);
+	imagecopymerge($source_image,$corner_image,$source_width-$radius,0,0,0,$radius,$radius,100);
+}
+############################
+# DRAW ANTI-ALIASED CURVES #
+############################
+/*
+    Copyright (c) 2006-2008 Ulrich Mierendorff
+    Permission is hereby granted, free of charge, to any person obtaining a
+    copy of this software and associated documentation files (the "Software"),
+    to deal in the Software without restriction, including without limitation
+    the rights to use, copy, modify, merge, publish, distribute, sublicense,
+    and/or sell copies of the Software, and to permit persons to whom the
+    Software is furnished to do so, subject to the following conditions:
+    The above copyright notice and this permission notice shall be included in
+    all copies or substantial portions of the Software.
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+    THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+    DEALINGS IN THE SOFTWARE.
+*/
+function imageSmoothArcDrawSegment($img, $cx, $cy, $a, $b, $color, $start, $stop, $seg) {
+    // Originally written from scratch by Ulrich Mierendorff, 06/2006
+    // Rewritten and improved, 04/2007, 07/2007
+    // Optimized circle version: 03/2008
+    // Please do not use THIS function directly. Scroll down to imageSmoothArc(...).
+    $fillColor = imageColorExactAlpha($img, $color[0], $color[1], $color[2], $color[3]);
+    switch ($seg) {
+        case 0: $xp = +1; $yp = -1; $xa = 1; $ya = -1; break;
+        case 1: $xp = -1; $yp = -1; $xa = 0; $ya = -1; break;
+        case 2: $xp = -1; $yp = +1; $xa = 0; $ya = 0; break;
+        case 3: $xp = +1; $yp = +1; $xa = 1; $ya = 0; break;
+    }
+    for ( $x = 0; $x <= $a; $x += 1 ) {
+        $y = $b * sqrt( 1 - ($x*$x)/($a*$a) );
+        $error = $y - (int)($y);
+        $y = (int)($y);
+        $diffColor = imageColorExactAlpha($img, $color[0], $color[1], $color[2], 127-(127-$color[3])*$error);
+        imageSetPixel($img, $cx+$xp*$x+$xa, $cy+$yp*($y+1)+$ya, $diffColor);
+        imageLine($img, $cx+$xp*$x+$xa, $cy+$yp*$y+$ya , $cx+$xp*$x+$xa, $cy+$ya, $fillColor);
+    }
+    for ( $y = 0; $y < $b; $y += 1 ) {
+        $x = $a * sqrt( 1 - ($y*$y)/($b*$b) );
+        $error = $x - (int)($x);
+        $x = (int)($x);
+        $diffColor = imageColorExactAlpha($img, $color[0], $color[1], $color[2], 127-(127-$color[3])*$error);
+        imageSetPixel($img, $cx+$xp*($x+1)+$xa, $cy+$yp*$y+$ya, $diffColor);
+    }
+}
+function imageSmoothArc($img, $cx, $cy, $w, $h, $color, $start, $stop) {
+    // Originally written from scratch by Ulrich Mierendorff, 06/2006
+    // Rewritten and improved, 04/2007, 07/2007
+    // Optimized circle version: 03/2008
+    // compared to old version:
+    // + Support for transparency added
+    // + Improved quality of edges & antialiasing
+    // note: This function does not represent the fastest way to draw elliptical
+    // arcs. It was written without reading any papers on that subject. Better
+    // algorithms may be twice as fast or even more.
+    // Parameters:
+    // $cx      - Center of ellipse, X-coord
+    // $cy      - Center of ellipse, Y-coord
+    // $w       - Width of ellipse ($w >= 2)
+    // $h       - Height of ellipse ($h >= 2 )
+    // $color   - Color of ellipse as a four component array with RGBA
+    // $start   - Starting angle of the arc: 0, PI/2, PI, PI/2*3, 2*PI,... (0,90°,180°,270°,360°,...)
+    // $stop    - Stop     angle of the arc: 0, PI/2, PI, PI/2*3, 2*PI,... (0,90°,180°,270°,360°,...)
+    // $start _can_ be greater than $stop!
+    // If any value is not in the given range, results are undefined!
+    // This script does not use any special algorithms, everything is completely
+    // written from scratch; see http://de.wikipedia.org/wiki/Ellipse for formulas.
+    while ($start < 0)
+        $start += 2*M_PI;
+    while ($stop < 0)
+        $stop += 2*M_PI;
+    while ($start > 2*M_PI)
+        $start -= 2*M_PI;
+    while ($stop > 2*M_PI)
+        $stop -= 2*M_PI;
+    if ($start > $stop) {
+        imageSmoothArc($img, $cx, $cy, $w, $h, $color, $start, 2*M_PI);
+        imageSmoothArc($img, $cx, $cy, $w, $h, $color, 0, $stop);
+        return;
+    }
+    $a = 1.0*round ($w/2);
+    $b = 1.0*round ($h/2);
+    $cx = 1.0*round ($cx);
+    $cy = 1.0*round ($cy);
+    for ($i=0; $i<4;$i++) {
+        if ($start < ($i+1)*M_PI/2) {
+            if ($start > $i*M_PI/2) {
+                if ($stop > ($i+1)*M_PI/2) {
+                    imageSmoothArcDrawSegment($img, $cx, $cy, $a, $b, $color, $start, ($i+1)*M_PI/2, $i);
+                } else {
+                    imageSmoothArcDrawSegment($img, $cx, $cy, $a, $b, $color, $start, $stop, $i);
+                    break;
+                }
+            } else {
+                if ($stop > ($i+1)*M_PI/2) {
+                    imageSmoothArcDrawSegment($img, $cx, $cy, $a, $b, $color, $i*M_PI/2, ($i+1)*M_PI/2, $i);
+                } else {
+                    imageSmoothArcDrawSegment($img, $cx, $cy, $a, $b, $color, $i*M_PI/2, $stop, $i);
+                    break;
+                }
+            }
+        }
+    }
+}
+#########################
+# DELETE DIRECTORY TREE #
+#########################
+function destroy($dir) {
+	if(substr($dir,count($dir)-1)!="/") $dir.="/";
+    $mydir = opendir($dir);
+    while(false !== ($file = readdir($mydir))) {
+        if($file != "." && $file != "..") {
+            chmod($dir.$file, 0777);
+            if(is_dir($dir.$file)) {
+                chdir(".");
+                destroy($dir.$file."/");
+                rmdir($dir.$file);
+            } else unlink($dir.$file);
+        }
+    }
+    closedir($mydir);
+	rmdir($dir);
+}
+##################
+# CLEAR AN ARRAY #
+##################
+function clear(&$a) { $a=array(); }
+?>
