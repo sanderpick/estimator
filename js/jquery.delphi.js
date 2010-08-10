@@ -68,7 +68,7 @@ System.init();
 // constants
 var Einstein = {};
 //Einstein.PORTAL_URI = "http://lighthousesolar.com/mysolarportal/"; // live
-Einstein.PORTAL_URI = "http://lighthousesolar.ld/mysolarportal/"; // local
+Einstein.PORTAL_URI = "http://lighthousesolar.ld/portal/"; // local
 Einstein.MARGIN_UPPER = 20;
 Einstein.MARGIN_LOWER = 20;
 Einstein.PPW_GROSS_UPPER = 4.5;

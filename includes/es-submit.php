@@ -11,7 +11,7 @@ $E = new Object();
 //$E->push("EINSTEIN_SMTP_PASS","");
 //$E->push("EINSTEIN_SMTP_FROM","noreply@lighthousesolar.com");
 # local
-$E->push("PORTAL_URI","http://lighthousesolar.ld/mysolarportal/");
+$E->push("PORTAL_URI","http://lighthousesolar.ld/portal/");
 $E->push("EINSTEIN_URI","http://lighthousesolar.ld/estimator/");
 $E->push("EINSTEIN_SMTP_SERVER","ssl://smtp.gmail.com");
 $E->push("EINSTEIN_SMTP_PORT",465);
