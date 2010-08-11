@@ -55,10 +55,10 @@ CREATE TABLE `es_offices` (
 	
 	`off_cover_letter` text NOT NULL default '',
 	
-	# `off_num_reps` int(4) NOT NULL default '0',
-	# 	`off_num_cus` int(4) NOT NULL default '0',
-	# 	`off_num_jobs` int(4) NOT NULL default '0',
-	# 	`off_num_props` int(4) NOT NULL default '0',
+  # `off_num_reps` int(4) NOT NULL default '0',
+  # `off_num_cus` int(4) NOT NULL default '0',
+  # `off_num_jobs` int(4) NOT NULL default '0',
+  # `off_num_props` int(4) NOT NULL default '0',
 	
 	PRIMARY KEY (ID)
 );
@@ -82,9 +82,9 @@ CREATE TABLE `es_reps` (
 	`rep_key` varchar(60) NOT NULL default '',
 	`rep_role` int(1) NOT NULL default '2',
 	
-	# `rep_num_cus` int(4) NOT NULL default '0',
-	# 	`rep_num_jobs` int(4) NOT NULL default '0',
-	# 	`rep_num_props` int(4) NOT NULL default '0',
+  # `rep_num_cus` int(4) NOT NULL default '0',
+  # `rep_num_jobs` int(4) NOT NULL default '0',
+  # `rep_num_props` int(4) NOT NULL default '0',
 	
 	`rep_officeID` int(6),
 	
@@ -118,8 +118,8 @@ CREATE TABLE `es_customers` (
 	`cus_lat` decimal(10,2),
 	`cus_long` decimal(10,2),
 	
-	# `cus_num_jobs` int(4) NOT NULL default '0',
-	# 	`cus_num_props` int(4) NOT NULL default '0',
+  # `cus_num_jobs` int(4) NOT NULL default '0',
+  # `cus_num_props` int(4) NOT NULL default '0',
 	
 	`cus_officeID` int(6),
 	`cus_repID` int(6),
@@ -169,8 +169,8 @@ CREATE TABLE `es_jobs` (
 	`job_bill_11` decimal(10,2) NOT NULL default '0',
 	`job_bill_12` decimal(10,2) NOT NULL default '0',
 	
-	# `job_num_zones` int(4) NOT NULL default '0',
-	# 	`job_num_props` int(4) NOT NULL default '0',
+	`job_num_zones` int(4) NOT NULL default '0',
+  # `job_num_props` int(4) NOT NULL default '0',
 	
 	`job_officeID` int(6),
 	`job_repID` int(6),
@@ -212,6 +212,8 @@ CREATE TABLE `es_zones` (
 	
 	`zon_rebate` decimal(10,2),
 	`zon_rebate_desc` varchar(255) NOT NULL default '',
+	
+	`zon_pvwatts` varchar(255) NOT NULL default '',
 	
 	`zon_pvwatts_m1` varchar(20) NOT NULL default '',
 	`zon_pvwatts_m2` varchar(20) NOT NULL default '',

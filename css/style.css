@@ -78,7 +78,7 @@ form.updateproposalform { padding:5px 10px 10px 10px }
 
 form.updatezoneform { padding:5px 20px 10px 10px; }
 h1.addform-header { font-style:italic; font-weight:normal; font-size:14px; color:#808080; text-transform:uppercase; line-height:normal; }
-.form-column { float:left; margin:0 20px 0 0; }
+.form-column { float:left; margin:0 15px 0 0; }
 .form-column-right { float:left; margin:0 0 0 0; }
 
 #zones-header { padding:0 0 0 20px; }
@@ -213,6 +213,14 @@ h1.add-proposal-section { font-size:10px; text-transform:uppercase; padding:0 0 
 #topper-menu { padding:15px 20px 0 20px; display:none; }
 /*--------------------------------main*/
 #main { padding:20px; width:97%; min-height:700px; }
+
+#extra-nav { font-size:11px; margin:-15px 0 0 0; }
+#extra-nav ul { text-align:right }
+#extra-nav li { list-style-type:none; display:inline; padding:0 0 0 20px; }
+#extra-nav li a { text-decoration:none; font-style:normal; font-weight:bold; }
+#extra-nav li a:hover { color:#808080; }
+
+.extra-nav-hover { color:#B1CD49; }
 
 /*--------------------------footer*/ 
 #footer { display:none; width:100%; background:white; border-top:3px solid #b1cd49; padding:5px 0 5px 0; text-align:center; }

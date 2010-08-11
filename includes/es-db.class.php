@@ -11,16 +11,10 @@ class DBConnection {
 	# PRIVATE PROPERTIES #
 	######################
 	// db vars
-	# live
-	//private $_HOSTNAME = 'keeper101.db.5185848.hostedresource.com';
-	//private $_USERNAME = 'keeper101';
-	//private $_PASSWORD = 'V4rfvB5tgb';
-	//private $_DB = 'keeper101';
-	# local
-	private $_HOSTNAME = 'localhost';
-	private $_USERNAME = 'root';
-	private $_PASSWORD = 'solarone';
-	private $_DB = 'keeper101';
+	private $_HOSTNAME;
+	private $_USERNAME;
+	private $_PASSWORD;
+	private $_DB;
 	private $_db_link = 0;
 	private $_query_id = 0;
 	private $_affected_rows = 0;
@@ -33,7 +27,12 @@ class DBConnection {
 	# PUBLIC METHODS #
 	##################
 	// constructor
-	public function DBConnection() {}
+	public function DBConnection($db_host,$db_user,$db_pass,$db_name) {
+		$this->_HOSTNAME = $db_host;
+		$this->_USERNAME = $db_user;
+		$this->_PASSWORD = $db_pass;
+		$this->_DB = $db_name;
+	}
 	// returns query as an array of objects or single object
 	public function get_results($sql,$single=FALSE) {
 		$this->_connect();

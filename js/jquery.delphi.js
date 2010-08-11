@@ -65,10 +65,15 @@ var System = {
 	}
 };
 System.init();
+// determine host
+var host = window.location.hostname;
+var tld = /\.([a-z,A-Z]{2,6})$/;
 // constants
 var Einstein = {};
-//Einstein.PORTAL_URI = "http://lighthousesolar.com/mysolarportal/"; // live
-Einstein.PORTAL_URI = "http://lighthousesolar.ld/portal/"; // local
+switch(host.match(tld)[1]) {
+	case "ld" : Einstein.PORTAL_URI = "http://lighthousesolar.ld/portal/"; break;
+	default : Einstein.PORTAL_URI = "http://mylighthousesolar.com/"; break;
+}
 Einstein.MARGIN_UPPER = 20;
 Einstein.MARGIN_LOWER = 20;
 Einstein.PPW_GROSS_UPPER = 4.5;
@@ -199,7 +204,8 @@ var Login = Module.extend({
 		// set the title
 		document.title = this.docTitle;
 		// create the dashboard columns
-		$("#main").append("<h1 class='main-header'>&rsaquo;&rsaquo;&nbsp;"+this.dashboardText+"</h1> \
+		$("#main").append("<div id='extra-nav'>"+this.docNav+"</div> \
+							<h1 class='main-header'>&rsaquo;&rsaquo;&nbsp;"+this.dashboardText+"</h1> \
 							<div class='dashboard-wrap'> \
 								"+this.docWrapper+" \
 								<div class='clear'></div> \
@@ -207,7 +213,7 @@ var Login = Module.extend({
 		$("#footer, #topper-menu").show();
 		$("#logo .left").html("<h3><img src='gfx/einstein.png' height='30' alt='' style='vertical-align: middle; padding:0 5px 10px 0' />Einstein</h3><h3 class='location'> | "+this.officeLocation+"</h3>");
 		// do the next action in start sequence
-		for(m in this.next) this.next[m].begin();
+		for(var m in this.next) this.next[m].begin();
 	},
 	iHTML:function() {
 		this._super();
@@ -261,22 +267,52 @@ var Login = Module.extend({
 						this.dashboardText = "Systemwide Dashboard"; 
 						this.docTitle = "Administer / Einstein Estimator - Lighthouse Solar / "+this.officeLocation;
 						this.docWrapper = "<div class='dashboard-left'></div><div class='dashboard-right'></div>";
+						this.docNav = "";
 						break;
 					case "1" : 
 						this.next = this.isOffice; 
 						this.dashboardText = "Office Dashboard"; 
 						this.docTitle = "Office / Einstein Estimator - Lighthouse Solar / "+this.officeLocation;
 						this.docWrapper = "<div class='dashboard-left'></div><div class='dashboard-right'></div>";
+						this.docNav = "";
 						break;
 					case "2" : 
 						this.next = this.isAdmin; 
-						this.dashboardText = "Admin Dashboard"; this.docTitle = "Welcome / Einstein Estimator - Lighthouse Solar / "+this.officeLocation;
+						this.dashboardText = "Admin Dashboard"; 
+						this.docTitle = "Welcome / Einstein Estimator - Lighthouse Solar / "+this.officeLocation;
 						this.docWrapper = "<div class='dashboard-bar-left'></div><div class='dashboard-main'></div>";
+						this.docNav = "";
 						break;
 					case "3" : 
 						this.next = this.isRep; 
-						this.dashboardText = "Rep Dashboard"; this.docTitle = "Welcome / Einstein Estimator - Lighthouse Solar / "+this.officeLocation;
+						this.dashboardText = "Rep Dashboard"; 
+						this.docTitle = "Welcome / Einstein Estimator - Lighthouse Solar / "+this.officeLocation;
 						this.docWrapper = "<div class='dashboard-bar-left'></div><div class='dashboard-main'></div>";
+						this.docNav = "";
+						break;
+					case "4" : 
+						this.next = this.isSupport;
+						this.dashboardText = "Support Dashboard: <span style='font-variant:small-caps; font-size:16px; color:#808080;'>"+json.data3[0].off_city+", "+json.data3[0].off_state+"</span>"; 
+						this.docTitle = "Support / Einstein Estimator - Lighthouse Solar / "+this.officeLocation;
+						this.docWrapper = "<div class='dashboard-bar-left'></div><div class='dashboard-main'></div>";
+						this.docNav = "<ul>";
+						for(var n in json.data3) {
+							this.docNav += n==0 ? "<li><a id='sup"+json.data3[n].ID+"' class='extra-nav-hover' href='javascript:void(0);' title='"+json.data3[n].off_city+", "+json.data3[n].off_state+"'>"+json.data3[n].off_city+"</a></li>" : "<li><a id='sup"+json.data3[n].ID+"' href='javascript:void(0);' title='"+json.data3[n].off_city+", "+json.data3[n].off_state+"'>"+json.data3[n].off_city+"</a></li>";
+						}
+						this.docNav += "</ul>";
+						// set initial office
+						$("#data").data("rep").rep_officeID = json.data3[0].ID;
+						// add clicks to nav
+						var t = this;
+						$("a",$("#extra-nav")).live("click",function() {
+							$("a",$("#extra-nav")).each(function(i) {
+								$(this).removeClass("extra-nav-hover");
+							});
+							$(this).addClass("extra-nav-hover");
+							$(".main-header").html("&rsaquo;&rsaquo;&nbsp;Support Dashboard: <span style='font-variant:small-caps; font-size:16px; color:#808080;'>"+this.title+"</span>");
+							$("#data").data("rep").rep_officeID = this.id.substring(3);
+							for(var m in t.next) t.next[m].begin(true);
+						});
 						break;
 				}
 				// add logout link
@@ -2738,20 +2774,25 @@ var Customers = Module.extend({
 	},
   	show:function(holder) { this._super(holder); },
 	hide:function() { this._super(); },
-	begin:function() { 
-		this._super(); 
-		this.show(".dashboard-bar-left"); 
+	begin:function(refresh) { 
+		if(!refresh) {
+			this._super(); 
+			this.show(".dashboard-bar-left");
+		}
 		// get all
 		this.io.request(this,"table="+this.dbTable+"&order="+this.dbOrder+"&wc=cus_officeID='"+$('#data').data('rep').rep_officeID+"'&es_do=browseAll");
 	},
 	clear:function() { this._super(); },
 	iHTML:function() {
 		this._super();
+		// disable creation if support role
+		var adder = $("#data").data("role")!=4 ? "<a href='javascript:void(0);' class='dashboard-link' title='New'>+</a>" : "";
+		var search_margin = $("#data").data("role")!=4 ? "" : "style='margin-right:4px;'";
 		// returns the initial html for this module
 		return "<div class='dashboard-item'> \
 					<div class='dashboard-item-header'> \
-						<a href='javascript:void(0);' class='dashboard-link' title='New'>+</a> \
-						<input type='input' class='dashboard-search' value='search...' /> \
+						"+adder+" \
+						<input type='input' class='dashboard-search' value='search...' "+search_margin+" /> \
 						<h1 class='dashboard-header'>"+$("#data").data("city")+" Contacts</h1> \
 					</div> \
 					<div class='dashboard-item-content'><p style='padding:10px; color:#808080;'>Loading...</p></div> \
@@ -3167,9 +3208,11 @@ var Jobs = Module.extend({
 	},
   	show:function(holder) { this._super(holder); },
 	hide:function() { this._super(); },
-	begin:function() {
-		this._super(); 
-		this.show(".dashboard-main"); 
+	begin:function(refresh) {
+		if(!refresh) {
+			this._super(); 
+			this.show(".dashboard-main"); 
+		}
 		// get all
 		this.io.request(this,"table="+this.dbTable+"&order="+this.dbOrder+"&wc=job_officeID='"+$('#data').data('rep').rep_officeID+"'&es_do=browseAllJobs");
 	},
@@ -3892,10 +3935,10 @@ var Zones = Module.extend({
 								<input class='required' type='text' id='zon_num_modules' value='' /> \
 								<label for='zon_per_landscape'># <span style='font-weight:bold;'>Landscape</span> Modules</label> \
 								<input class='required' type='text' id='zon_per_landscape' value='0' /> \
-							</div> \
-							<div class='form-column'> \
 								<label for='zon_racking'>Racking Type</label> \
 								<select class='required' id='zon_racking'>"+selects.zon_racking+"</select> \
+							</div> \
+							<div class='form-column'> \
 								<label for='zon_mounting_method'>Mounting Method</label> \
 								<select class='required' id='zon_mounting_method'>"+selects.zon_mounting_method+"</select> \
 								<label for='zon_pitch'>Surface Pitch</label> \
@@ -3903,16 +3946,18 @@ var Zones = Module.extend({
 								<input type='text' id='zon_custom_pitch' value='' style='width:25%; display:none;'/><label for='zon_custom_pitch' style='padding-left:4px; display:none;'>º</label> \
 								<label for='zon_mounting_medium'>Mounting Medium</label> \
 								<select class='required' id='zon_mounting_medium'>"+selects.zon_mounting_medium+"</select> \
-							</div> \
-							<div class='form-column-right'> \
 								<label for='zon_support_dist'>Distance Between Supports (ft)</label> \
 								<input class='required' type='text' id='zon_support_dist' value='4' /> \
+							</div> \
+							<div class='form-column-right'> \
 								<label for='zon_num_cont_arrays'>Contiguous Arrays</label> \
 								<input class='required' type='text' id='zon_num_cont_arrays' value='1' /> \
 								<label for='zon_rebate'>Rebate ($/W)</label> \
 								<input class='required' type='text' id='zon_rebate' value='0' /> \
 								<label for='zon_rebate_desc'>Rebate Description</label> \
 								<input type='text' id='zon_rebate_desc' value='' /> \
+								<label for='zon_pvwatts'>PV Watts Query (optional)</label> \
+								<input type='text' id='zon_pvwatts' value='' /> \
 							</div> \
 							<div class='clear'></div> \
 							<br /> \
@@ -4101,10 +4146,10 @@ var Zones = Module.extend({
 						<input class='required' type='text' id='zon_num_modules' value='"+data.zon_num_modules+"' /> \
 						<label for='zon_per_landscape'># <span style='font-weight:bold;'>Landscape</span> Modules</label> \
 						<input class='required' type='text' id='zon_per_landscape' value='"+num_land+"' /> \
-					</div> \
-					<div class='form-column'> \
 						<label for='zon_racking'>Racking Type</label> \
 						<select class='required' id='zon_racking'>"+selects.zon_racking+"</select> \
+					</div> \
+					<div class='form-column'> \
 						<label for='zon_mounting_method'>Mounting Method</label> \
 						<select class='required' id='zon_mounting_method'>"+selects.zon_mounting_method+"</select> \
 						<label for='zon_pitch'>Surface Pitch</label> \
@@ -4112,16 +4157,18 @@ var Zones = Module.extend({
 						<input type='text' id='zon_custom_pitch' value='"+data.zon_custom_pitch+"' style='width:25%; "+custom_pitch_style+"' /><label for='zon_custom_pitch' style='padding-left:4px; "+custom_pitch_style+"'>º</label> \
 						<label for='zon_mounting_medium'>Mounting Medium</label> \
 						<select class='required' id='zon_mounting_medium'>"+selects.zon_mounting_medium+"</select> \
-					</div> \
-					<div class='form-column-right'> \
 						<label for='zon_support_dist'>Distance Between Supports (ft)</label> \
 						<input class='required' type='text' id='zon_support_dist' value='"+data.zon_support_dist+"' /> \
+					</div> \
+					<div class='form-column-right'> \
 						<label for='zon_num_cont_arrays'>Contiguous Arrays</label> \
 						<input class='required' type='text' id='zon_num_cont_arrays' value='"+data.zon_num_cont_arrays+"' /> \
 						<label for='zon_rebate'>Rebate ($/W)</label> \
 						<input class='required' type='text' id='zon_rebate' value='"+data.zon_rebate+"' /> \
 						<label for='zon_rebate_desc'>Rebate Description</label> \
 						<input type='text' id='zon_rebate_desc' value='"+data.zon_rebate_desc+"' /> \
+						<label for='zon_pvwatts'>PV Watts Query (optional)</label> \
+						<input type='text' id='zon_pvwatts' value='"+data.zon_pvwatts+"' /> \
 					</div> \
 					<div class='clear'></div> \
 					<br /> \
@@ -4304,9 +4351,11 @@ var Proposals = Module.extend({
 	},
   	show:function(holder) { this._super(holder); },
 	hide:function() { this._super(); },
-	begin:function() {
-		this._super(); 
-		this.show(this.s.holder); 
+	begin:function(refresh) {
+		if(!refresh) {
+			this._super(); 
+			this.show(this.s.holder);
+		}
 		// get all
 		this.io.request(this,"table="+this.dbTable+"&order="+this.dbOrder+"&wc="+this.s.filter+"!!pro_officeID='"+$('#data').data('rep').rep_officeID+"'&"+this.itemFormOptions()+"&es_do=browseAllProposals");
 	},
@@ -4739,7 +4788,7 @@ var Proposals = Module.extend({
 				panel = "<span class='edit-panel'>";
 				panel += 	"<a href='"+Einstein.PORTAL_URI+"?pro_key="+data.pro_key+"' target='_blank' class='view-link' title='View'>View</a> | ";
 				panel += 	"<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
-				panel += 	$("#data").data("role")==2 ? " | <a href='javascript:void(0);' class='trash-link' title='Trash'>Trash</a>" : "";
+				panel += 	($("#data").data("role")==2 || $("#data").data("role")==4) ? " | <a href='javascript:void(0);' class='trash-link' title='Trash'>Trash</a>" : "";
 				panel += 	"<span> | <a href='javascript:void(0);' class='clone-link' title='Clone'>Clone</a></span>";
 				panel += "</span>";
 				break;
@@ -4747,19 +4796,19 @@ var Proposals = Module.extend({
 				panel = "<span class='edit-panel'>";
 				panel += "<a href='"+Einstein.PORTAL_URI+"?pro_key="+data.pro_key+"' target='_blank' class='view-link' title='View'>View</a> | ";
 				panel += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
-				panel += $("#data").data("role")==2 ? " | <a href='javascript:void(0);' class='trash-link' title='Trash'>Trash</a>" : "";
+				panel += ($("#data").data("role")==2 || $("#data").data("role")==4) ? " | <a href='javascript:void(0);' class='trash-link' title='Trash'>Trash</a>" : "";
 				panel += "</span>";
 				break;
 			case 2 :
 				panel = "<span class='edit-panel'>";
 				panel += "<a href='"+Einstein.PORTAL_URI+"?pro_key="+data.pro_key+"' target='_blank' class='view-link' title='View'>View</a>";
-				panel += $("#data").data("role")==2 ? " | <a href='javascript:void(0);' class='trash-link' title='Trash'>Trash</a>" : "";
+				panel += ($("#data").data("role")==2 || $("#data").data("role")==4) ? " | <a href='javascript:void(0);' class='trash-link' title='Trash'>Trash</a>" : "";
 				panel += "</span>";
 				break;
 			case 3 :
 				panel = "<span class='edit-panel'>";
 				panel += "<a href='"+Einstein.PORTAL_URI+"?pro_key="+data.pro_key+"' target='_blank' class='view-link' title='View'>View</a>";
-				panel += $("#data").data("role")==2 ? " | <a href='javascript:void(0);' class='trash-link' title='Trash'>Trash</a>" : "";
+				panel += ($("#data").data("role")==2 || $("#data").data("role")==4) ? " | <a href='javascript:void(0);' class='trash-link' title='Trash'>Trash</a>" : "";
 				panel += "</span>";
 				break;
 		}
@@ -4768,7 +4817,7 @@ var Proposals = Module.extend({
 				action = "<td colspan='1' align='right'><input type='submit' title='Submit' value='Submit' /><img style='display:none;' id='emailing-gif-"+data.ID+"' src='gfx/emailing.gif' alt='emailing...' /></td>";
 				break;
 			case "publish" :
-				action = $("#data").data("role")==2 ? "<td colspan='1' align='right'><input type='submit' title='Publish' value='Publish' /><img style='display:none;' id='emailing-gif-"+data.ID+"' src='gfx/emailing.gif' alt='emailing...' /></td>" : "";
+				action = ($("#data").data("role")==2 || $("#data").data("role")==4) ? "<td colspan='1' align='right'><input type='submit' title='Publish' value='Publish' /><img style='display:none;' id='emailing-gif-"+data.ID+"' src='gfx/emailing.gif' alt='emailing...' /></td>" : "";
 				break;
 			default : action = "";
 		}
@@ -5311,6 +5360,7 @@ $(function() {
 	login.isOffice = [settings, reps];
 	login.isAdmin = [customers, jobs, drafts, submitted, published, approved];
 	login.isRep = [customers, jobs, drafts, submitted, published, approved];
+	login.isSupport = [customers, jobs, drafts, submitted, published, approved];
 	login.begin();
 });
 //####################################################################### END

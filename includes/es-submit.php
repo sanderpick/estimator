@@ -1,18 +1,20 @@
 <?php
+#——————————————————————————————–—————————————————————–––––––––– HOST
+$host = gethostbyaddr(gethostbyname($_SERVER["SERVER_NAME"]));
+preg_match('/\.([a-z,A-Z]{2,6})$/',$host,$tld);
 #——————————————————————————————–—————————————————————–––––– SETTINGS
 require_once("es-object.class.php");
 $E = new Object();
-## live
-//$E->push("PORTAL_URI","http://lighthousesolar.com/mysolarportal/");
-//$E->push("EINSTEIN_URI","http://tools.lighthousesolar.com/einstein/");
-//$E->push("EINSTEIN_SMTP_SERVER","relay-hosting.secureserver.net");
-//$E->push("EINSTEIN_SMTP_PORT",25);
-//$E->push("EINSTEIN_SMTP_USER","");
-//$E->push("EINSTEIN_SMTP_PASS","");
-//$E->push("EINSTEIN_SMTP_FROM","noreply@lighthousesolar.com");
-# local
-$E->push("PORTAL_URI","http://lighthousesolar.ld/portal/");
-$E->push("EINSTEIN_URI","http://lighthousesolar.ld/estimator/");
+switch($tld[1]) {
+	case "ld" : // local
+		$E->push("PORTAL_URI","http://lighthousesolar.ld/portal/");
+		$E->push("EINSTEIN_URI","http://lighthousesolar.ld/estimator/");
+		break;
+	default : 
+		$E->push("PORTAL_URI","http://mylighthousesolar.com/");
+		$E->push("EINSTEIN_URI","http://einstein.cleanenergysolutionsinc.com/");
+		break;
+}
 $E->push("EINSTEIN_SMTP_SERVER","ssl://smtp.gmail.com");
 $E->push("EINSTEIN_SMTP_PORT",465);
 $E->push("EINSTEIN_SMTP_USER","einstein@lighthousesolar.com");
@@ -43,6 +45,9 @@ function login() {
 		else if($m->getRow("es_offices",$r['data']->rep_officeID)) {
 			$r['data2'] = array("location"=>$m->lastData()->off_city.", ".$m->lastData()->off_state,"city"=>$m->lastData()->off_city,"state"=>$m->lastData()->off_state,"zip"=>$m->lastData()->off_zip);
 		} else $r['data2'] = array("location"=>"unknown location","city"=>"","state"=>"","zip"=>"");
+		// get all offices for support
+		$m->getAll("es_offices","ID,off_city,off_state","ID");
+		$r['data3'] = $m->lastData();
 	} else $r['did'] = "failed login";
 }
 // resume
@@ -57,6 +62,9 @@ function resume() {
 			else if($m->getRow("es_offices",$r['data']->rep_officeID)) {
 				$r['data2'] = array("location"=>$m->lastData()->off_city.", ".$m->lastData()->off_state,"city"=>$m->lastData()->off_city,"state"=>$m->lastData()->off_state,"zip"=>$m->lastData()->off_zip);
 			} else $r['data2'] = array("location"=>"unknown location","city"=>"","state"=>"","zip"=>"");
+			// get all offices for support
+			$m->getAll("es_offices","ID,off_city,off_state","ID");
+			$r['data3'] = $m->lastData();
 		} else $r['did'] = "cant resume";
 	} else $r['did'] = "cant resume";
 }
@@ -579,12 +587,12 @@ function updateZone() {
 	// get the old zone
 	$m->getRow($table,$id);
 	$old_zone = $m->lastData();
-	$old_upload = $m->lastData()->zon_layout;
+	//$old_upload = $m->lastData()->zon_layout;
 	// check to see if upload is different
-	if(isset($_POST['zon_layout'])) {
-		removeUploads("ID",$old_upload);
-		$m->deleteRow("es_uploads",$old_upload);
-	}
+	//if(isset($_POST['zon_layout'])) {
+	//	removeUploads("ID",$old_upload);
+	//	$m->deleteRow("es_uploads",$old_upload);
+	//}
 	// rebate to dollars
 	$m->getRow('es_modules',$_POST['zon_module'],"mod_model_num");
 	$mod_watts = $m->lastData()->mod_stc;
@@ -1066,7 +1074,7 @@ function makeZone($zone,$officeID) {
 	$labor_unit_cost = $m->lastData()->off_labor_cost;
 	$labor_unit_price = $m->lastData()->off_labor_price;
 	$off_inventory_up = $m->lastData()->off_inventory_up;
-	$pvwatts_data = explode(":",$m->lastData()->off_pvwatts);
+	$pvwatts_data = $zone['zon_pvwatts']!="" ? explode(":",$zone['zon_pvwatts']) : explode(":",$m->lastData()->off_pvwatts);
 	// determine mode from array type
 	switch($zone['zon_type']) {
 		case "Fixed Tilt" :
