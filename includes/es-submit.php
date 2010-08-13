@@ -213,10 +213,10 @@ function addOffice() {
 	$table = $_POST['table'];
 	unset($_POST['es_do'],$_POST['table']);
 	$off = $_POST;
-	$off['off_manager_list'] = strtolower($off['off_city']."_gm@lighthousesolar.com");
+	$off['off_manager_list'] = strtolower(str_replace(" ","_",$off['off_city'])."_gm@lighthousesolar.com");
 	if($id=$m->addRow($table,$off)) {
 		// create office admin
-		$rep['rep_login'] = strtolower($off['off_city']."_".$off['off_state']);
+		$rep['rep_login'] = strtolower(str_replace(" ","_",$off['off_city']."_".$off['off_state']));
 		$salt = substr(md5($rep['rep_login']),0,15);
 		$pass = substr(uniqid(md5(rand())),0,8);
 		$rep['rep_pass'] = sha1($pass.$salt);
