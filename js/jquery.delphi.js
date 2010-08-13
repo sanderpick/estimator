@@ -361,6 +361,7 @@ var Offices = Module.extend({
 		// new item
 		$("a[title='New']",$(t.el)).live("click",function() {
 			$(".dashboard-item-content",$(t.el)).html(t.itemForm());
+			$("#manager-warning").hide();
 		});
 		// cancel add
 		$("input[title='Cancel']",$(t.el)).live("click",function() {
@@ -405,7 +406,11 @@ var Offices = Module.extend({
 		// for manager list
 		$("#off_city",$(t.el)).live("keyup",function() {
 			var city = this.value.trim().replace(" ","_").toLowerCase();
-			if($(this).closest("form").hasClass("addform")) $(".off_manager_list-display",$(this).closest("form")).text(city+"_gm@lighthousesolar.com");
+			if($(this).closest("form").hasClass("addform")) {	
+				if(city!="") $("#manager-warning",$(this).closest("form")).show();
+				else $("#manager-warning",$(this).closest("form")).hide();
+				$(".off_manager_list-display",$(this).closest("form")).text(city+"_gm@lighthousesolar.com");
+			}
 		});
 	},
   	show:function(holder) { this._super(holder); },
@@ -468,8 +473,10 @@ var Offices = Module.extend({
 					<br /> \
 					<input type='submit' title='Add' value='Add New' /> \
 					<input type='submit' title='Cancel' value='Cancel' /> \
-					<span style='padding:0 0 0 20px; color:#808080; font-variant:small-caps;'>New Office <em>Manager\'s List</em> <span style='color:black;'>must</span> be:</span> \
-					<div class='off_manager_list-display' style='font-weight:bold; color:#5880C0; display:inline;'>_gm@lighthousesolar.com</div> \
+					<div id='manager-warning' style='display:inline;'> \
+						<span style='padding:0 0 0 20px; color:#808080; font-variant:small-caps;'>New Office <em>Manager\'s List</em> <span style='color:black;'>must</span> be:</span> \
+						<div class='off_manager_list-display' style='font-weight:bold; color:#5880C0; display:inline;'>_gm@lighthousesolar.com</div> \
+					</div> \
 				</form>";
 	},
 	receive:function(json) {
