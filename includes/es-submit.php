@@ -1183,7 +1183,7 @@ function sendProposal() {
 		$tse_message = Swift_Message::newInstance("[LHS ".$off->off_city.", ".$off->off_state." – Einstein] Proposal #".$pro->ID.": \"".$pro->pro_name."\""." Approved.")
 		  ->setFrom(array($E->EINSTEIN_SMTP_FROM => "LHS Einstein"))
 		  ->setTo(array($rep->rep_email => $rep->rep_name_first." ".$rep->rep_name_last))
-		  ->setBcc(array($off->off_manager_list => "Sales Manager, Lighthouse ".$off->off_city.", ".$off->off_state))
+		  ->setBcc(array($off->off_manager_list => "General Manager, Lighthouse ".$off->off_city.", ".$off->off_state))
 		  ->setBody($tse_email);
 		// send mail
 		$mailer->send($cus_message);
@@ -1206,7 +1206,7 @@ function sendProposal() {
 		$cus_message = Swift_Message::newInstance("Your Lighthousesolar Proposal #".$pro->ID.": \"".$pro->pro_name."\" is ready for review.")
 		  ->setFrom(array($rep->rep_email => $rep->rep_name_first." ".$rep->rep_name_last))
 		  ->setTo(array($cus_address => $cus_name))
-		  ->setBcc(array($off->off_manager_list => "Sales Manager, Lighthouse ".$off->off_city.", ".$off->off_state))
+		  ->setBcc(array($off->off_manager_list => "General Manager, Lighthouse ".$off->off_city.", ".$off->off_state))
 		  ->setBody($cus_email);
 		$tse_message = Swift_Message::newInstance("[LHS ".$off->off_city.", ".$off->off_state." – Einstein] Proposal #".$pro->ID.": \"".$pro->pro_name."\""." Delivered.")
 		  ->setFrom(array($E->EINSTEIN_SMTP_FROM => "LHS Einstein"))
@@ -1259,13 +1259,13 @@ function sendProposal() {
 		$sm_email .= "- LHS ".$off->off_city.", ".$off->off_state;
 		$tse_email .= "\n--------------------------------------------------\n";
 		$tse_email .= "View Proposal: ".$E->PORTAL_URI."?pro_key=".$pro->pro_key."\n\n";
-		$tse_email .= "Your Sales Manager has been notified of this action and will moderate your Proposal before it is sent to your Customer.\n\n";
+		$tse_email .= "Your General Manager has been notified of this action and will moderate your Proposal before it is sent to your Customer.\n\n";
 		$tse_email .= "Thanks for using Einstein.\n\n";
 		$tse_email .= "- LHS ".$off->off_city.", ".$off->off_state;
 		// make messages
 		$sm_message = Swift_Message::newInstance("[LHS ".$off->off_city.", ".$off->off_state." – Einstein] Please moderate Proposal #".$pro->ID.": \"".$pro->pro_name."\"")
 		  ->setFrom(array($rep->rep_email => $rep->rep_name_first." ".$rep->rep_name_last))
-		  ->setTo(array($off->off_manager_list => "Sales Manager, Lighthouse ".$off->off_city.", ".$off->off_state))
+		  ->setTo(array($off->off_manager_list => "General Manager, Lighthouse ".$off->off_city.", ".$off->off_state))
 		  ->setBody($sm_email);
 		$tse_message = Swift_Message::newInstance("[LHS ".$off->off_city.", ".$off->off_state." – Einstein] Proposal #".$pro->ID.": \"".$pro->pro_name."\""." Submitted.")
 		  ->setFrom(array($E->EINSTEIN_SMTP_FROM => "LHS Einstein"))
@@ -1296,23 +1296,33 @@ function notifyRep() {
 	// determine action
 	if($type=="new") {
 		// notify rep of new account
-		$rep_email = $rep->rep_name_first.",\n\nYour Einstein Estimator Account has been created.\n\n";
+		$rep_email = $rep->rep_name_first.",\n\nYour Einstein Estimator Sales Rep Account has been created.\n\n";
 		$rep_email .= "Username: ".$rep->rep_login."\n";
 		$rep_email .= "Password: ".$pass."\n\n";
 		$rep_email .= "Follow this link to Log In and start building Proposals: ".$E->EINSTEIN_URI."\n\n";
 		$rep_email .= "Thanks for using Einstein.\n\n";
 		$rep_email .= "- LHS ".$off->off_city.", ".$off->off_state;
+		// notify gm of new account
+		$sm_email = "You created a new Einstein Estimator Sales Rep Account for ".$rep->rep_name_first." ".$rep->rep_name_last.".\n\n";
+		$sm_email .= "Username: ".$rep->rep_login."\n";
+		$sm_email .= "Password: ".$pass."\n\n";
+		$sm_email .= "Thanks for using Einstein.\n\n";
+		$sm_email .= "- LHS ".$off->off_city.", ".$off->off_state;
 		// make messages
 		$rep_message = Swift_Message::newInstance("[LHS ".$off->off_city.", ".$off->off_state." – Einstein] New Sales Rep created.")
 		  ->setFrom(array($E->EINSTEIN_SMTP_FROM => "LHS Einstein"))
 		  ->setTo(array($rep->rep_email => $rep->rep_name_first." ".$rep->rep_name_last))
-		  ->setBcc(array($E->EINSTEIN_SMTP_FROM => "LHS Admin"))
 		  ->setBody($rep_email);
+		$sm_message = Swift_Message::newInstance("[LHS ".$off->off_city.", ".$off->off_state." – Einstein] New Sales Rep created.")
+		  ->setFrom(array($E->EINSTEIN_SMTP_FROM => "LHS Einstein"))
+		  ->setTo(array($off->off_manager_list => "General Manager, Lighthouse ".$off->off_city.", ".$off->off_state))
+		  ->setBody($sm_email);
 		// send mail
 		$mailer->send($rep_message);
+		$mailer->send($sm_message);
 	} else if($type=="update") {
 		// notify rep of password change
-		$rep_email = $rep->rep_name_first.",\n\nYour Einstein Estimator Account password has been reset.\n\n";
+		$rep_email = $rep->rep_name_first.",\n\nYour Einstein Estimator Sales Rep Account password has been reset.\n\n";
 		$rep_email .= "New Password: ".$pass."\n\n";
 		$rep_email .= "Follow this link to Log In: ".$E->EINSTEIN_URI."\n\n";
 		$rep_email .= "Thanks for using Einstein.\n\n";

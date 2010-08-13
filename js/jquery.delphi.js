@@ -1871,7 +1871,7 @@ var Settings = Module.extend({
 							break;
 						case "off_email" :
 							row += "<td colspan='1'>";
-							row += "<span style='font-weight:bold;'>Sales Manager's List Address</span><br /><span style='font-size:10px; color:#808080;'>(This list receives monitoring requests and notifications.)</span><br />";
+							row += "<span style='font-weight:bold;'>Office E-mail Address</span><br /><span style='font-size:10px; color:#808080;'>(Used for general inquiries.)</span><br />";
 							row += "<span class='edit-panel'>";
 							row += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
 							row += "</span>";
@@ -1882,8 +1882,31 @@ var Settings = Module.extend({
 							edit +=	"<h1 class='addform-header'>Quick Edit</h1>";
 							edit +=	"<br />";
 							edit +=	"<div class='form-column'>";
-							edit +=	"<label for='off_email'>Sales Manager's List Address</label>";
+							edit +=	"<label for='off_email'>Office E-mail Address</label>";
 							edit +=	"<input class='required' type='text' id='off_email' value='"+json.data.off_email+"' />";
+							edit +=	"</div>";
+							edit +=	"<div class='clear'></div>";
+							edit +=	"<br />";
+							edit +=	"<input type='submit' title='Update' value='Update' />";
+							edit +=	"<input type='submit' title='CancelQ' value='Cancel' style='margin-left:3px;' />";
+							edit +=	"</form>";
+							edit += "</td>";
+							break;
+						case "off_manager_list" :
+							row += "<td colspan='1'>";
+							row += "<span style='font-weight:bold;'>General Manager's List Address</span><br /><span style='font-size:10px; color:#808080;'>(This list receives monitoring requests and notifications.)</span><br />";
+							row += "<span class='edit-panel'>";
+							row += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
+							row += "</span>";
+							row += "</td>";
+							row += "<td colspan='1' align='right'>"+json.data.off_manager_list+"</td>";
+							edit += "<td colspan='2'>";
+							edit += "<form class='updateform' action='javascript:void(0);'>";
+							edit +=	"<h1 class='addform-header'>Quick Edit</h1>";
+							edit +=	"<br />";
+							edit +=	"<div class='form-column'>";
+							edit +=	"<label for='off_manager_list'>General Manager's List Address</label>";
+							edit +=	"<input class='required' type='text' id='off_manager_list' value='"+json.data.off_manager_list+"' />";
 							edit +=	"</div>";
 							edit +=	"<div class='clear'></div>";
 							edit +=	"<br />";
@@ -2169,7 +2192,7 @@ var Settings = Module.extend({
 				// email
 				html += "<tr id='show-off_email' class='"+color[0]+"'>";
 				html += "<td colspan='1'>";
-				html += "<span style='font-weight:bold;'>Sales Manager's List Address</span><br /><span style='font-size:10px; color:#808080;'>(This list receives monitoring requests and notifications.)</span><br />";
+				html += "<span style='font-weight:bold;'>Office E-mail Address</span><br /><span style='font-size:10px; color:#808080;'>(Used for general inquiries.)</span><br />";
 				html += "<span class='edit-panel'>";
 				html += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
 				html += "</span>";
@@ -2183,8 +2206,36 @@ var Settings = Module.extend({
 				html +=	"<h1 class='addform-header'>Quick Edit</h1>";
 				html +=	"<br />";
 				html +=	"<div class='form-column'>";
-				html +=	"<label for='off_email'>Sales Manager's List Address</label>";
+				html +=	"<label for='off_email'>Office E-mail Address</label>";
 				html +=	"<input class='required' type='text' id='off_email' value='"+json.data.off_email+"' />";
+				html +=	"</div>";
+				html +=	"<div class='clear'></div>";
+				html +=	"<br />";
+				html +=	"<input type='submit' title='Update' value='Update' />";
+				html +=	"<input type='submit' title='CancelQ' value='Cancel' style='margin-left:3px;' />";
+				html +=	"</form>";
+				html += "</td>";
+				html += "</tr>";
+				///////////////////////////////////////////
+				// manager's list
+				html += "<tr id='show-off_manager_list' class='"+color[0]+"'>";
+				html += "<td colspan='1'>";
+				html += "<span style='font-weight:bold;'>General Manager's List Address</span><br /><span style='font-size:10px; color:#808080;'>(This list receives monitoring requests and notifications.)</span><br />";
+				html += "<span class='edit-panel'>";
+				html += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
+				html += "</span>";
+				html += "</td>";
+				html += "<td colspan='1' align='right'>"+json.data.off_manager_list+"</td>";
+				html += "</tr>";
+				// edit email
+				html += "<tr id='edit-off_manager_list' style='display:none;' class='quick-edit "+color[0]+"'>";
+				html += "<td colspan='2'>";
+				html += "<form class='updateform' action='javascript:void(0);'>";
+				html +=	"<h1 class='addform-header'>Quick Edit</h1>";
+				html +=	"<br />";
+				html +=	"<div class='form-column'>";
+				html +=	"<label for='off_manager_list'>General Manager's List Address</label>";
+				html +=	"<input class='required' type='text' id='off_manager_list' value='"+json.data.off_manager_list+"' />";
 				html +=	"</div>";
 				html +=	"<div class='clear'></div>";
 				html +=	"<br />";
