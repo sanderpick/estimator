@@ -578,12 +578,14 @@ var Offices = Module.extend({
 						<input class='required' type='text' id='off_phone' value='"+data.off_phone+"' /> \
 						<label for='off_email'>Email</label> \
 						<input class='required' type='text' id='off_email' value='"+data.off_email+"' /> \
+						<label for='off_manager_list'>Manager\'s List</label> \
+						<input class='required' type='text' id='off_manager_list' value='"+data.off_manager_list+"' /> \
 						<label for='off_labor_cost'>Labor Cost (hr)</label> \
 						<input class='required' type='text' id='off_labor_cost' value='"+data.off_labor_cost+"' /> \
-						<label for='off_labor_price'>Labor Price (hr)</label> \
-						<input class='required' type='text' id='off_labor_price' value='"+data.off_labor_price+"' /> \
 					</div> \
 					<div class='form-column-right'> \
+						<label for='off_labor_price'>Labor Price (hr)</label> \
+						<input class='required' type='text' id='off_labor_price' value='"+data.off_labor_price+"' /> \
 						<label for='off_pvwatts'>PV Watts Query</label> \
 						<input class='required' type='text' id='off_pvwatts' value='"+data.off_pvwatts+"' /> \
 						<label for='off_lat'>Latitude (º)</label> \
