@@ -707,11 +707,11 @@ function cloneProposal() {
 	foreach($m->lastData() as $k=>$v) if($k!="ID") $clone[$k] = $v;
 	// set date
 	$clone['pro_date'] = date('Y-m-d H:i:s');
-	// reset published and delivered and approved
+	// reset submitted, published, and approved
+	$clone['pro_submitted'] = 0;
 	$clone['pro_published'] = 0;
-	$clone['pro_delivered'] = 0;
 	$clone['pro_approved'] = 0;
-	unset($clone['pro_published_date'],$clone['pro_delivered_date'],$clone['pro_approved_date']);
+	unset($clone['pro_submitted_date'],$clone['pro_published_date'],$clone['pro_approved_date']);
 	// make link
 	$clone['pro_key'] = uniqid(md5(rand()));
 	// add to db
@@ -737,8 +737,8 @@ function cloneProposal() {
 	}
 }
 
-// publish proposal
-function publishProposal() {
+// submit proposal
+function submitProposal() {
 	global $m,$r;
 	$table = $_POST['table'];
 	$id = $_POST['id'];
@@ -751,12 +751,12 @@ function publishProposal() {
 	$job = $m->lastData();
 	// validate email address for job associated with proposal
 	if(validateEmail($job->job_email)) {
-		// set published value
-		if($m->editCell($table,1,"pro_published",$id) && $m->editCell($table,$pub_date,"pro_published_date",$id)) {
+		// set submitted value
+		if($m->editCell($table,1,"pro_submitted",$id) && $m->editCell($table,$pub_date,"pro_submitted_date",$id)) {
 			// get updated proposal
 			$m->getRow("es_proposals",$id);
 			$pro = $m->lastData();
-			$r['did'] = $table." published";
+			$r['did'] = $table." submitted";
 			$r['data'] = $pro;
 			// get zones
 			$jobID = $pro->pro_jobID;
@@ -774,7 +774,7 @@ function publishProposal() {
 					} else $r['did'] = "failed ".$table." options";
 				}
 			}
-		} else $r['did'] = "failed ".$table." publish";
+		} else $r['did'] = "failed ".$table." submit";
 	} else {	
 		$r['did'] = "invalid email";
 		$r['data']['job'] = $job->job_name;
@@ -784,7 +784,7 @@ function publishProposal() {
 }
 
 // publish proposal
-function deliverProposal() {
+function publishProposal() {
 	global $m,$r;
 	$table = $_POST['table'];
 	$id = $_POST['id'];
@@ -797,14 +797,14 @@ function deliverProposal() {
 	$job = $m->lastData();
 	// validate email address for job associated with proposal
 	if(validateEmail($job->job_email)) {
-		// set delivered value
-		if($m->editCell($table,1,"pro_delivered",$id) && $m->editCell($table,$del_date,"pro_delivered_date",$id)) {
+		// set published value
+		if($m->editCell($table,1,"pro_published",$id) && $m->editCell($table,$del_date,"pro_published_date",$id)) {
 			// get updated proposal
 			$m->getRow("es_proposals",$id);
 			$pro = $m->lastData();
-			$r['did'] = $table." delivered";
+			$r['did'] = $table." published";
 			$r['data'] = $pro;
-		} else $r['did'] = "failed ".$table." deliver";
+		} else $r['did'] = "failed ".$table." publish";
 	} else {	
 		$r['did'] = "invalid email";
 		$r['data']['job'] = $job->job_name;
@@ -1162,7 +1162,7 @@ function sendProposal() {
 	$m->getRow("es_customers",$pro->pro_customerID);
 	$cus = $m->lastData();
 	// determine action
-	if($pro->pro_published && $pro->pro_delivered && $pro->pro_approved) { // just approved
+	if($pro->pro_submitted && $pro->pro_published && $pro->pro_approved) { // just approved
 		// build emails
 		$cus_email = "Dear ".$cus->cus_name_first." ".$cus->cus_name_last.",\n\n";
 		$cus_email .= "Thank you for your interest in our services. I will be contacting you within 24 hours to discuss contract options for your Lighthousesolar system installation.\n\n";
@@ -1188,7 +1188,7 @@ function sendProposal() {
 		// send mail
 		$mailer->send($cus_message);
 		$mailer->send($tse_message);
-	} else if($pro->pro_published && $pro->pro_delivered) { // just delivered
+	} else if($pro->pro_submitted && $pro->pro_published) { // just published
 		// build emails
 		$cus_email = "Dear ".$cus->cus_name_first." ".$cus->cus_name_last.",\n\n";
 		$cus_email .= "Thank you for offering Lighthouse Solar the opportunity to produce a Proposal for your solar energy systems. Please follow the link below to review your Proposal.\n\n";
@@ -1215,7 +1215,7 @@ function sendProposal() {
 		// send mail
 		$mailer->send($cus_message);
 		$mailer->send($tse_message);
-	} else { // just published
+	} else { // just submitted
 		// make calcs
 		require_once("es-calcs.php");
 		$figures = estimate($pro);

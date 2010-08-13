@@ -238,7 +238,7 @@ var Login = Module.extend({
 						<div class='clear'></div> \
 					</form> \
 					<br /> \
-					<small class='contact'>Having problems? <a href='mailto:einstein@lighthousesolar.com' target='_blank'>Contact</a> your Administrator. To ensure the best user experience, please use a modern web browser like <a href='http://www.google.com/chrome/' target='_blank'>Chrome</a>, <a href='http://www.apple.com/safari/download/' target='_blank'>Safari</a>, or <a href='http://www.mozilla.com/' target='_blank'>Firefox</a>.</small> \
+					<small class='contact'>Having problems? <a href='mailto:helpdesk@lighthousesolar.com' target='_self'>Contact</a> your Administrator. To ensure the best user experience, please use a modern web browser like <a href='http://www.google.com/chrome/' target='_blank'>Chrome</a>, <a href='http://www.apple.com/safari/download/' target='_blank'>Safari</a>, or <a href='http://www.mozilla.com/' target='_blank'>Firefox</a>.</small> \
 				</div>";
 	},
 	receive:function(json) {
@@ -4311,7 +4311,7 @@ var Proposals = Module.extend({
 			if(!confirm("Submitting will email this Proposal to your Office's General Manager(s) for review.\n\nSubmit Proposal #"+t.currentRowID+"?")) return false;
 			$(this).hide();
 			$("#emailing-gif-"+t.currentRowID).show();
-			t.io.request(t,"id="+t.currentRowID+"&table="+t.dbTable+"&"+t.itemFormOptions()+"&es_do=publishProposal");
+			t.io.request(t,"id="+t.currentRowID+"&table="+t.dbTable+"&"+t.itemFormOptions()+"&es_do=submitProposal");
 		});
 		// publish
 		$("input[title='Publish']",$(t.el)).live("click",function() {
@@ -4319,7 +4319,7 @@ var Proposals = Module.extend({
 			if(!confirm("Publishing will email this Proposal to your prospective Customer for review.\n\nPublish Proposal #"+t.currentRowID+"?")) return false;
 			$(this).hide();
 			$("#emailing-gif-"+t.currentRowID).show();
-			t.io.request(t,"id="+t.currentRowID+"&table="+t.dbTable+"&es_do=deliverProposal");
+			t.io.request(t,"id="+t.currentRowID+"&table="+t.dbTable+"&es_do=publishProposal");
 		});
 		// hover over rows
 		$("tr",$(t.el)).live("mouseenter",function() {
@@ -4555,7 +4555,7 @@ var Proposals = Module.extend({
 				$("#emailing-gif-"+json.data.pro).hide();
 				$("input",$("#pro"+json.data.pro)).show();
 				break;
-			case this.dbTable+" published" :
+			case this.dbTable+" submitted" :
 				// check structure
 				if(!$("#"+this.submitted.s.wrapper).length) {
 					var html = "<table cellpadding='0' cellspacing='0'>";
@@ -4602,7 +4602,7 @@ var Proposals = Module.extend({
 				// send mail
 				this.io.request(this,"id="+json.data.ID+"&es_do=sendProposal");
 				break;
-			case this.dbTable+" delivered" :
+			case this.dbTable+" published" :
 				// check structure
 				if(!$("#"+this.published.s.wrapper).length) {
 					var html = "<table cellpadding='0' cellspacing='0'>";
@@ -5383,7 +5383,7 @@ $(function() {
 			holder:".dashboard-main",
 			wrapper:"all-drafts",
 			order:"ID DESC",
-			filter:"pro_published='0'!!pro_delivered='0'!!pro_approved='0'",
+			filter:"pro_submitted='0'!!pro_published='0'!!pro_approved='0'",
 			panel:0,
 			action:"submit",
 			date:{ src:"pro_date", head:"Last Updated" }
@@ -5395,11 +5395,11 @@ $(function() {
 			slug:"submitted proposals",
 			holder:".dashboard-main",
 			wrapper:"all-submitted",
-			order:"pro_published_date DESC",
-			filter:"pro_published='1'!!pro_delivered='0'!!pro_approved='0'",
+			order:"pro_submitted_date DESC",
+			filter:"pro_submitted='1'!!pro_published='0'!!pro_approved='0'",
 			panel:0,
 			action:"publish",
-			date:{ src:"pro_published_date", head:"Submitted" }
+			date:{ src:"pro_submitted_date", head:"Submitted" }
 		}
 	);
 	var published = new Proposals("#m_published",_published_io,
@@ -5408,11 +5408,11 @@ $(function() {
 			slug:"published proposals",
 			holder:".dashboard-main",
 			wrapper:"all-published",
-			order:"pro_delivered_date DESC",
-			filter:"pro_published='1'!!pro_delivered='1'!!pro_approved='0'",
+			order:"pro_published_date DESC",
+			filter:"pro_submitted='1'!!pro_published='1'!!pro_approved='0'",
 			panel:1,
 			action:"",
-			date:{ src:"pro_delivered_date", head:"Published" }
+			date:{ src:"pro_published_date", head:"Published" }
 		}
 	);
 	var approved = new Proposals("#m_approved",_approved_io,
@@ -5422,7 +5422,7 @@ $(function() {
 			holder:".dashboard-main",
 			wrapper:"all-approved",
 			order:"pro_approved_date DESC",
-			filter:"pro_published='1'!!pro_delivered='1'!!pro_approved='1'",
+			filter:"pro_submitted='1'!!pro_published='1'!!pro_approved='1'",
 			panel:1,
 			action:"",
 			date:{ src:"pro_approved_date", head:"Approved" }

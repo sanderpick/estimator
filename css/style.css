@@ -212,7 +212,7 @@ h1.add-proposal-section { font-size:10px; text-transform:uppercase; padding:0 0 
 #loading { display:none; padding:17px 0 0 20px; }
 #topper-menu { padding:15px 20px 0 20px; display:none; }
 /*--------------------------------main*/
-#main { padding:20px; width:97%; min-height:700px; }
+#main { padding:20px; width:97%; min-height:650px; }
 
 #extra-nav { font-size:11px; margin:-15px 0 0 0; }
 #extra-nav ul { text-align:right }
