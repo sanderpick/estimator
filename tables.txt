@@ -303,11 +303,11 @@ CREATE TABLE `es_proposals` (
 	
 	`pro_cover_letter` text,
 	
+	`pro_submitted` int(1) NOT NULL default '0',
+	`pro_submitted_date` datetime,
+	
 	`pro_published` int(1) NOT NULL default '0',
 	`pro_published_date` datetime,
-	
-	`pro_delivered` int(1) NOT NULL default '0',
-	`pro_delivered_date` datetime,
 	
 	`pro_approved` int(1) NOT NULL default '0',
 	`pro_approved_date` datetime,

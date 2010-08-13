@@ -1790,6 +1790,801 @@ var Inters = Module.extend({
 		return edit;
 	}
 });
+//////////////////////////////////////////////////////////////////////////// zone types : super
+var Types = Module.extend({
+  	init:function(el,io) {
+		this._super(el,io);
+		var t = this;
+		// new item
+		$("a[title='New']",$(t.el)).live("click",function() {
+			$(".dashboard-item-content",$(t.el)).html(t.itemForm());
+		});
+		// cancel add
+		$("input[title='Cancel']",$(t.el)).live("click",function() {
+			t.io.request(t,"table="+t.dbTable+"&order="+t.dbOrder+"&es_do=browseAll");
+		});
+		// add new
+		$("input[title='Add']",$(t.el)).live("click",function() {
+			var ds = $(this).closest("form").postify();
+			if(ds=="") return false;
+			t.io.request(t,ds+"table="+t.dbTable+"&es_do=addItem");
+		});
+		// hover over rows
+		$("tr",$(t.el)).live("mouseenter",function() {
+			$(".edit-panel",this).css("visibility","visible");
+		});
+		$("tr",$(t.el)).live("mouseleave",function() {
+			$(".edit-panel",this).css("visibility","hidden");
+		});
+		// edit link
+		$("a[title='Edit']",$(t.el)).live("click",function() {
+			$("#"+this.parentNode.parentNode.parentNode.id).hide();
+			$("#edit-"+this.parentNode.parentNode.parentNode.id).show();
+		});
+		// cancel update
+		$("input[title='CancelQ']",$(t.el)).live("click",function() {
+			$("#"+this.parentNode.parentNode.parentNode.id).hide();
+			$("#"+this.parentNode.parentNode.parentNode.id.substring(5)).show();
+		});
+		// update
+		$("input[title='Update']",$(t.el)).live("click",function() {
+			t.currentRowID = this.parentNode.parentNode.parentNode.id.substring(8);
+			var ds = $(this).closest("form").postify();
+			if(ds=="") return false;
+			t.io.request(t,ds+"id="+t.currentRowID+"&table="+t.dbTable+"&es_do=updateItem");
+		});
+		// trash link
+		$("a[title='Trash']",$(t.el)).live("click",function() {
+			t.currentRowID = this.parentNode.parentNode.parentNode.id.substring(3);
+			if(!confirm("Are you sure you want to delete this item? This cannot be undone.")) return false;
+			t.io.request(t,"id="+t.currentRowID+"&table="+t.dbTable+"&es_do=deleteItem");
+		});
+	},
+  	show:function(holder) { this._super(holder); },
+	hide:function() { this._super(); },
+	begin:function() { 
+		this._super(); 
+		this.show(".dashboard-left"); 
+		// get all the modules
+		this.io.request(this,"table="+this.dbTable+"&order="+this.dbOrder+"&es_do=browseAll");
+	},
+	clear:function() { this._super(); },
+	iHTML:function() {
+		this._super();
+		// returns the initial html for this module
+		return "<div class='dashboard-item'> \
+					<div class='dashboard-item-header'> \
+						<a href='javascript:void(0);' class='dashboard-link' title='New'>+</a> \
+						<h1 class='dashboard-header'>Zone Types</h1> \
+					</div> \
+					<div class='dashboard-item-content'><p style='padding:10px; color:#808080;'>Loading...</p></div> \
+				</div>";
+	},
+	dbTable:"es_arrays",
+	dbOrder:"ID",
+	itemForm:function() {
+		this._super();
+		// returns the form
+		return "<form class='addform' action='javascript:void(0);'> \
+					<h1 class='addform-header'>New Array Info:</h1> \
+					<br /> \
+					<div class='form-column'> \
+						<label for='arr_value'>Type</label> \
+						<input class='required' type='text' id='arr_value' value='' /> \
+						<label for='active'>Active</label> \
+						<select class='required' id='active'> \
+							<option value='' selected='selected'>--select--</option> \
+							<option value='1'>yes</option> \
+							<option value='0'>no</option> \
+						</select> \
+					</div> \
+					<div class='clear'></div> \
+					<br /> \
+					<input type='submit' title='Add' value='Add New' /> \
+					<input type='submit' title='Cancel' value='Cancel' /> \
+				</form>";
+	},
+	receive:function(json) {
+		this._super();
+		// build vars
+		var html = "";
+		switch(json.did) {
+			case this.dbTable+" added" :
+				// show the list again
+				$(".dashboard-item-content",$(this.el)).html("");
+				this.io.request(this,"table="+this.dbTable+"&order="+this.dbOrder+"&es_do=browseAll");
+				break;
+			case this.dbTable+" updated" :
+				// set active
+				json.data.active = (json.data.active==1) ? "yes" : "no";
+				$("#arr"+this.currentRowID).html(this.rowContent(json.data)).show();
+				$("#edit-arr"+this.currentRowID).html(this.editRowContent(json.data)).hide();
+				break;
+			case this.dbTable+" deleted" :
+				$("#arr"+this.currentRowID).remove();
+				$("#edit-arr"+this.currentRowID).remove();
+				break;
+			case "found "+this.dbTable :
+				var html = "<table cellpadding='0' cellspacing='0'>";
+				// build the titles
+				html += "<thead>";
+				html += "<tr>";
+				html += "<th colspan='1'>Type</th>";
+				html += "<th colspan='1' align='right'>Active</th>";
+				html += "</tr>";
+				html += "</thead>";
+				html += "<tbody>";
+				// loop over each result
+				var color = ["light","dark"];
+				for(var i=0;i<json.data.length;i++) {
+					// set active
+					json.data[i].active = (json.data[i].active==1) ? "yes" : "no";
+					html += "<tr id='arr"+json.data[i].ID+"' class='"+color[(i+1)%2]+"'>";
+					html += this.rowContent(json.data[i]);
+					html += "</tr>";
+					html += "<tr id='edit-arr"+json.data[i].ID+"' style='display:none;' class='quick-edit "+color[(i+1)%2]+"'>";
+					html += this.editRowContent(json.data[i]);
+					html += "</tr>";
+				}
+				html += "</tbody>";
+				html += "</table>";
+				// add to page
+				$(".dashboard-item-content", $(this.el)).html(html);
+				break;
+			case "no "+this.dbTable :
+				// clear the list
+				$(".dashboard-item-content",$(this.el)).html("<p style='padding:10px; color:#808080;'>There are no Zone Types in your system at the moment.</p>");
+				break;
+			//-----------------------------------//
+			default :
+				console.log(json.did+" from "+this.dbTable);
+				break;
+		}
+	},
+	rowContent:function(data) {
+		this._super();
+		// create the row
+		var row = "<td colspan='1'>";
+		row += "<span style='font-weight:bold;'>"+data.arr_value+"</span><br />";
+		row += "<span class='edit-panel'>";
+		row += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a> | ";
+		row += "<a href='javascript:void(0);' class='trash-link' title='Trash'>Trash</a>";
+		row += "</span>";
+		row += "</td>";
+		row += "<td colspan='1' align='right'>"+data.active+"</td>";
+		return row;
+	},
+	editRowContent:function(data) {
+		this._super();
+		// create the edit row
+		var sel_yes = (data.active=="yes") ? "selected='selected'" : "";
+		var sel_no = (data.active=="no") ? "selected='selected'" : "";
+		var edit = "<td colspan='2'>";
+		edit += "<form class='updateform' action='javascript:void(0);'> \
+					<h1 class='addform-header'>Quick Edit</h1> \
+					<br /> \
+					<div class='form-column'> \
+						<label for='arr_value'>Type</label> \
+						<input class='required' type='text' id='arr_value' value='"+data.arr_value+"' /> \
+						<label for='active'>Active</label> \
+						<select class='required' id='active'> \
+							<option value='1' "+sel_yes+">yes</option> \
+							<option value='0' "+sel_no+">no</option> \
+						</select> \
+					</div> \
+					<div class='clear'></div> \
+					<br /> \
+					<input type='submit' title='Update' value='Update' /> \
+					<input type='submit' title='CancelQ' value='Cancel' /> \
+				</form>";
+		edit += "</td>";
+		return edit;
+	}
+});
+/////////////////////////////////////////////////////////////////////////// zone angles : super
+var Angles = Module.extend({
+  	init:function(el,io) {
+		this._super(el,io);
+		var t = this;
+		// new item
+		$("a[title='New']",$(t.el)).live("click",function() {
+			$(".dashboard-item-content",$(t.el)).html(t.itemForm());
+		});
+		// cancel add
+		$("input[title='Cancel']",$(t.el)).live("click",function() {
+			t.io.request(t,"table="+t.dbTable+"&order="+t.dbOrder+"&es_do=browseAll");
+		});
+		// add new
+		$("input[title='Add']",$(t.el)).live("click",function() {
+			var ds = $(this).closest("form").postify();
+			if(ds=="") return false;
+			t.io.request(t,ds+"table="+t.dbTable+"&es_do=addItem");
+		});
+		// hover over rows
+		$("tr",$(t.el)).live("mouseenter",function() {
+			$(".edit-panel",this).css("visibility","visible");
+		});
+		$("tr",$(t.el)).live("mouseleave",function() {
+			$(".edit-panel",this).css("visibility","hidden");
+		});
+		// edit link
+		$("a[title='Edit']",$(t.el)).live("click",function() {
+			$("#"+this.parentNode.parentNode.parentNode.id).hide();
+			$("#edit-"+this.parentNode.parentNode.parentNode.id).show();
+		});
+		// cancel update
+		$("input[title='CancelQ']",$(t.el)).live("click",function() {
+			$("#"+this.parentNode.parentNode.parentNode.id).hide();
+			$("#"+this.parentNode.parentNode.parentNode.id.substring(5)).show();
+		});
+		// update
+		$("input[title='Update']",$(t.el)).live("click",function() {
+			t.currentRowID = this.parentNode.parentNode.parentNode.id.substring(8);
+			var ds = $(this).closest("form").postify();
+			if(ds=="") return false;
+			t.io.request(t,ds+"id="+t.currentRowID+"&table="+t.dbTable+"&es_do=updateItem");
+		});
+		// trash link
+		$("a[title='Trash']",$(t.el)).live("click",function() {
+			t.currentRowID = this.parentNode.parentNode.parentNode.id.substring(3);
+			if(!confirm("Are you sure you want to delete this item? This cannot be undone.")) return false;
+			t.io.request(t,"id="+t.currentRowID+"&table="+t.dbTable+"&es_do=deleteItem");
+		});
+	},
+  	show:function(holder) { this._super(holder); },
+	hide:function() { this._super(); },
+	begin:function() { 
+		this._super(); 
+		this.show(".dashboard-right"); 
+		// get all the modules
+		this.io.request(this,"table="+this.dbTable+"&order="+this.dbOrder+"&es_do=browseAll");
+	},
+	clear:function() { this._super(); },
+	iHTML:function() {
+		this._super();
+		// returns the initial html for this module
+		return "<div class='dashboard-item'> \
+					<div class='dashboard-item-header'> \
+						<a href='javascript:void(0);' class='dashboard-link' title='New'>+</a> \
+						<h1 class='dashboard-header'>Zone Angles</h1> \
+					</div> \
+					<div class='dashboard-item-content'><p style='padding:10px; color:#808080;'>Loading...</p></div> \
+				</div>";
+	},
+	dbTable:"es_angles",
+	dbOrder:"ID",
+	itemForm:function() {
+		this._super();
+		// returns the form
+		return "<form class='addform' action='javascript:void(0);'> \
+					<h1 class='addform-header'>New Angle Info:</h1> \
+					<br /> \
+					<div class='form-column'> \
+						<label for='ang_value'>Value (rise:run (º))</label> \
+						<input class='required' type='text' id='ang_value' value='' /> \
+						<label for='ang_labor'>Labor (hrs/module)</label> \
+						<input class='required' type='text' id='ang_labor' value='' /> \
+						<label for='active'>Active</label> \
+						<select class='required' id='active'> \
+							<option value='' selected='selected'>--select--</option> \
+							<option value='1'>yes</option> \
+							<option value='0'>no</option> \
+						</select> \
+					</div> \
+					<div class='clear'></div> \
+					<br /> \
+					<input type='submit' title='Add' value='Add New' /> \
+					<input type='submit' title='Cancel' value='Cancel' /> \
+				</form>";
+	},
+	receive:function(json) {
+		this._super();
+		// build vars
+		var html = "";
+		switch(json.did) {
+			case this.dbTable+" added" :
+				// show the list again
+				$(".dashboard-item-content",$(this.el)).html("");
+				this.io.request(this,"table="+this.dbTable+"&order="+this.dbOrder+"&es_do=browseAll");
+				break;
+			case this.dbTable+" updated" :
+				// set active
+				json.data.active = (json.data.active==1) ? "yes" : "no";
+				$("#ang"+this.currentRowID).html(this.rowContent(json.data)).show();
+				$("#edit-ang"+this.currentRowID).html(this.editRowContent(json.data)).hide();
+				break;
+			case this.dbTable+" deleted" :
+				$("#ang"+this.currentRowID).remove();
+				$("#edit-ang"+this.currentRowID).remove();
+				break;
+			case "found "+this.dbTable :
+				var html = "<table cellpadding='0' cellspacing='0'>";
+				// build the titles
+				html += "<thead>";
+				html += "<tr>";
+				html += "<th colspan='1'>Value</th>";
+				html += "<th colspan='1' align='right'>Labor (hrs/module)</th>";
+				html += "<th colspan='1' align='right'>Active</th>";
+				html += "</tr>";
+				html += "</thead>";
+				html += "<tbody>";
+				// loop over each result
+				var color = ["light","dark"];
+				for(var i=0;i<json.data.length;i++) {
+					if(json.data[i].ang_value=="custom") continue;
+					// set active
+					json.data[i].active = (json.data[i].active==1) ? "yes" : "no";
+					html += "<tr id='ang"+json.data[i].ID+"' class='"+color[(i+1)%2]+"'>";
+					html += this.rowContent(json.data[i]);
+					html += "</tr>";
+					html += "<tr id='edit-ang"+json.data[i].ID+"' style='display:none;' class='quick-edit "+color[(i+1)%2]+"'>";
+					html += this.editRowContent(json.data[i]);
+					html += "</tr>";
+				}
+				html += "</tbody>";
+				html += "</table>";
+				// add to page
+				$(".dashboard-item-content", $(this.el)).html(html);
+				break;
+			case "no "+this.dbTable :
+				// clear the list
+				$(".dashboard-item-content",$(this.el)).html("<p style='padding:10px; color:#808080;'>There are no Zone Angles in your system at the moment.</p>");
+				break;
+			//-----------------------------------//
+			default :
+				console.log(json.did+" from "+this.dbTable);
+				break;
+		}
+	},
+	rowContent:function(data) {
+		this._super();
+		// create the row
+		var row = "<td colspan='1'>";
+		row += "<span style='font-weight:bold;'>"+data.ang_value+"</span><br />";
+		row += "<span class='edit-panel'>";
+		row += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a> | ";
+		row += "<a href='javascript:void(0);' class='trash-link' title='Trash'>Trash</a>";
+		row += "</span>";
+		row += "</td>";
+		row += "<td colspan='1' align='right'>"+data.ang_labor+"</td>";
+		row += "<td colspan='1' align='right'>"+data.active+"</td>";
+		return row;
+	},
+	editRowContent:function(data) {
+		this._super();
+		// create the edit row
+		var sel_yes = (data.active=="yes") ? "selected='selected'" : "";
+		var sel_no = (data.active=="no") ? "selected='selected'" : "";
+		var edit = "<td colspan='3'>";
+		edit += "<form class='updateform' action='javascript:void(0);'> \
+					<h1 class='addform-header'>Quick Edit</h1> \
+					<br /> \
+					<div class='form-column'> \
+						<label for='ang_value'>Value (rise:run (º))</label> \
+						<input class='required' type='text' id='ang_value' value='"+data.ang_value+"' /> \
+						<label for='ang_labor'>Labor (hrs/module)</label> \
+						<input class='required' type='text' id='ang_labor' value='"+data.ang_labor+"' /> \
+						<label for='active'>Active</label> \
+						<select class='required' id='active'> \
+							<option value='1' "+sel_yes+">yes</option> \
+							<option value='0' "+sel_no+">no</option> \
+						</select> \
+					</div> \
+					<div class='clear'></div> \
+					<br /> \
+					<input type='submit' title='Update' value='Update' /> \
+					<input type='submit' title='CancelQ' value='Cancel' /> \
+				</form>";
+		edit += "</td>";
+		return edit;
+	}
+});
+////////////////////////////////////////////////////////////////////// mounting methods : super
+var MountingMethods = Module.extend({
+  	init:function(el,io) {
+		this._super(el,io);
+		var t = this;
+		// new item
+		$("a[title='New']",$(t.el)).live("click",function() {
+			$(".dashboard-item-content",$(t.el)).html(t.itemForm());
+		});
+		// cancel add
+		$("input[title='Cancel']",$(t.el)).live("click",function() {
+			t.io.request(t,"table="+t.dbTable+"&order="+t.dbOrder+"&es_do=browseAll");
+		});
+		// add new
+		$("input[title='Add']",$(t.el)).live("click",function() {
+			var ds = $(this).closest("form").postify();
+			if(ds=="") return false;
+			t.io.request(t,ds+"table="+t.dbTable+"&es_do=addItem");
+		});
+		// hover over rows
+		$("tr",$(t.el)).live("mouseenter",function() {
+			$(".edit-panel",this).css("visibility","visible");
+		});
+		$("tr",$(t.el)).live("mouseleave",function() {
+			$(".edit-panel",this).css("visibility","hidden");
+		});
+		// edit link
+		$("a[title='Edit']",$(t.el)).live("click",function() {
+			$("#"+this.parentNode.parentNode.parentNode.id).hide();
+			$("#edit-"+this.parentNode.parentNode.parentNode.id).show();
+		});
+		// cancel update
+		$("input[title='CancelQ']",$(t.el)).live("click",function() {
+			$("#"+this.parentNode.parentNode.parentNode.id).hide();
+			$("#"+this.parentNode.parentNode.parentNode.id.substring(5)).show();
+		});
+		// update
+		$("input[title='Update']",$(t.el)).live("click",function() {
+			t.currentRowID = this.parentNode.parentNode.parentNode.id.substring(8);
+			var ds = $(this).closest("form").postify();
+			if(ds=="") return false;
+			t.io.request(t,ds+"id="+t.currentRowID+"&table="+t.dbTable+"&es_do=updateItem");
+		});
+		// trash link
+		$("a[title='Trash']",$(t.el)).live("click",function() {
+			t.currentRowID = this.parentNode.parentNode.parentNode.id.substring(3);
+			if(!confirm("Are you sure you want to delete this item? This cannot be undone.")) return false;
+			t.io.request(t,"id="+t.currentRowID+"&table="+t.dbTable+"&es_do=deleteItem");
+		});
+	},
+  	show:function(holder) { this._super(holder); },
+	hide:function() { this._super(); },
+	begin:function() { 
+		this._super(); 
+		this.show(".dashboard-left"); 
+		// get all the modules
+		this.io.request(this,"table="+this.dbTable+"&order="+this.dbOrder+"&es_do=browseAll");
+	},
+	clear:function() { this._super(); },
+	iHTML:function() {
+		this._super();
+		// returns the initial html for this module
+		return "<div class='dashboard-item'> \
+					<div class='dashboard-item-header'> \
+						<a href='javascript:void(0);' class='dashboard-link' title='New'>+</a> \
+						<h1 class='dashboard-header'>Mounting Method</h1> \
+					</div> \
+					<div class='dashboard-item-content'><p style='padding:10px; color:#808080;'>Loading...</p></div> \
+				</div>";
+	},
+	dbTable:"es_mounting_methods",
+	dbOrder:"ID",
+	itemForm:function() {
+		this._super();
+		// returns the form
+		return "<form class='addform' action='javascript:void(0);'> \
+					<h1 class='addform-header'>New Mounting Method Info:</h1> \
+					<br /> \
+					<div class='form-column'> \
+						<label for='met_value'>Method</label> \
+						<input class='required' type='text' id='met_value' value='' /> \
+						<label for='met_cost'>Cost ($)</label> \
+						<input class='required' type='text' id='met_cost' value='' /> \
+						<label for='met_price'>Price ($)</label> \
+						<input class='required' type='text' id='met_price' value='' /> \
+						<label for='met_labor'>Labor (hrs/module)</label> \
+						<input class='required' type='text' id='met_labor' value='' /> \
+						<label for='active'>Active</label> \
+						<select class='required' id='active'> \
+							<option value='' selected='selected'>--select--</option> \
+							<option value='1'>yes</option> \
+							<option value='0'>no</option> \
+						</select> \
+					</div> \
+					<div class='clear'></div> \
+					<br /> \
+					<input type='submit' title='Add' value='Add New' /> \
+					<input type='submit' title='Cancel' value='Cancel' /> \
+				</form>";
+	},
+	receive:function(json) {
+		this._super();
+		// build vars
+		var html = "";
+		switch(json.did) {
+			case this.dbTable+" added" :
+				// show the list again
+				$(".dashboard-item-content",$(this.el)).html("");
+				this.io.request(this,"table="+this.dbTable+"&order="+this.dbOrder+"&es_do=browseAll");
+				break;
+			case this.dbTable+" updated" :
+				// set active
+				json.data.active = (json.data.active==1) ? "yes" : "no";
+				$("#met"+this.currentRowID).html(this.rowContent(json.data)).show();
+				$("#edit-met"+this.currentRowID).html(this.editRowContent(json.data)).hide();
+				break;
+			case this.dbTable+" deleted" :
+				$("#met"+this.currentRowID).remove();
+				$("#edit-met"+this.currentRowID).remove();
+				break;
+			case "found "+this.dbTable :
+				var html = "<table cellpadding='0' cellspacing='0'>";
+				// build the titles
+				html += "<thead>";
+				html += "<tr>";
+				html += "<th colspan='1'>Method</th>";
+				html += "<th colspan='1' align='right'>Cost ($)</th>";
+				html += "<th colspan='1' align='right'>Price ($)</th>";
+				html += "<th colspan='1' align='right'>Labor (hrs/module)</th>";
+				html += "<th colspan='1' align='right'>Active</th>";
+				html += "</tr>";
+				html += "</thead>";
+				html += "<tbody>";
+				// loop over each result
+				var color = ["light","dark"];
+				for(var i=0;i<json.data.length;i++) {
+					// set active
+					json.data[i].active = (json.data[i].active==1) ? "yes" : "no";
+					html += "<tr id='met"+json.data[i].ID+"' class='"+color[(i+1)%2]+"'>";
+					html += this.rowContent(json.data[i]);
+					html += "</tr>";
+					html += "<tr id='edit-met"+json.data[i].ID+"' style='display:none;' class='quick-edit "+color[(i+1)%2]+"'>";
+					html += this.editRowContent(json.data[i]);
+					html += "</tr>";
+				}
+				html += "</tbody>";
+				html += "</table>";
+				// add to page
+				$(".dashboard-item-content", $(this.el)).html(html);
+				break;
+			case "no "+this.dbTable :
+				// clear the list
+				$(".dashboard-item-content",$(this.el)).html("<p style='padding:10px; color:#808080;'>There are no Mounting Methods in your system at the moment.</p>");
+				break;
+			//-----------------------------------//
+			default :
+				console.log(json.did+" from "+this.dbTable);
+				break;
+		}
+	},
+	rowContent:function(data) {
+		this._super();
+		// create the row
+		var row = "<td colspan='1'>";
+		row += "<span style='font-weight:bold;'>"+data.met_value+"</span><br />";
+		row += "<span class='edit-panel'>";
+		row += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a> | ";
+		row += "<a href='javascript:void(0);' class='trash-link' title='Trash'>Trash</a>";
+		row += "</span>";
+		row += "</td>";
+		row += "<td colspan='1' align='right'>"+data.met_cost+"</td>";
+		row += "<td colspan='1' align='right'>"+data.met_price+"</td>";
+		row += "<td colspan='1' align='right'>"+data.met_labor+"</td>";
+		row += "<td colspan='1' align='right'>"+data.active+"</td>";
+		return row;
+	},
+	editRowContent:function(data) {
+		this._super();
+		// create the edit row
+		var sel_yes = (data.active=="yes") ? "selected='selected'" : "";
+		var sel_no = (data.active=="no") ? "selected='selected'" : "";
+		var edit = "<td colspan='5'>";
+		edit += "<form class='updateform' action='javascript:void(0);'> \
+					<h1 class='addform-header'>Quick Edit</h1> \
+					<br /> \
+					<div class='form-column'> \
+						<label for='met_value'>Method</label> \
+						<input class='required' type='text' id='met_value' value='"+data.met_value+"' /> \
+						<label for='met_cost'>Cost ($)</label> \
+						<input class='required' type='text' id='met_cost' value='"+data.met_cost+"' /> \
+						<label for='met_price'>Price ($)</label> \
+						<input class='required' type='text' id='met_price' value='"+data.met_price+"' /> \
+						<label for='met_labor'>Labor (hrs/module)</label> \
+						<input class='required' type='text' id='met_labor' value='"+data.met_labor+"' /> \
+						<label for='active'>Active</label> \
+						<select class='required' id='active'> \
+							<option value='1' "+sel_yes+">yes</option> \
+							<option value='0' "+sel_no+">no</option> \
+						</select> \
+					</div> \
+					<div class='clear'></div> \
+					<br /> \
+					<input type='submit' title='Update' value='Update' /> \
+					<input type='submit' title='CancelQ' value='Cancel' /> \
+				</form>";
+		edit += "</td>";
+		return edit;
+	}
+});
+////////////////////////////////////////////////////////////////////// mounting mediums : super
+var MountingMediums = Module.extend({
+  	init:function(el,io) {
+		this._super(el,io);
+		var t = this;
+		// new item
+		$("a[title='New']",$(t.el)).live("click",function() {
+			$(".dashboard-item-content",$(t.el)).html(t.itemForm());
+		});
+		// cancel add
+		$("input[title='Cancel']",$(t.el)).live("click",function() {
+			t.io.request(t,"table="+t.dbTable+"&order="+t.dbOrder+"&es_do=browseAll");
+		});
+		// add new
+		$("input[title='Add']",$(t.el)).live("click",function() {
+			var ds = $(this).closest("form").postify();
+			if(ds=="") return false;
+			t.io.request(t,ds+"table="+t.dbTable+"&es_do=addItem");
+		});
+		// hover over rows
+		$("tr",$(t.el)).live("mouseenter",function() {
+			$(".edit-panel",this).css("visibility","visible");
+		});
+		$("tr",$(t.el)).live("mouseleave",function() {
+			$(".edit-panel",this).css("visibility","hidden");
+		});
+		// edit link
+		$("a[title='Edit']",$(t.el)).live("click",function() {
+			$("#"+this.parentNode.parentNode.parentNode.id).hide();
+			$("#edit-"+this.parentNode.parentNode.parentNode.id).show();
+		});
+		// cancel update
+		$("input[title='CancelQ']",$(t.el)).live("click",function() {
+			$("#"+this.parentNode.parentNode.parentNode.id).hide();
+			$("#"+this.parentNode.parentNode.parentNode.id.substring(5)).show();
+		});
+		// update
+		$("input[title='Update']",$(t.el)).live("click",function() {
+			t.currentRowID = this.parentNode.parentNode.parentNode.id.substring(8);
+			var ds = $(this).closest("form").postify();
+			if(ds=="") return false;
+			t.io.request(t,ds+"id="+t.currentRowID+"&table="+t.dbTable+"&es_do=updateItem");
+		});
+		// trash link
+		$("a[title='Trash']",$(t.el)).live("click",function() {
+			t.currentRowID = this.parentNode.parentNode.parentNode.id.substring(3);
+			if(!confirm("Are you sure you want to delete this item? This cannot be undone.")) return false;
+			t.io.request(t,"id="+t.currentRowID+"&table="+t.dbTable+"&es_do=deleteItem");
+		});
+	},
+  	show:function(holder) { this._super(holder); },
+	hide:function() { this._super(); },
+	begin:function() { 
+		this._super(); 
+		this.show(".dashboard-left"); 
+		// get all the modules
+		this.io.request(this,"table="+this.dbTable+"&order="+this.dbOrder+"&es_do=browseAll");
+	},
+	clear:function() { this._super(); },
+	iHTML:function() {
+		this._super();
+		// returns the initial html for this module
+		return "<div class='dashboard-item'> \
+					<div class='dashboard-item-header'> \
+						<a href='javascript:void(0);' class='dashboard-link' title='New'>+</a> \
+						<h1 class='dashboard-header'>Mounting Mediums</h1> \
+					</div> \
+					<div class='dashboard-item-content'><p style='padding:10px; color:#808080;'>Loading...</p></div> \
+				</div>";
+	},
+	dbTable:"es_mounting_mediums",
+	dbOrder:"ID",
+	itemForm:function() {
+		this._super();
+		// returns the form
+		return "<form class='addform' action='javascript:void(0);'> \
+					<h1 class='addform-header'>New Mounting Medium Info:</h1> \
+					<br /> \
+					<div class='form-column'> \
+						<label for='med_value'>Medium</label> \
+						<input class='required' type='text' id='med_value' value='' /> \
+						<label for='med_labor'>Labor (hrs/module)</label> \
+						<input class='required' type='text' id='med_labor' value='' /> \
+						<label for='active'>Active</label> \
+						<select class='required' id='active'> \
+							<option value='' selected='selected'>--select--</option> \
+							<option value='1'>yes</option> \
+							<option value='0'>no</option> \
+						</select> \
+					</div> \
+					<div class='clear'></div> \
+					<br /> \
+					<input type='submit' title='Add' value='Add New' /> \
+					<input type='submit' title='Cancel' value='Cancel' /> \
+				</form>";
+	},
+	receive:function(json) {
+		this._super();
+		// build vars
+		var html = "";
+		switch(json.did) {
+			case this.dbTable+" added" :
+				// show the list again
+				$(".dashboard-item-content",$(this.el)).html("");
+				this.io.request(this,"table="+this.dbTable+"&order="+this.dbOrder+"&es_do=browseAll");
+				break;
+			case this.dbTable+" updated" :
+				// set active
+				json.data.active = (json.data.active==1) ? "yes" : "no";
+				$("#med"+this.currentRowID).html(this.rowContent(json.data)).show();
+				$("#edit-med"+this.currentRowID).html(this.editRowContent(json.data)).hide();
+				break;
+			case this.dbTable+" deleted" :
+				$("#med"+this.currentRowID).remove();
+				$("#edit-med"+this.currentRowID).remove();
+				break;
+			case "found "+this.dbTable :
+				var html = "<table cellpadding='0' cellspacing='0'>";
+				// build the titles
+				html += "<thead>";
+				html += "<tr>";
+				html += "<th colspan='1'>Medium</th>";
+				html += "<th colspan='1' align='right'>Labor (hrs/module)</th>";
+				html += "<th colspan='1' align='right'>Active</th>";
+				html += "</tr>";
+				html += "</thead>";
+				html += "<tbody>";
+				// loop over each result
+				var color = ["light","dark"];
+				for(var i=0;i<json.data.length;i++) {
+					// set active
+					json.data[i].active = (json.data[i].active==1) ? "yes" : "no";
+					html += "<tr id='med"+json.data[i].ID+"' class='"+color[(i+1)%2]+"'>";
+					html += this.rowContent(json.data[i]);
+					html += "</tr>";
+					html += "<tr id='edit-med"+json.data[i].ID+"' style='display:none;' class='quick-edit "+color[(i+1)%2]+"'>";
+					html += this.editRowContent(json.data[i]);
+					html += "</tr>";
+				}
+				html += "</tbody>";
+				html += "</table>";
+				// add to page
+				$(".dashboard-item-content", $(this.el)).html(html);
+				break;
+			case "no "+this.dbTable :
+				// clear the list
+				$(".dashboard-item-content",$(this.el)).html("<p style='padding:10px; color:#808080;'>There are no Mounting Mediums in your system at the moment.</p>");
+				break;
+			//-----------------------------------//
+			default :
+				console.log(json.did+" from "+this.dbTable);
+				break;
+		}
+	},
+	rowContent:function(data) {
+		this._super();
+		// create the row
+		var row = "<td colspan='1'>";
+		row += "<span style='font-weight:bold;'>"+data.med_value+"</span><br />";
+		row += "<span class='edit-panel'>";
+		row += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a> | ";
+		row += "<a href='javascript:void(0);' class='trash-link' title='Trash'>Trash</a>";
+		row += "</span>";
+		row += "</td>";
+		row += "<td colspan='1' align='right'>"+data.med_labor+"</td>";
+		row += "<td colspan='1' align='right'>"+data.active+"</td>";
+		return row;
+	},
+	editRowContent:function(data) {
+		this._super();
+		// create the edit row
+		var sel_yes = (data.active=="yes") ? "selected='selected'" : "";
+		var sel_no = (data.active=="no") ? "selected='selected'" : "";
+		var edit = "<td colspan='3'>";
+		edit += "<form class='updateform' action='javascript:void(0);'> \
+					<h1 class='addform-header'>Quick Edit</h1> \
+					<br /> \
+					<div class='form-column'> \
+						<label for='med_value'>Medium</label> \
+						<input class='required' type='text' id='med_value' value='"+data.med_value+"' /> \
+						<label for='med_labor'>Labor (hrs/module)</label> \
+						<input class='required' type='text' id='med_labor' value='"+data.med_labor+"' /> \
+						<label for='active'>Active</label> \
+						<select class='required' id='active'> \
+							<option value='1' "+sel_yes+">yes</option> \
+							<option value='0' "+sel_no+">no</option> \
+						</select> \
+					</div> \
+					<div class='clear'></div> \
+					<br /> \
+					<input type='submit' title='Update' value='Update' /> \
+					<input type='submit' title='CancelQ' value='Cancel' /> \
+				</form>";
+		edit += "</td>";
+		return edit;
+	}
+});
 ///////////////////////////////////////////////////////////////////////////// settings : office
 var Settings = Module.extend({
   	init:function(el,io) {
@@ -5351,6 +6146,10 @@ $(function() {
 	var _racking_io = new IO();
 	var _connects_io = new IO();
 	var _inters_io = new IO();
+	var _types_io = new IO();
+	var _angles_io = new IO();
+	var _mounting_met_io = new IO();
+	var _mounting_med_io = new IO();
 	// create super objects
 	var offices = new Offices("#m_offices",_offices_io);
 	var modules = new Modules("#m_modules",_modules_io);
@@ -5358,6 +6157,10 @@ $(function() {
 	var racking = new Racking("#m_racking",_racking_io);
 	var connects = new Connects("#m_connects",_connects_io);
 	var inters = new Inters("#m_inters",_inters_io);
+	var types = new Types("#m_types",_types_io);
+	var angles = new Angles("#m_angles",_angles_io);
+	var mounting_met = new MountingMethods("#m_mounting_met",_mounting_met_io);
+	var mounting_med = new MountingMediums("#m_mounting_med",_mounting_med_io);
 	// create office io
 	var _settings_io = new IO();
 	var _reps_io = new IO();
@@ -5439,7 +6242,7 @@ $(function() {
 	published.drafts = drafts;
 	approved.drafts = drafts;
 	// try to resume login
-	login.isSuper = [offices, modules, inverters, racking, connects, inters];
+	login.isSuper = [offices, modules, inverters, racking, connects, inters, types, angles, mounting_met, mounting_med];
 	login.isOffice = [settings, reps];
 	login.isAdmin = [customers, jobs, drafts, submitted, published, approved];
 	login.isRep = [customers, jobs, drafts, submitted, published, approved];

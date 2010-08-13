@@ -1189,12 +1189,15 @@ function sendProposal() {
 		$mailer->send($cus_message);
 		$mailer->send($tse_message);
 	} else if($pro->pro_submitted && $pro->pro_published) { // just published
-		// build emails
-		$cus_email = "Dear ".$cus->cus_name_first." ".$cus->cus_name_last.",\n\n";
-		$cus_email .= "Thank you for offering Lighthouse Solar the opportunity to produce a Proposal for your solar energy systems. Please follow the link below to review your Proposal.\n\n";
-		$cus_email .= $E->PORTAL_URI."?pro_key=".$pro->pro_key."\n\n";
-		$cus_email .= "Let me know if you have any questions or concerns. We look forward to hearing from you!\n\n";
-		$cus_email .= "Sincerely Yours,\n".$rep->rep_name_first." ".$rep->rep_name_last."\n\nTechnical Sales Engineer\nLighthousesolar ".$off->off_city.", ".$off->off_state."\n".$rep->rep_email."\n".$off->off_phone;
+		// for customer
+		$cus_email = "Dear ".$cus->cus_name_first." ".$cus->cus_name_last.",<br /><br />";
+		$cus_email .= "Thank you for offering Lighthouse Solar the opportunity to produce a Proposal for your solar energy systems. Please follow the link below to review your Proposal.<br /><br />";
+		$cus_email .= $E->PORTAL_URI."?pro_key=".$pro->pro_key."<br /><br />";
+		$cus_email .= "Let me know if you have any questions or concerns. We look forward to hearing from you!<br /><br />";
+		$cus_email .= "Sincerely Yours,<br />".$rep->rep_name_first." ".$rep->rep_name_last."<br /><br />Technical Sales Engineer<br />Lighthousesolar ".$off->off_city.", ".$off->off_state."<br />".$rep->rep_email."<br />".$off->off_phone;
+		$cus_email .= "<br /><br />--------------------------------------------------<br />";
+		$cus_email .= "Having trouble viewing your PV Proposal? To ensure the best viewing experience, please try installing or upgrading to the latest version of <a href='http://www.google.com/chrome/'>Chrome</a>, <a href='http://www.apple.com/safari/download/'>Safari</a>, or <a href='http://www.mozilla.com/'>Firefox</a>. Please inform your Lighthouse Solar Sales Rep as soon as possible if you're unable to view your PV Proposal. We value your feeback.";
+		// for tse
 		$tse_email = $rep->rep_name_first.",\n\nYour Proposal #".$pro->ID.": \"".$pro->pro_name."\" has been delivered to your Customer, ".$cus->cus_name_first." ".$cus->cus_name_last.".\n\n";
 		$tse_email .= "Follow this link to view your Proposal: ".$E->PORTAL_URI."?pro_key=".$pro->pro_key."\n\n";
 		$tse_email .= "Thanks for using Einstein.\n\n";
@@ -1207,7 +1210,8 @@ function sendProposal() {
 		  ->setFrom(array($rep->rep_email => $rep->rep_name_first." ".$rep->rep_name_last))
 		  ->setTo(array($cus_address => $cus_name))
 		  ->setBcc(array($off->off_manager_list => "General Manager, Lighthouse ".$off->off_city.", ".$off->off_state))
-		  ->setBody($cus_email);
+		  ->setBody($cus_email)
+		  ->setContentType("text/html");
 		$tse_message = Swift_Message::newInstance("[LHS ".$off->off_city.", ".$off->off_state." – Einstein] Proposal #".$pro->ID.": \"".$pro->pro_name."\""." Delivered.")
 		  ->setFrom(array($E->EINSTEIN_SMTP_FROM => "LHS Einstein"))
 		  ->setTo(array($rep->rep_email => $rep->rep_name_first." ".$rep->rep_name_last))
