@@ -17,9 +17,9 @@ switch($tld[1]) {
 }
 $E->push("EINSTEIN_SMTP_SERVER","ssl://smtp.gmail.com");
 $E->push("EINSTEIN_SMTP_PORT",465);
-$E->push("EINSTEIN_SMTP_USER","einstein@lighthousesolar.com");
-$E->push("EINSTEIN_SMTP_PASS","albert99");
-$E->push("EINSTEIN_SMTP_FROM","noreply@lighthousesolar.com");
+$E->push("EINSTEIN_SMTP_USER","lhadmin@lighthousesolar.com");
+$E->push("EINSTEIN_SMTP_PASS","l1gh7h0u53!");
+$E->push("EINSTEIN_SMTP_FROM","lhadmin@lighthousesolar.com");
 #——————————————————————————————–—————————————————————–– INIT MANAGER
 require_once("es-manager.class.php");
 $m = new EstimatorManager();
@@ -207,13 +207,42 @@ function addItem() {
 	} else $r['did'] = "failed ".$table." add";
 }
 
+// add new office
+function addOffice() {
+	global $m,$r;
+	$table = $_POST['table'];
+	unset($_POST['es_do'],$_POST['table']);
+	$off = $_POST;
+	$off['off_manager_list'] = strtolower($off['off_city']."_gm@lighthousesolar.com");
+	if($id=$m->addRow($table,$off)) {
+		// create office admin
+		$rep['rep_login'] = strtolower($off['off_city']."_".$off['off_state']);
+		$salt = substr(md5($rep['rep_login']),0,15);
+		$pass = substr(uniqid(md5(rand())),0,8);
+		$rep['rep_pass'] = sha1($pass.$salt);
+		$rep['rep_name_first'] = $off['off_city'];
+		$rep['rep_name_last'] = $off['off_state'];
+		$rep['rep_title'] = $off['off_city'].", ".$off['off_state']." Office Administrator";
+		$rep['rep_phone'] = $off['off_phone'];
+		$rep['rep_email'] = $off['off_manager_list'];
+		$rep['rep_registered'] = date('Y-m-d H:i:s');
+		$rep['rep_key'] = uniqid(md5(rand()));
+		$rep['rep_role'] = 1;
+		$rep['rep_officeID'] = $id;
+		if($rep_id=$m->addRow("es_reps",$rep)) {
+			$r['did'] = $table." added";
+			$r['data']['rep_id'] = $rep_id;
+			$r['data']['rep_pass'] = $pass;
+		}
+	} else $r['did'] = "failed ".$table." add";
+}
+
 // add new rep
 function addRep() {
-	global $E,$m,$r;
+	global $m,$r;
 	$table = $_POST['table'];
 	unset($_POST['es_do'],$_POST['table'],$_POST['rep_pass_confirm']);
 	$rep = $_POST;
-	$pass = $rep['rep_pass'];
 	$rep['rep_registered'] = date('Y-m-d H:i:s');
 	$rep['rep_key'] = uniqid(md5(rand()));
 	$salt = substr(md5($rep['rep_login']),0,15);
@@ -221,27 +250,6 @@ function addRep() {
 	if($id=$m->addRow($table,$rep)) {
 		$r['did'] = $table." added";
 		$r['data'] = $id;
-		// get info
-		$m->getRow("es_reps",$id);
-		$rep = $m->lastData();
-		$m->getRow("es_offices",$rep->rep_officeID);
-		$off = $m->lastData();
-		// notify rep of new account
-		$rep_email = $rep->rep_name_first.",\n\nYour Einstein Estimator account has been created.\n\n";
-		$rep_email .= "Username: ".$rep->rep_login."\n";
-		$rep_email .= "Password: ".$pass."\n\n";
-		$rep_email .= "Follow this link to log in and start building proposals: ".$E->EINSTEIN_URI."\n\n";
-		$rep_email .= "Thanks for using Einstein.\n\n";
-		$rep_email .= "- LHS ".$off->off_city.", ".$off->off_state;
-		// send mail
-		require_once("swift/lib/swift_required.php");
-		$transport = Swift_SmtpTransport::newInstance($E->EINSTEIN_SMTP_SERVER,$E->EINSTEIN_SMTP_PORT)->setUsername($E->EINSTEIN_SMTP_USER)->setPassword($E->EINSTEIN_SMTP_PASS);
-		$mailer = Swift_Mailer::newInstance($transport);
-		$rep_message = Swift_Message::newInstance("[LHS ".$off->off_city.", ".$off->off_state." – Einstein] New Sales Rep created.")
-		  ->setFrom(array($E->EINSTEIN_SMTP_FROM => "LHS Einstein"))
-		  ->setTo(array($rep->rep_email => $rep->rep_name_first." ".$rep->rep_name_last))
-		  ->setBody($rep_email);
-		if(!$mailer->send($rep_message)) $r['did'] = "failed ".$table." notify";
 	} else $r['did'] = "failed ".$table." add";
 }
 
@@ -516,13 +524,12 @@ function updateItem() {
 
 // update rep
 function updateRep() {
-	global $E,$m,$r;
+	global $m,$r;
 	$table = $_POST['table'];
 	$id = $_POST['id'];
 	unset($_POST['es_do'],$_POST['table'],$_POST['id']);
 	$rep = $_POST;
 	if(isset($rep['rep_pass'])) {
-		$pass = $rep['rep_pass'];
 		$salt = substr(md5($rep['rep_login']),0,15);
 		$rep['rep_pass'] = sha1($rep['rep_pass'].$salt);
 	}
@@ -530,27 +537,6 @@ function updateRep() {
 		if($m->getRow($table,$id)) {
 			$r['did'] = $table." updated";
 			$r['data'] = $m->lastData();
-			if(isset($rep['rep_pass'])) {
-				// get info
-				$rep = $r['data'];
-				$m->getRow("es_offices",$rep->rep_officeID);
-				$off = $m->lastData();
-				// notify rep of new account
-				$rep_email = $rep->rep_name_first.",\n\nYour Einstein Estimator account password has been reset.\n\n";
-				$rep_email .= "New Password: ".$pass."\n\n";
-				$rep_email .= "Follow this link to log in: ".$E->EINSTEIN_URI."\n\n";
-				$rep_email .= "Thanks for using Einstein.\n\n";
-				$rep_email .= "- LHS ".$off->off_city.", ".$off->off_state;
-				// send mail
-				require_once("swift/lib/swift_required.php");
-				$transport = Swift_SmtpTransport::newInstance($E->EINSTEIN_SMTP_SERVER,$E->EINSTEIN_SMTP_PORT)->setUsername($E->EINSTEIN_SMTP_USER)->setPassword($E->EINSTEIN_SMTP_PASS);
-				$mailer = Swift_Mailer::newInstance($transport);
-				$rep_message = Swift_Message::newInstance("[LHS ".$off->off_city.", ".$off->off_state." – Einstein] Account changed.")
-				  ->setFrom(array($E->EINSTEIN_SMTP_FROM => "LHS Einstein"))
-				  ->setTo(array($rep->rep_email => $rep->rep_name_first." ".$rep->rep_name_last))
-				  ->setBody($rep_email);
-				if(!$mailer->send($rep_message)) $r['did'] = "failed ".$table." notify";
-			}
 		} else $r['did'] = "failed ".$table." update";
 	} else $r['did'] = "failed ".$table." update";
 }
@@ -753,79 +739,23 @@ function cloneProposal() {
 
 // publish proposal
 function publishProposal() {
-	global $E,$m,$r;
+	global $m,$r;
 	$table = $_POST['table'];
 	$id = $_POST['id'];
 	$pub_date = date('Y-m-d H:i:s');
 	unset($_POST['es_do'],$_POST['table'],$_POST['id']);
-	// set published value
-	if($m->editCell($table,1,"pro_published",$id) && $m->editCell($table,$pub_date,"pro_published_date",$id)) {
-		// get info
-		$m->getRow("es_proposals",$id);
-		$pro = $m->lastData();
-		$m->getRow("es_reps",$pro->pro_repID);
-		$rep = $m->lastData();
-		$m->getRow("es_offices",$pro->pro_officeID);
-		$off = $m->lastData();
-		// make calcs
-		require_once("es-calcs.php");
-		$figures = estimate($pro);
-		// ensure no zeros
-		if($figures['permit_margin']==0) $figures['permit_margin'] = "n / a";
-		else $figures['permit_margin'] .= "%";
-		if($figures['sub_margin']==0) $figures['sub_margin'] = "n / a";
-		else $figures['sub_margin'] .= "%";
-		if($figures['equip_margin']==0) $figures['equip_margin'] = "n / a";
-		else $figures['equip_margin'] .= "%";
-		if($figures['install_labor_margin']==0) $figures['install_labor_margin'] = "n / a";
-		else $figures['install_labor_margin'] .= "%";
-		if($figures['inventory_margin']==0) $figures['inventory_margin'] = "n / a";
-		else $figures['inventory_margin'] .= "%";
-		if($figures['non_inventory_margin']==0) $figures['non_inventory_margin'] = "n / a";
-		else $figures['non_inventory_margin'] .= "%";
-		if($figures['total_margin']==0) $figures['total_margin'] = "n / a";
-		else $figures['total_margin'] .= "%";
-		// build emails
-		$sm_email = "I just submitted a new Proposal. Here are the details:\n\n";
-		$tse_email = "Here are the details of the Proposal you just submitted:\n\n";
-		$details = "System Size: ".$figures['size']." kW\n";
-		$details .= "Labor Hours: ".$figures['install_labor_hrs']." hrs\n";
-		$details .= "Price: $".$figures['price']."\n";
-		$details .= "PPW Gross: $".$figures['ppw_gross']."/W\n";
-		$details .= "PPW Net: $".$figures['ppw_net']."/W\n";
-		$details .= "Permit Margin: ".$figures['permit_margin']."\n";
-		$details .= "Subcontractor Margin: ".$figures['sub_margin']."\n";
-		$details .= "Equipment Margin: ".$figures['equip_margin']."\n";
-		$details .= "Installation Labor Margin: ".$figures['install_labor_margin']."\n";
-		$details .= "Inventory Margin: ".$figures['inventory_margin']."\n";
-		$details .= "Non-Inventory Margin: ".$figures['non_inventory_margin']."\n\n";
-		$details .= "Total Margin: ".$figures['total_margin']."\n\n";
-		$sm_email .= $details;
-		$tse_email .= $details;
-		$sm_email .= "- ".$rep->rep_name_first." ".$rep->rep_name_last."\n\n\n";
-		$sm_email .= "--------------------------------------------------\n";
-		$sm_email .= "View Proposal: ".$E->PORTAL_URI."?pro_key=".$pro->pro_key."\n\n";
-		$sm_email .= "Please login to your account at ".$E->EINSTEIN_URI." and moderate this Proposal.\n\n";
-		$sm_email .= "Thanks for using Einstein.\n\n";
-		$sm_email .= "- LHS ".$off->off_city.", ".$off->off_state;
-		$tse_email .= "\n--------------------------------------------------\n";
-		$tse_email .= "View Proposal: ".$E->PORTAL_URI."?pro_key=".$pro->pro_key."\n\n";
-		$tse_email .= "Your Sales Manager has been notified of this action and will moderate your Proposal before it is sent to your Customer.\n\n";
-		$tse_email .= "Thanks for using Einstein.\n\n";
-		$tse_email .= "- LHS ".$off->off_city.", ".$off->off_state;
-		// send mail
-		require_once("swift/lib/swift_required.php");
-		$transport = Swift_SmtpTransport::newInstance($E->EINSTEIN_SMTP_SERVER,$E->EINSTEIN_SMTP_PORT)->setUsername($E->EINSTEIN_SMTP_USER)->setPassword($E->EINSTEIN_SMTP_PASS);
-		$mailer = Swift_Mailer::newInstance($transport);
-		$sm_message = Swift_Message::newInstance("[LHS ".$off->off_city.", ".$off->off_state." – Einstein] Please moderate Proposal #".$pro->ID.": \"".$pro->pro_name."\"")
-		  ->setFrom(array($rep->rep_email => $rep->rep_name_first." ".$rep->rep_name_last))
-		  ->setTo(array($off->off_email => "Sales Manager, Lighthouse ".$off->off_city.", ".$off->off_state))
-		  ->setBody($sm_email);
-		$tse_message = Swift_Message::newInstance("[LHS ".$off->off_city.", ".$off->off_state." – Einstein] Proposal #".$pro->ID.": \"".$pro->pro_name."\""." published")
-		  ->setFrom(array($E->EINSTEIN_SMTP_FROM => "LHS Einstein"))
-		  ->setTo(array($rep->rep_email => $rep->rep_name_first." ".$rep->rep_name_last))
-		  ->setBody($tse_email);
-		if($mailer->send($sm_message) && $mailer->send($tse_message)) {
+	// get info
+	$m->getRow("es_proposals",$id);
+	$pro = $m->lastData();
+	$m->getRow("es_jobs",$pro->pro_jobID);
+	$job = $m->lastData();
+	// validate email address for job associated with proposal
+	if(validateEmail($job->job_email)) {
+		// set published value
+		if($m->editCell($table,1,"pro_published",$id) && $m->editCell($table,$pub_date,"pro_published_date",$id)) {
+			// get updated proposal
+			$m->getRow("es_proposals",$id);
+			$pro = $m->lastData();
 			$r['did'] = $table." published";
 			$r['data'] = $pro;
 			// get zones
@@ -845,65 +775,47 @@ function publishProposal() {
 				}
 			}
 		} else $r['did'] = "failed ".$table." publish";
-	} else $r['did'] = "failed ".$table." publish";
+	} else {	
+		$r['did'] = "invalid email";
+		$r['data']['job'] = $job->job_name;
+		$r['data']['pro'] = $pro->ID;
+		$r['data']['action'] = "Submitting";
+	}
 }
 
 // publish proposal
 function deliverProposal() {
-	global $E,$m,$r;
+	global $m,$r;
 	$table = $_POST['table'];
 	$id = $_POST['id'];
 	$del_date = date('Y-m-d H:i:s');
 	unset($_POST['es_do'],$_POST['table'],$_POST['id']);
-	// set delivered value
-	if($m->editCell($table,1,"pro_delivered",$id) && $m->editCell($table,$del_date,"pro_delivered_date",$id)) {
-		// get info
-		$m->getRow("es_proposals",$id);
-		$pro = $m->lastData();
-		$m->getRow("es_reps",$pro->pro_repID);
-		$rep = $m->lastData();
-		$m->getRow("es_offices",$pro->pro_officeID);
-		$off = $m->lastData();
-		$m->getRow("es_customers",$pro->pro_customerID);
-		$cus = $m->lastData();
-		$m->getRow("es_jobs",$pro->pro_jobID);
-		$job = $m->lastData();
-		// build emails
-		$cus_email = "Dear ".$cus->cus_name_first." ".$cus->cus_name_last.",\n\n";
-		$cus_email .= "Thank you for offering Lighthouse Solar the opportunity to produce a Proposal for your solar energy systems. Please follow the link below to review your Proposal.\n\n";
-		$cus_email .= $E->PORTAL_URI."?pro_key=".$pro->pro_key."\n\n";
-		$cus_email .= "Let me know if you have any questions or concerns. We look forward to hearing from you!\n\n";
-		$cus_email .= "Sincerely Yours,\n".$rep->rep_name_first." ".$rep->rep_name_last."\n\nTechnical Sales Engineer\nLighthousesolar ".$off->off_city.", ".$off->off_state."\n".$rep->rep_email."\n".$off->off_phone;
-		$tse_email = $rep->rep_name_first.",\n\nYour Proposal #".$pro->ID.": \"".$pro->pro_name."\" has been delivered to your Customer, ".$cus->cus_name_first." ".$cus->cus_name_last.".\n\n";
-		$tse_email .= "Follow this link to view your Proposal: ".$E->PORTAL_URI."?pro_key=".$pro->pro_key."\n\n";
-		$tse_email .= "Thanks for using Einstein.\n\n";
-		$tse_email .= "- LHS ".$off->off_city.", ".$off->off_state;
-		// customer info -- temp, should always be from job
-		$cus_address = $job->job_email!="" ? $job->job_email : ($cus->cus_email1!="" ? $cus->cus_email1 : $cus->cus_email2);
-		$cus_name = $job->job_contact!="" ? $job->job_contact : $cus->cus_name_first." ".$cus->cus_name_last;
-		// send mail
-		require_once("swift/lib/swift_required.php");
-		$transport = Swift_SmtpTransport::newInstance($E->EINSTEIN_SMTP_SERVER,$E->EINSTEIN_SMTP_PORT)->setUsername($E->EINSTEIN_SMTP_USER)->setPassword($E->EINSTEIN_SMTP_PASS);
-		$mailer = Swift_Mailer::newInstance($transport);
-		$cus_message = Swift_Message::newInstance("Your Lighthousesolar Proposal #".$pro->ID.": \"".$pro->pro_name."\" is ready for review.")
-		  ->setFrom(array($rep->rep_email => $rep->rep_name_first." ".$rep->rep_name_last))
-		  ->setTo(array($cus_address => $cus_name))
-		  ->setBcc(array($off->off_email => "Sales Manager, Lighthouse ".$off->off_city.", ".$off->off_state))
-		  ->setBody($cus_email);
-		$tse_message = Swift_Message::newInstance("[LHS ".$off->off_city.", ".$off->off_state." – Einstein] Proposal #".$pro->ID.": \"".$pro->pro_name."\""." delivered")
-		  ->setFrom(array($E->EINSTEIN_SMTP_FROM => "LHS Einstein"))
-		  ->setTo(array($rep->rep_email => $rep->rep_name_first." ".$rep->rep_name_last))
-		  ->setBody($tse_email);
-		if($mailer->send($cus_message) && $mailer->send($tse_message)) {
+	// get info
+	$m->getRow("es_proposals",$id);
+	$pro = $m->lastData();
+	$m->getRow("es_jobs",$pro->pro_jobID);
+	$job = $m->lastData();
+	// validate email address for job associated with proposal
+	if(validateEmail($job->job_email)) {
+		// set delivered value
+		if($m->editCell($table,1,"pro_delivered",$id) && $m->editCell($table,$del_date,"pro_delivered_date",$id)) {
+			// get updated proposal
+			$m->getRow("es_proposals",$id);
+			$pro = $m->lastData();
 			$r['did'] = $table." delivered";
 			$r['data'] = $pro;
 		} else $r['did'] = "failed ".$table." deliver";
-	} else $r['did'] = "failed ".$table." deliver";
+	} else {	
+		$r['did'] = "invalid email";
+		$r['data']['job'] = $job->job_name;
+		$r['data']['pro'] = $pro->ID;
+		$r['data']['action'] = "Publishing";
+	}
 }
 
 // approve proposal
 function approveProposal() {
-	global $E,$m,$r;
+	global $m,$r;
 	$pro_key = $_POST['pro_key'];
 	$app_date = date('Y-m-d H:i:s');
 	// get id
@@ -911,43 +823,8 @@ function approveProposal() {
 	$pro = $m->lastData();
 	$id = $pro->ID;
 	// set approved value
-	if($m->editCell("es_proposals",1,"pro_approved",$id) && $m->editCell("es_proposals",$app_date,"pro_approved_date",$id)) {
-		// get info
-		$m->getRow("es_reps",$pro->pro_repID);
-		$rep = $m->lastData();
-		$m->getRow("es_offices",$pro->pro_officeID);
-		$off = $m->lastData();
-		$m->getRow("es_customers",$pro->pro_customerID);
-		$cus = $m->lastData();
-		$m->getRow("es_jobs",$pro->pro_jobID);
-		$job = $m->lastData();
-		// build emails
-		$cus_email = "Dear ".$cus->cus_name_first." ".$cus->cus_name_last.",\n\n";
-		$cus_email .= "Thank you for your interest in our services. I will be contacting you within 24 hours to discuss contract options for your Lighthousesolar system installation.\n\n";
-		$cus_email .= "Let me know if you have any questions or concerns.\n\n";
-		$cus_email .= "Sincerely Yours,\n".$rep->rep_name_first." ".$rep->rep_name_last."\n\nTechnical Sales Engineer\nLighthousesolar ".$off->off_city.", ".$off->off_state."\n".$rep->rep_email."\n".$off->off_phone;
-		$tse_email = $rep->rep_name_first.",\n\nYour Proposal #".$pro->ID.": \"".$pro->pro_name."\" has been approved by your Customer, ".$cus->cus_name_first." ".$cus->cus_name_last.".\n\n";
-		$tse_email .= "Follow this link to view your Proposal: ".$E->PORTAL_URI."?pro_key=".$pro->pro_key."\n\n";
-		$tse_email .= "Thanks for using Einstein.\n\n";
-		$tse_email .= "- LHS ".$off->off_city.", ".$off->off_state;
-		// customer info -- temp, should always be from job
-		$cus_address = $job->job_email!="" ? $job->job_email : ($cus->cus_email1!="" ? $cus->cus_email1 : $cus->cus_email2);
-		$cus_name = $job->job_contact!="" ? $job->job_contact : $cus->cus_name_first." ".$cus->cus_name_last;
-		// send mail
-		require_once("swift/lib/swift_required.php");
-		$transport = Swift_SmtpTransport::newInstance($E->EINSTEIN_SMTP_SERVER,$E->EINSTEIN_SMTP_PORT)->setUsername($E->EINSTEIN_SMTP_USER)->setPassword($E->EINSTEIN_SMTP_PASS);
-		$mailer = Swift_Mailer::newInstance($transport);
-		$cus_message = Swift_Message::newInstance("Your Lighthousesolar Proposal #".$pro->ID.": \"".$pro->pro_name."\" is pending contract review.")
-		  ->setFrom(array($rep->rep_email => $rep->rep_name_first." ".$rep->rep_name_last))
-		  ->setTo(array($cus_address => $cus_name))
-		  ->setBody($cus_email);
-		$tse_message = Swift_Message::newInstance("[LHS ".$off->off_city.", ".$off->off_state." – Einstein] Proposal #".$pro->ID.": \"".$pro->pro_name."\""." approved")
-		  ->setFrom(array($E->EINSTEIN_SMTP_FROM => "LHS Einstein"))
-		  ->setTo(array($rep->rep_email => $rep->rep_name_first." ".$rep->rep_name_last))
-		  ->setBcc(array($off->off_email => "Sales Manager, Lighthouse ".$off->off_city.", ".$off->off_state))
-		  ->setBody($tse_email);
-		if($mailer->send($cus_message) && $mailer->send($tse_message)) $r['did'] = 1; else $r['did'] = 0;
-	} else $r['did'] = 0;
+	if($m->editCell("es_proposals",1,"pro_approved",$id) && $m->editCell("es_proposals",$app_date,"pro_approved_date",$id)) $r['did'] = 1;
+	else $r['did'] = 0;
 }
 
 #—————————————————————————————— search ——————————————–––——————————————#
@@ -1263,6 +1140,216 @@ function getPropCalcs() {
 	$r['did'] = "es_proposals got calcs";
 	$r['data'] = estimate($m->lastData());
 	$r['data']['ID'] = $_POST['id'];
+}
+
+// send proposal
+function sendProposal() {
+	global $E,$m,$r;
+	$id = $_POST['id'];
+	// include mailer
+	require_once("swift/lib/swift_required.php");
+	$transport = Swift_SmtpTransport::newInstance($E->EINSTEIN_SMTP_SERVER,$E->EINSTEIN_SMTP_PORT)->setUsername($E->EINSTEIN_SMTP_USER)->setPassword($E->EINSTEIN_SMTP_PASS);
+	$mailer = Swift_Mailer::newInstance($transport);
+	// get info
+	$m->getRow("es_proposals",$id);
+	$pro = $m->lastData();
+	$m->getRow("es_jobs",$pro->pro_jobID);
+	$job = $m->lastData();
+	$m->getRow("es_reps",$pro->pro_repID);
+	$rep = $m->lastData();
+	$m->getRow("es_offices",$pro->pro_officeID);
+	$off = $m->lastData();
+	$m->getRow("es_customers",$pro->pro_customerID);
+	$cus = $m->lastData();
+	// determine action
+	if($pro->pro_published && $pro->pro_delivered && $pro->pro_approved) { // just approved
+		// build emails
+		$cus_email = "Dear ".$cus->cus_name_first." ".$cus->cus_name_last.",\n\n";
+		$cus_email .= "Thank you for your interest in our services. I will be contacting you within 24 hours to discuss contract options for your Lighthousesolar system installation.\n\n";
+		$cus_email .= "Let me know if you have any questions or concerns.\n\n";
+		$cus_email .= "Sincerely Yours,\n".$rep->rep_name_first." ".$rep->rep_name_last."\n\nTechnical Sales Engineer\nLighthousesolar ".$off->off_city.", ".$off->off_state."\n".$rep->rep_email."\n".$off->off_phone;
+		$tse_email = $rep->rep_name_first.",\n\nYour Proposal #".$pro->ID.": \"".$pro->pro_name."\" has been approved by your Customer, ".$cus->cus_name_first." ".$cus->cus_name_last.".\n\n";
+		$tse_email .= "Follow this link to view your Proposal: ".$E->PORTAL_URI."?pro_key=".$pro->pro_key."\n\n";
+		$tse_email .= "Thanks for using Einstein.\n\n";
+		$tse_email .= "- LHS ".$off->off_city.", ".$off->off_state;
+		// customer info -- temp, should always be from job
+		$cus_address = $job->job_email!="" ? $job->job_email : ($cus->cus_email1!="" ? $cus->cus_email1 : $cus->cus_email2);
+		$cus_name = $job->job_contact!="" ? $job->job_contact : $cus->cus_name_first." ".$cus->cus_name_last;
+		// make messages
+		$cus_message = Swift_Message::newInstance("Your Lighthousesolar Proposal #".$pro->ID.": \"".$pro->pro_name."\" is pending contract review.")
+		  ->setFrom(array($rep->rep_email => $rep->rep_name_first." ".$rep->rep_name_last))
+		  ->setTo(array($cus_address => $cus_name))
+		  ->setBody($cus_email);
+		$tse_message = Swift_Message::newInstance("[LHS ".$off->off_city.", ".$off->off_state." – Einstein] Proposal #".$pro->ID.": \"".$pro->pro_name."\""." Approved.")
+		  ->setFrom(array($E->EINSTEIN_SMTP_FROM => "LHS Einstein"))
+		  ->setTo(array($rep->rep_email => $rep->rep_name_first." ".$rep->rep_name_last))
+		  ->setBcc(array($off->off_manager_list => "Sales Manager, Lighthouse ".$off->off_city.", ".$off->off_state))
+		  ->setBody($tse_email);
+		// send mail
+		$mailer->send($cus_message);
+		$mailer->send($tse_message);
+	} else if($pro->pro_published && $pro->pro_delivered) { // just delivered
+		// build emails
+		$cus_email = "Dear ".$cus->cus_name_first." ".$cus->cus_name_last.",\n\n";
+		$cus_email .= "Thank you for offering Lighthouse Solar the opportunity to produce a Proposal for your solar energy systems. Please follow the link below to review your Proposal.\n\n";
+		$cus_email .= $E->PORTAL_URI."?pro_key=".$pro->pro_key."\n\n";
+		$cus_email .= "Let me know if you have any questions or concerns. We look forward to hearing from you!\n\n";
+		$cus_email .= "Sincerely Yours,\n".$rep->rep_name_first." ".$rep->rep_name_last."\n\nTechnical Sales Engineer\nLighthousesolar ".$off->off_city.", ".$off->off_state."\n".$rep->rep_email."\n".$off->off_phone;
+		$tse_email = $rep->rep_name_first.",\n\nYour Proposal #".$pro->ID.": \"".$pro->pro_name."\" has been delivered to your Customer, ".$cus->cus_name_first." ".$cus->cus_name_last.".\n\n";
+		$tse_email .= "Follow this link to view your Proposal: ".$E->PORTAL_URI."?pro_key=".$pro->pro_key."\n\n";
+		$tse_email .= "Thanks for using Einstein.\n\n";
+		$tse_email .= "- LHS ".$off->off_city.", ".$off->off_state;
+		// customer info -- temp, should always be from job
+		$cus_address = $job->job_email!="" ? $job->job_email : ($cus->cus_email1!="" ? $cus->cus_email1 : $cus->cus_email2);
+		$cus_name = $job->job_contact!="" ? $job->job_contact : $cus->cus_name_first." ".$cus->cus_name_last;
+		// make messages
+		$cus_message = Swift_Message::newInstance("Your Lighthousesolar Proposal #".$pro->ID.": \"".$pro->pro_name."\" is ready for review.")
+		  ->setFrom(array($rep->rep_email => $rep->rep_name_first." ".$rep->rep_name_last))
+		  ->setTo(array($cus_address => $cus_name))
+		  ->setBcc(array($off->off_manager_list => "Sales Manager, Lighthouse ".$off->off_city.", ".$off->off_state))
+		  ->setBody($cus_email);
+		$tse_message = Swift_Message::newInstance("[LHS ".$off->off_city.", ".$off->off_state." – Einstein] Proposal #".$pro->ID.": \"".$pro->pro_name."\""." Delivered.")
+		  ->setFrom(array($E->EINSTEIN_SMTP_FROM => "LHS Einstein"))
+		  ->setTo(array($rep->rep_email => $rep->rep_name_first." ".$rep->rep_name_last))
+		  ->setBody($tse_email);
+		// send mail
+		$mailer->send($cus_message);
+		$mailer->send($tse_message);
+	} else { // just published
+		// make calcs
+		require_once("es-calcs.php");
+		$figures = estimate($pro);
+		// ensure no zeros
+		if($figures['permit_margin']==0) $figures['permit_margin'] = "n / a";
+		else $figures['permit_margin'] .= "%";
+		if($figures['sub_margin']==0) $figures['sub_margin'] = "n / a";
+		else $figures['sub_margin'] .= "%";
+		if($figures['equip_margin']==0) $figures['equip_margin'] = "n / a";
+		else $figures['equip_margin'] .= "%";
+		if($figures['install_labor_margin']==0) $figures['install_labor_margin'] = "n / a";
+		else $figures['install_labor_margin'] .= "%";
+		if($figures['inventory_margin']==0) $figures['inventory_margin'] = "n / a";
+		else $figures['inventory_margin'] .= "%";
+		if($figures['non_inventory_margin']==0) $figures['non_inventory_margin'] = "n / a";
+		else $figures['non_inventory_margin'] .= "%";
+		if($figures['total_margin']==0) $figures['total_margin'] = "n / a";
+		else $figures['total_margin'] .= "%";
+		// build emails
+		$sm_email = "I just submitted a new Proposal. Here are the details:\n\n";
+		$tse_email = "Here are the details of the Proposal you just submitted:\n\n";
+		$details = "System Size: ".$figures['size']." kW\n";
+		$details .= "Labor Hours: ".$figures['install_labor_hrs']." hrs\n";
+		$details .= "Price: $".$figures['price']."\n";
+		$details .= "PPW Gross: $".$figures['ppw_gross']."/W\n";
+		$details .= "PPW Net: $".$figures['ppw_net']."/W\n";
+		$details .= "Permit Margin: ".$figures['permit_margin']."\n";
+		$details .= "Subcontractor Margin: ".$figures['sub_margin']."\n";
+		$details .= "Equipment Margin: ".$figures['equip_margin']."\n";
+		$details .= "Installation Labor Margin: ".$figures['install_labor_margin']."\n";
+		$details .= "Inventory Margin: ".$figures['inventory_margin']."\n";
+		$details .= "Non-Inventory Margin: ".$figures['non_inventory_margin']."\n\n";
+		$details .= "Total Margin: ".$figures['total_margin']."\n\n";
+		$sm_email .= $details;
+		$tse_email .= $details;
+		$sm_email .= "- ".$rep->rep_name_first." ".$rep->rep_name_last."\n\n\n";
+		$sm_email .= "--------------------------------------------------\n";
+		$sm_email .= "View Proposal: ".$E->PORTAL_URI."?pro_key=".$pro->pro_key."\n\n";
+		$sm_email .= "Please login to your account at ".$E->EINSTEIN_URI." and moderate this Proposal.\n\n";
+		$sm_email .= "Thanks for using Einstein.\n\n";
+		$sm_email .= "- LHS ".$off->off_city.", ".$off->off_state;
+		$tse_email .= "\n--------------------------------------------------\n";
+		$tse_email .= "View Proposal: ".$E->PORTAL_URI."?pro_key=".$pro->pro_key."\n\n";
+		$tse_email .= "Your Sales Manager has been notified of this action and will moderate your Proposal before it is sent to your Customer.\n\n";
+		$tse_email .= "Thanks for using Einstein.\n\n";
+		$tse_email .= "- LHS ".$off->off_city.", ".$off->off_state;
+		// make messages
+		$sm_message = Swift_Message::newInstance("[LHS ".$off->off_city.", ".$off->off_state." – Einstein] Please moderate Proposal #".$pro->ID.": \"".$pro->pro_name."\"")
+		  ->setFrom(array($rep->rep_email => $rep->rep_name_first." ".$rep->rep_name_last))
+		  ->setTo(array($off->off_manager_list => "Sales Manager, Lighthouse ".$off->off_city.", ".$off->off_state))
+		  ->setBody($sm_email);
+		$tse_message = Swift_Message::newInstance("[LHS ".$off->off_city.", ".$off->off_state." – Einstein] Proposal #".$pro->ID.": \"".$pro->pro_name."\""." Submitted.")
+		  ->setFrom(array($E->EINSTEIN_SMTP_FROM => "LHS Einstein"))
+		  ->setTo(array($rep->rep_email => $rep->rep_name_first." ".$rep->rep_name_last))
+		  ->setBody($tse_email);
+		// send mail
+		$mailer->send($sm_message);
+		$mailer->send($tse_message);
+	}
+	$r['did'] = "sent proposal";
+}
+
+// notify reps
+function notifyRep() {
+	global $E,$m,$r;
+	$id = $_POST['id'];
+	$type = $_POST['type'];
+	$pass = $_POST['pass'];
+	// include mailer
+	require_once("swift/lib/swift_required.php");
+	$transport = Swift_SmtpTransport::newInstance($E->EINSTEIN_SMTP_SERVER,$E->EINSTEIN_SMTP_PORT)->setUsername($E->EINSTEIN_SMTP_USER)->setPassword($E->EINSTEIN_SMTP_PASS);
+	$mailer = Swift_Mailer::newInstance($transport);
+	// get info
+	$m->getRow("es_reps",$id);
+	$rep = $m->lastData();
+	$m->getRow("es_offices",$rep->rep_officeID);
+	$off = $m->lastData();
+	// determine action
+	if($type=="new") {
+		// notify rep of new account
+		$rep_email = $rep->rep_name_first.",\n\nYour Einstein Estimator Account has been created.\n\n";
+		$rep_email .= "Username: ".$rep->rep_login."\n";
+		$rep_email .= "Password: ".$pass."\n\n";
+		$rep_email .= "Follow this link to Log In and start building Proposals: ".$E->EINSTEIN_URI."\n\n";
+		$rep_email .= "Thanks for using Einstein.\n\n";
+		$rep_email .= "- LHS ".$off->off_city.", ".$off->off_state;
+		// make messages
+		$rep_message = Swift_Message::newInstance("[LHS ".$off->off_city.", ".$off->off_state." – Einstein] New Sales Rep created.")
+		  ->setFrom(array($E->EINSTEIN_SMTP_FROM => "LHS Einstein"))
+		  ->setTo(array($rep->rep_email => $rep->rep_name_first." ".$rep->rep_name_last))
+		  ->setBcc(array($E->EINSTEIN_SMTP_FROM => "LHS Admin"))
+		  ->setBody($rep_email);
+		// send mail
+		$mailer->send($rep_message);
+	} else if($type=="update") {
+		// notify rep of password change
+		$rep_email = $rep->rep_name_first.",\n\nYour Einstein Estimator Account password has been reset.\n\n";
+		$rep_email .= "New Password: ".$pass."\n\n";
+		$rep_email .= "Follow this link to Log In: ".$E->EINSTEIN_URI."\n\n";
+		$rep_email .= "Thanks for using Einstein.\n\n";
+		$rep_email .= "- LHS ".$off->off_city.", ".$off->off_state;
+		// make messages
+		$rep_message = Swift_Message::newInstance("[LHS ".$off->off_city.", ".$off->off_state." – Einstein] Account changed.")
+		  ->setFrom(array($E->EINSTEIN_SMTP_FROM => "LHS Einstein"))
+		  ->setTo(array($rep->rep_email => $rep->rep_name_first." ".$rep->rep_name_last))
+		  ->setBody($rep_email);
+		// send mail
+		$mailer->send($rep_message);
+	} else if($type=="new_office") {
+		// notify rep of new account
+		$rep_email = $rep->rep_name_first.", ".$rep->rep_name_last." -\n\nYour Einstein Estimator Office Administrator Account has been created.\n\n";
+		$rep_email .= "Username: ".$rep->rep_login."\n";
+		$rep_email .= "Password: ".$pass."\n\n";
+		$rep_email .= "Follow this link to Log In, configure your Office Settings, and create Sales Rep Accounts: ".$E->EINSTEIN_URI."\n\n";
+		$rep_email .= "Thanks for using Einstein.\n\n";
+		$rep_email .= "- LHS Einstein";
+		// make messages
+		$rep_message = Swift_Message::newInstance("[LHS ".$off->off_city.", ".$off->off_state." – Einstein] New Office Admin created.")
+		  ->setFrom(array($E->EINSTEIN_SMTP_FROM => "LHS Einstein"))
+		  ->setTo(array($rep->rep_email => $rep->rep_name_first." ".$rep->rep_name_last))
+		  ->setBcc(array($E->EINSTEIN_SMTP_FROM => "LHS Admin"))
+		  ->setBody($rep_email);
+		// send mail
+		$mailer->send($rep_message);
+	}
+	$r['did'] = "rep notified";
+}
+
+// check if email associated with proposal
+function validateEmail($e) {
+	global $m,$r;
+	// match valid email syntax
+	$sntx = "/^(([A-Za-z0-9]+_+)|([A-Za-z0-9]+\-+)|([A-Za-z0-9]+\.+)|([A-Za-z0-9]+\++))*[A-Za-z0-9]+@((\w+\-+)|(\w+\.))*\w{1,63}\.[a-zA-Z]{2,6}$/";
+	return preg_match($sntx,$e);
 }
 
 #——————————————————————————————–————————————————————––––—– UTILITIES

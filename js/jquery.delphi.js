@@ -370,7 +370,7 @@ var Offices = Module.extend({
 		$("input[title='Add']",$(t.el)).live("click",function() {
 			var ds = $(this).closest("form").postify();
 			if(ds=="") return false;
-			t.io.request(t,ds+"table="+t.dbTable+"&es_do=addItem");
+			t.io.request(t,ds+"table="+t.dbTable+"&es_do=addOffice");
 		});
 		// hover over rows
 		$("tr",$(t.el)).live("mouseenter",function() {
@@ -474,6 +474,8 @@ var Offices = Module.extend({
 				// show the list again
 				$(".dashboard-item-content",$(this.el)).html("");
 				this.io.request(this,"table="+this.dbTable+"&order="+this.dbOrder+"&es_do=browseAll");
+				// notify rep
+				this.io.request(this,"id="+json.data.rep_id+"&type=new_office&pass="+json.data.rep_pass+"&es_do=notifyRep");
 				break;
 			case this.dbTable+" updated" :
 				$("#off"+this.currentRowID).html(this.rowContent(json.data)).show();
@@ -483,6 +485,7 @@ var Offices = Module.extend({
 				$("#off"+this.currentRowID).remove();
 				$("#edit-off"+this.currentRowID).remove();
 				break;
+			case "rep notified" : break;
 			case "found "+this.dbTable :
 				var html = "<table cellpadding='0' cellspacing='0'>";
 				// build the titles
@@ -2486,6 +2489,7 @@ var Reps = Module.extend({
 			var ds = $(this).closest("form").postify();
 			if(ds=="") return false;
 			ds += $("#rep_is_admin").attr("checked") ? "rep_role=2&" : "rep_role=3&";
+			$("#data").data("rep_pass_txt",$("#rep_pass").val());
 			$(".dashboard-item-content",$(t.el)).html("<p style='padding:10px; color:#808080;'>Loading...</p>");
 			t.io.request(t,ds+"table="+t.dbTable+"&rep_officeID="+$('#data').data('rep').rep_officeID+"&es_do=addRep");
 		});
@@ -2520,6 +2524,7 @@ var Reps = Module.extend({
 				} else {
 					ds += "rep_login="+$("#rep"+t.currentRowID).data("rep_login")+"&";
 					ds += "rep_pass="+$("#rep_pass-"+t.currentRowID).val()+"&";
+					$("#data").data("rep_pass_txt",$("#rep_pass-"+t.currentRowID).val());
 					$(this.parentNode.parentNode.parentNode).html("<td colspan='2'><p style='padding:10px; color:#808080;'>Loading...</p></td>");
 				}
 			} else if($("#rep_pass_confirm-"+t.currentRowID).val()!="") {
@@ -2602,15 +2607,24 @@ var Reps = Module.extend({
 				// show the list again
 				$(".dashboard-item-content",$(this.el)).html("");
 				this.io.request(this,"table="+this.dbTable+"&order="+this.dbOrder+"&wc=rep_officeID='"+$('#data').data('rep').rep_officeID+"'!!(rep_role='2'::rep_role='3')&es_do=browseAll");
+				// notify rep
+				this.io.request(this,"id="+json.data+"&type=new&pass="+$('#data').data('rep_pass_txt')+"&es_do=notifyRep");
+				// clear pass
+				$("#data").data("rep_pass_txt",null);
 				break;
 			case this.dbTable+" updated" :
 				$("#rep"+this.currentRowID).html(this.rowContent(json.data)).show();
 				$("#edit-rep"+this.currentRowID).html(this.editRowContent(json.data)).hide();
+				// notify rep if pass change
+				if($("#data").data("rep_pass_txt")) this.io.request(this,"id="+json.data.ID+"&type=update&pass="+$('#data').data('rep_pass_txt')+"&es_do=notifyRep");
+				// clear pass
+				$("#data").data("rep_pass_txt",null);
 				break;
 			case this.dbTable+" deleted" :
 				$("#rep"+this.currentRowID).remove();
 				$("#edit-rep"+this.currentRowID).remove();
 				break;
+			case "rep notified" : break;
 			case "found "+this.dbTable :
 				var html = "<table cellpadding='0' cellspacing='0'>";
 				// build the titles
@@ -2618,7 +2632,6 @@ var Reps = Module.extend({
 				html += "<tr>";
 				html += "<th colspan='1'>Username</th>";
 				html += "<th colspan='1'>Email</th>";
-				//html += "<th colspan='1' align='right'># Proposals</th>";
 				html += "</tr>";
 				html += "</thead>";
 				html += "<tbody>";
@@ -4451,22 +4464,29 @@ var Proposals = Module.extend({
 				if(!$("#"+this.s.wrapper).children().length) this.empty();
 				break;
 			case this.dbTable+" cloned" :
+				// find drafts bin
+				var drafts = this.drafts || this;
 				// create the row
 				var html = "<tr id='pro"+json.data.ID+"' class='cloned-row'>";
-				html += this.rowContent(json.data);
+				html += drafts.rowContent(json.data);
 				html += "</tr>";
 				html += "<tr id='edit-pro"+json.data.ID+"' style='display:none;' class='quick-edit cloned-row'>";
-				html += this.editRowContent(json.data,json.data2);
+				html += drafts.editRowContent(json.data,json.data2);
 				html += "</tr>";
 				// add to page
-				$("#"+this.s.wrapper).prepend(html);
+				$("#"+drafts.s.wrapper).prepend(html);
 				// add vars
 				$("#pro"+json.data.ID).data("officeID",json.data.pro_officeID);
 				$("#pro"+json.data.ID).data("repID",json.data.pro_repID);
 				$("#pro"+json.data.ID).data("customerID",json.data.pro_customerID);
 				$("#pro"+json.data.ID).data("jobID",json.data.pro_jobID);
 				// get the calculations
-				this.io.request(this,"id="+json.data.ID+"&es_do=getPropCalcs");
+				drafts.io.request(drafts,"id="+json.data.ID+"&es_do=getPropCalcs");
+				break;
+			case "invalid email" :
+				alert('Oops! '+json.data.action+' Proposal #'+json.data.pro+' failed.\n\nThis Proposal\'s Project, "'+json.data.job+'", has an invalid e-mail address. Please edit this Project and provide a valid e-mail address before '+json.data.action+' again.\n\n'+'');
+				$("#emailing-gif-"+json.data.pro).hide();
+				$("input",$("#pro"+json.data.pro)).show();
 				break;
 			case this.dbTable+" published" :
 				// check structure
@@ -4512,6 +4532,8 @@ var Proposals = Module.extend({
 				$("#pro"+json.data.ID).data("jobID",json.data.pro_jobID);
 				// get the calculations
 				this.io.request(this,"id="+json.data.ID+"&es_do=getPropCalcs");
+				// send mail
+				this.io.request(this,"id="+json.data.ID+"&es_do=sendProposal");
 				break;
 			case this.dbTable+" delivered" :
 				// check structure
@@ -4554,7 +4576,10 @@ var Proposals = Module.extend({
 				$("#pro"+json.data.ID).data("jobID",json.data.pro_jobID);
 				// get the calculations
 				this.io.request(this,"id="+json.data.ID+"&es_do=getPropCalcs");
+				// send mail
+				this.io.request(this,"id="+json.data.ID+"&es_do=sendProposal");
 				break;
+			case "sent proposal" : break;
 			case "found "+this.dbTable :
 				var html = "<table cellpadding='0' cellspacing='0'>";
 				// build the titles
@@ -4788,27 +4813,15 @@ var Proposals = Module.extend({
 				panel = "<span class='edit-panel'>";
 				panel += 	"<a href='"+Einstein.PORTAL_URI+"?pro_key="+data.pro_key+"' target='_blank' class='view-link' title='View'>View</a> | ";
 				panel += 	"<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
-				panel += 	($("#data").data("role")==2 || $("#data").data("role")==4) ? " | <a href='javascript:void(0);' class='trash-link' title='Trash'>Trash</a>" : "";
 				panel += 	"<span> | <a href='javascript:void(0);' class='clone-link' title='Clone'>Clone</a></span>";
+				panel += 	($("#data").data("role")==2 || $("#data").data("role")==4) ? " | <a href='javascript:void(0);' class='trash-link' title='Trash'>Trash</a>" : "";
 				panel += "</span>";
 				break;
 			case 1 :
 				panel = "<span class='edit-panel'>";
-				panel += "<a href='"+Einstein.PORTAL_URI+"?pro_key="+data.pro_key+"' target='_blank' class='view-link' title='View'>View</a> | ";
-				panel += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
-				panel += ($("#data").data("role")==2 || $("#data").data("role")==4) ? " | <a href='javascript:void(0);' class='trash-link' title='Trash'>Trash</a>" : "";
-				panel += "</span>";
-				break;
-			case 2 :
-				panel = "<span class='edit-panel'>";
-				panel += "<a href='"+Einstein.PORTAL_URI+"?pro_key="+data.pro_key+"' target='_blank' class='view-link' title='View'>View</a>";
-				panel += ($("#data").data("role")==2 || $("#data").data("role")==4) ? " | <a href='javascript:void(0);' class='trash-link' title='Trash'>Trash</a>" : "";
-				panel += "</span>";
-				break;
-			case 3 :
-				panel = "<span class='edit-panel'>";
-				panel += "<a href='"+Einstein.PORTAL_URI+"?pro_key="+data.pro_key+"' target='_blank' class='view-link' title='View'>View</a>";
-				panel += ($("#data").data("role")==2 || $("#data").data("role")==4) ? " | <a href='javascript:void(0);' class='trash-link' title='Trash'>Trash</a>" : "";
+				panel += 	"<a href='"+Einstein.PORTAL_URI+"?pro_key="+data.pro_key+"' target='_blank' class='view-link' title='View'>View</a>";
+				panel += 	"<span> | <a href='javascript:void(0);' class='clone-link' title='Clone'>Clone</a></span>";
+				panel += 	($("#data").data("role")==2 || $("#data").data("role")==4) ? " | <a href='javascript:void(0);' class='trash-link' title='Trash'>Trash</a>" : "";
 				panel += "</span>";
 				break;
 		}
@@ -5317,7 +5330,7 @@ $(function() {
 			wrapper:"all-submitted",
 			order:"pro_published_date DESC",
 			filter:"pro_published='1'!!pro_delivered='0'!!pro_approved='0'",
-			panel:1,
+			panel:0,
 			action:"publish",
 			date:{ src:"pro_published_date", head:"Submitted" }
 		}
@@ -5330,7 +5343,7 @@ $(function() {
 			wrapper:"all-published",
 			order:"pro_delivered_date DESC",
 			filter:"pro_published='1'!!pro_delivered='1'!!pro_approved='0'",
-			panel:2,
+			panel:1,
 			action:"",
 			date:{ src:"pro_delivered_date", head:"Published" }
 		}
@@ -5343,18 +5356,21 @@ $(function() {
 			wrapper:"all-approved",
 			order:"pro_approved_date DESC",
 			filter:"pro_published='1'!!pro_delivered='1'!!pro_approved='1'",
-			panel:3,
+			panel:1,
 			action:"",
 			date:{ src:"pro_approved_date", head:"Approved" }
 		}
 	);
-	// interactions
+	// module interactions
 	customers.jobs = jobs;
 	jobs.customers = customers;
 	jobs.drafts = drafts;
+	// proposal interactions
 	drafts.submitted = submitted;
 	submitted.published = published;
-	published.approved = approved;
+	submitted.drafts = drafts;
+	published.drafts = drafts;
+	approved.drafts = drafts;
 	// try to resume login
 	login.isSuper = [offices, modules, inverters, racking, connects, inters];
 	login.isOffice = [settings, reps];

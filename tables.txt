@@ -34,6 +34,7 @@ CREATE TABLE `es_offices` (
 	`off_zip` char(5) NOT NULL default '',
 	`off_phone` varchar(20) NOT NULL default '',
 	`off_email` varchar(60) NOT NULL default '',
+	`off_manager_list` varchar(60) NOT NULL default '',
 	
 	`off_labor_cost` decimal(10,2),
 	`off_labor_price` decimal(10,2),
