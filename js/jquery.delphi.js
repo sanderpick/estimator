@@ -227,7 +227,7 @@ var Login = Module.extend({
 					<!--<h2 class='alert'>PV Watts may be down intermittently the weekends of July 16th - 18th and July 23rd - 25th.</h2><br />--> \
 					"+message+error+" \
 					<form class='loginform' action='javascript:void(0);'> \
-						<label for='rep_username'>Username:</label> \
+						<label for='rep_username'>Username</label> \
 						<input class='required login-text' type='text' id='rep_username' value='"+$.get_cookie('esrep_username')+"' /> \
 						<label for='rep_password'>Password</label> \
 						<input class='required login-text' type='password' id='rep_password' value='"+$.get_cookie('esrep_password')+"' /> \
