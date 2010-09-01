@@ -192,7 +192,7 @@ CREATE TABLE `es_zones` (
 	`zon_name` varchar(100) NOT NULL default '',
 	
 	`zon_type` varchar(20) NOT NULL default '',
-	`zon_size` decimal(10,2),
+	`zon_size` decimal(10,3),
 	`zon_tilt` varchar(20) NOT NULL default '',
 	`zon_custom_tilt` decimal(10,2),
 	`zon_azimuth` int(3),
@@ -298,7 +298,7 @@ CREATE TABLE `es_proposals` (
 	
 	`pro_credit` int(1) NOT NULL default '0',
 	`pro_incentive` int(1) NOT NULL default '0',
-	`pro_incentive_rate` decimal(2,2) NOT NULL default '0.0',
+	`pro_incentive_rate` decimal(4,3) NOT NULL default '0.0',
 	`pro_incentive_yrs` int(3) NOT NULL default '0',
 	
 	`pro_cover_letter` text,
