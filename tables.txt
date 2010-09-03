@@ -191,7 +191,7 @@ CREATE TABLE `es_zones` (
 	
 	`zon_name` varchar(100) NOT NULL default '',
 	
-	`zon_type` varchar(20) NOT NULL default '',
+	`zon_type` varchar(40) NOT NULL default '',
 	`zon_size` decimal(10,2),
 	`zon_tilt` varchar(20) NOT NULL default '',
 	`zon_custom_tilt` decimal(10,2),
@@ -199,14 +199,14 @@ CREATE TABLE `es_zones` (
 	`zon_derate` decimal(2,2),
 	`zon_erate` decimal(10,2),
 	
-	`zon_module` varchar(20) NOT NULL default '',
+	`zon_module` varchar(80) NOT NULL default '',
 	`zon_num_modules` int(3),
-	`zon_racking` varchar(20) NOT NULL default '',
-	`zon_mounting_method` varchar(40) NOT NULL default '',
+	`zon_racking` varchar(80) NOT NULL default '',
+	`zon_mounting_method` varchar(80) NOT NULL default '',
 	
 	`zon_pitch` varchar(20) NOT NULL default '',
 	`zon_custom_pitch` decimal(10,2),
-	`zon_mounting_medium` varchar(40) NOT NULL default '',
+	`zon_mounting_medium` varchar(80) NOT NULL default '',
 	`zon_support_dist` int(4),
 	`zon_per_landscape` decimal(5,2),
 	`zon_num_cont_arrays` int(2),

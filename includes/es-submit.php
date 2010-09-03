@@ -1,6 +1,6 @@
 <?php
 #——————————————————————————————–—————————————————————–––––––––– HOST
-$host = gethostbyaddr(gethostbyname($_SERVER["SERVER_NAME"]));
+$host = $_SERVER["SERVER_NAME"];
 preg_match('/\.([a-z,A-Z]{2,6})$/',$host,$tld);
 #——————————————————————————————–—————————————————————–––––– SETTINGS
 require_once("es-object.class.php");

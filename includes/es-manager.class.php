@@ -18,10 +18,10 @@ class EstimatorManager {
 	##################
 	// constructor - create db object
 	public function EstimatorManager() {
-		$host = gethostbyaddr(gethostbyname($_SERVER["SERVER_NAME"]));
+		$host = $_SERVER["SERVER_NAME"];
 		preg_match('/\.([a-z,A-Z]{2,6})$/',$host,$tld);
 		switch($tld[1]) {
-			case "ld" : $this->_esdb = new DBConnection('localhost','root','solarone','keeper101'); break; // local
+			case "ld" : $this->_esdb = new DBConnection('localhost','root','plebeian','ces_einstein'); break; // local
 		    # OLD GODADDY: default : $this->_esdb = new DBConnection('keeper101.db.5185848.hostedresource.com','keeper101','V4rfvB5tgb','keeper101'); break;
 			default : $this->_esdb = new DBConnection('estimator.cleanenergysolutionsinc.com','ces_albert','V4rfvB5tgb','ces_einstein'); break;
 		}
