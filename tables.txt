@@ -191,22 +191,22 @@ CREATE TABLE `es_zones` (
 	
 	`zon_name` varchar(100) NOT NULL default '',
 	
-	`zon_type` varchar(20) NOT NULL default '',
-	`zon_size` decimal(10,2),
+	`zon_type` varchar(40) NOT NULL default '',
+	`zon_size` decimal(10,3),
 	`zon_tilt` varchar(20) NOT NULL default '',
 	`zon_custom_tilt` decimal(10,2),
 	`zon_azimuth` int(3),
 	`zon_derate` decimal(2,2),
 	`zon_erate` decimal(10,2),
 	
-	`zon_module` varchar(20) NOT NULL default '',
+	`zon_module` varchar(80) NOT NULL default '',
 	`zon_num_modules` int(3),
-	`zon_racking` varchar(20) NOT NULL default '',
-	`zon_mounting_method` varchar(40) NOT NULL default '',
+	`zon_racking` varchar(80) NOT NULL default '',
+	`zon_mounting_method` varchar(80) NOT NULL default '',
 	
 	`zon_pitch` varchar(20) NOT NULL default '',
 	`zon_custom_pitch` decimal(10,2),
-	`zon_mounting_medium` varchar(40) NOT NULL default '',
+	`zon_mounting_medium` varchar(80) NOT NULL default '',
 	`zon_support_dist` int(4),
 	`zon_per_landscape` decimal(5,2),
 	`zon_num_cont_arrays` int(2),
@@ -295,10 +295,11 @@ CREATE TABLE `es_proposals` (
 	`pro_rebate_amnt` text NOT NULL default '',
 	`pro_rebate_desc` text NOT NULL default '',
 	`pro_rebate_type` text NOT NULL default '',
+	`pro_rebate_display_weight` text NOT NULL default '',
 	
 	`pro_credit` int(1) NOT NULL default '0',
 	`pro_incentive` int(1) NOT NULL default '0',
-	`pro_incentive_rate` decimal(2,2) NOT NULL default '0.0',
+	`pro_incentive_rate` decimal(4,3) NOT NULL default '0.0',
 	`pro_incentive_yrs` int(3) NOT NULL default '0',
 	
 	`pro_cover_letter` text,
@@ -327,7 +328,7 @@ CREATE TABLE `es_proposals` (
 CREATE TABLE `es_modules` (
 	`ID` int(6) NOT NULL AUTO_INCREMENT,
 
-	`mod_model_num` varchar(40) NOT NULL default '',
+	`mod_model_num` varchar(100) NOT NULL default '',
 	`mod_desc` varchar(100) NOT NULL default '',
 	`mod_width` decimal(10,2),
 	`mod_length` decimal(10,2),
@@ -354,7 +355,7 @@ CREATE TABLE `es_modules` (
 CREATE TABLE `es_inverters` (
 	`ID` int(6) NOT NULL AUTO_INCREMENT,
 
-	`inv_model_num` varchar(40) NOT NULL default '',
+	`inv_model_num` varchar(100) NOT NULL default '',
 	`inv_desc` varchar(100) NOT NULL default '',
 	`inv_type` varchar(20) NOT NULL default '',
 	`inv_unit` varchar(10) NOT NULL default '',
@@ -377,7 +378,7 @@ CREATE TABLE `es_inverters` (
 CREATE TABLE `es_racking` (
 	`ID` int(6) NOT NULL AUTO_INCREMENT,
 
-	`rac_model_num` varchar(40) NOT NULL default '',
+	`rac_model_num` varchar(100) NOT NULL default '',
 	`rac_desc` varchar(100) NOT NULL default '',
 	`rac_unit` varchar(10) NOT NULL default '',
 	`rac_cost` decimal(10,2),
@@ -395,7 +396,7 @@ CREATE TABLE `es_racking` (
 CREATE TABLE `es_conn_comps` (
 	`ID` int(6) NOT NULL AUTO_INCREMENT,
 
-	`con_model_num` varchar(40) NOT NULL default '',
+	`con_model_num` varchar(100) NOT NULL default '',
 	`con_desc` varchar(100) NOT NULL default '',
 	`con_unit` varchar(10) NOT NULL default '',
 	`con_cost` decimal(10,2),
@@ -414,7 +415,7 @@ CREATE TABLE `es_conn_comps` (
 CREATE TABLE `es_inter_comps` (
 	`ID` int(6) NOT NULL AUTO_INCREMENT,
 
-	`int_model_num` varchar(40) NOT NULL default '',
+	`int_model_num` varchar(100) NOT NULL default '',
 	`int_desc` varchar(100) NOT NULL default '',
 	`int_unit` varchar(10) NOT NULL default '',
 	`int_cost` decimal(10,2),
@@ -463,7 +464,7 @@ CREATE TABLE `es_uploads` (
 CREATE TABLE `es_arrays` (
 	`ID` int(6) NOT NULL AUTO_INCREMENT,
 	
-	`arr_value` varchar(20) NOT NULL default '',
+	`arr_value` varchar(100) NOT NULL default '',
 	
 	`active` int(1) NOT NULL default '1',
 
@@ -481,7 +482,7 @@ INSERT INTO es_arrays (arr_value) VALUES ('2-Axis Tracking');
 CREATE TABLE `es_angles` (
 	`ID` int(6) NOT NULL AUTO_INCREMENT,
 	
-	`ang_value` varchar(20) NOT NULL default '',
+	`ang_value` varchar(100) NOT NULL default '',
 	`ang_labor` decimal(10,2),
 	
 	`active` int(1) NOT NULL default '1',
@@ -513,7 +514,7 @@ INSERT INTO es_angles (ang_value, ang_labor) VALUES ('custom','0');
 CREATE TABLE `es_mounting_methods` (
 	`ID` int(6) NOT NULL AUTO_INCREMENT,
 	
-	`met_value` varchar(20) NOT NULL default '',
+	`met_value` varchar(100) NOT NULL default '',
 	`met_cost` decimal(10,2),
 	`met_price` decimal(10,2),
 	`met_labor` decimal(10,2),
@@ -537,7 +538,7 @@ INSERT INTO es_mounting_methods (met_value, met_cost, met_price, met_labor) VALU
 CREATE TABLE `es_mounting_mediums` (
 	`ID` int(6) NOT NULL AUTO_INCREMENT,
 	
-	`med_value` varchar(20) NOT NULL default '',
+	`med_value` varchar(100) NOT NULL default '',
 	`med_labor` decimal(10,2),
 	
 	`active` int(1) NOT NULL default '1',

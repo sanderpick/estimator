@@ -2611,7 +2611,7 @@ var Settings = Module.extend({
 		$("input[title='Update']",$(t.el)).live("click",function() {
 			var ds = $(this).closest("form").postify();
 			if(ds=="") return false;
-			t.io.request(t,ds+"&table="+t.dbTable+"&row="+$('#data').data('rep').rep_officeID+"&es_do=updateCells");
+			t.io.request(t,ds+"table="+t.dbTable+"&row="+$('#data').data('rep').rep_officeID+"&es_do=updateCells");
 		});
 	},
   	show:function(holder) { this._super(holder); },
@@ -3607,7 +3607,7 @@ var Customers = Module.extend({
 			if(ds=="") return false;
 			ds += "cus_officeID="+$("#data").data("rep").rep_officeID+"&";
 			ds += "cus_repID="+$("#data").data("rep").ID+"&";
-			t.io.request(t,ds+"&table="+t.dbTable+"&es_do=addCustomer");
+			t.io.request(t,ds+"table="+t.dbTable+"&es_do=addCustomer");
 		});
 		// add new job
 		$("input[title='NewJob']",$(t.el)).live("click",function() {
@@ -3975,7 +3975,7 @@ var Jobs = Module.extend({
 			ds += "job_officeID="+$($("#data").data("customer")).data("officeID")+"&";
 			ds += "job_repID="+$($("#data").data("customer")).data("repID")+"&";
 			ds += "job_customerID="+$($("#data").data("customer")).data("ID")+"&";
-			t.io.request(t,ds+"&table="+t.dbTable+"&es_do=addJob");
+			t.io.request(t,ds+"table="+t.dbTable+"&es_do=addJob");
 		});
 		// show zones and details
 		$("input[title='Configure']",$(t.el)).live("click",function() {
@@ -4491,7 +4491,7 @@ var Zones = Module.extend({
 				$("#waiting").css("opacity",t.blink);
 				t.blink = (t.blink=="0.8") ? t.blink = "1" : t.blink = "0.8";  
 			}, 200);
-			t.io.request(t,ds+"&table="+t.dbTable+"&es_do=addZone");
+			t.io.request(t,ds+"table="+t.dbTable+"&es_do=addZone");
 		});
 		// hover over rows
 		$("tr.zonehover",$(t.el)).live("mouseenter",function() {
@@ -5081,7 +5081,7 @@ var Proposals = Module.extend({
 			ds += "pro_zones="+czID+"&";
 			ds += $("#pro_credit").attr("checked") ? "pro_credit=1&" : "pro_credit=0&";
 			ds += $("#pro_incentive").attr("checked") ? "pro_incentive=1&" : "pro_incentive=0&";
-			t.io.request(t,ds+"&table="+t.dbTable+"&es_do=addProposal");
+			t.io.request(t,ds+"table="+t.dbTable+"&es_do=addProposal");
 		});
 		// preview
 		$("input[title='Preview']",$(t.el)).live("click",function() {
@@ -5098,7 +5098,7 @@ var Proposals = Module.extend({
 			ds += $("#pro_credit").attr("checked") ? "pro_credit=1&" : "pro_credit=0&";
 			ds += $("#pro_incentive").attr("checked") ? "pro_incentive=1&" : "pro_incentive=0&";
 			t.currentForm = $(this).closest("form");
-			t.io.request(t,ds+"&table="+t.dbTable+"&es_do=peakProposal");
+			t.io.request(t,ds+"table="+t.dbTable+"&es_do=peakProposal");
 		});
 		// submit
 		$("input[title='Submit']",$(t.el)).live("click",function() {
@@ -5165,7 +5165,7 @@ var Proposals = Module.extend({
 			ds += $("#pro_credit"+t.currentRowID).attr("checked") ? "pro_credit=1&" : "pro_credit=0&";
 			ds += $("#pro_incentive"+t.currentRowID).attr("checked") ? "pro_incentive=1&" : "pro_incentive=0&";
 			t.currentForm = $(this).closest("form");
-			t.io.request(t,ds+"&table="+t.dbTable+"&es_do=peakProposal");
+			t.io.request(t,ds+"table="+t.dbTable+"&es_do=peakProposal");
 		});
 		// clone link
 		$("a[title='Clone']",$(t.el)).live("click",function() {
@@ -5212,7 +5212,9 @@ var Proposals = Module.extend({
 						<input type='text' id='pro_rebate_amnt_"+num+"' value='' /> \
 						<label for='pro_rebate_desc_"+num+"'>Rebate Description</label> \
 						<input type='text' id='pro_rebate_desc_"+num+"' value='' /> \
-					</div>";
+						<!-- @mcn --> \
+						<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_rebate_display_weight_"+num+"' value='0' checked='checked' /> Above Total in Portal<br /> \
+						<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_rebate_display_weight_"+num+"' value='1' /> Below Total in Portal \					</div>";
 			$(this.parentNode.nextElementSibling).append($(ar));
 		});
 		$("a[title='Delete Rebate']",$(t.el)).live("click",function() {
@@ -5625,6 +5627,9 @@ var Proposals = Module.extend({
 									<input type='text' id='pro_rebate_amnt_1' value='' /> \
 									<label for='pro_rebate_desc_1'>Rebate Description</label> \
 									<input type='text' id='pro_rebate_desc_1' value='' /> \
+									<!-- @mcn --> \
+									<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_rebate_display_weight_1' value='0' checked='checked' /> Above Total in Portal<br /> \
+									<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_rebate_display_weight_1' value='1' /> Below Total in Portal \
 								</div> \
 							</div> \
 							<div class='clear'></div> \
@@ -5823,8 +5828,12 @@ var Proposals = Module.extend({
 		var types = data.pro_rebate_type ? data.pro_rebate_type.substring(0,data.pro_rebate_type.length-1).split(",") : [];
 		var amnts = data.pro_rebate_amnt ? data.pro_rebate_amnt.substring(0,data.pro_rebate_amnt.length-1).split(",") : [];
 		var descs = data.pro_rebate_desc ? data.pro_rebate_desc.substring(0,data.pro_rebate_desc.length-1).split(",") : [];
+		// @mcn
+		var display_weights = data.pro_rebate_display_weight ? data.pro_rebate_display_weight.substring(0,data.pro_rebate_display_weight.length-1).split(",") : [];
+		
 		for(i=0;i<types.length;i++) {
 			var type_html = "";
+			var display_weight_html = "";
 			switch(types[i]) {
 				case "0" :
 					type_html = "<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_rebate_type_"+(i+1)+"' value='0' checked='checked' /> $/W \
@@ -5842,6 +5851,17 @@ var Proposals = Module.extend({
 								<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_rebate_type_"+(i+1)+"' value='2' checked='checked' /> Fixed";
 					break;
 			}
+			switch(display_weights[i]) {
+				case "0":
+					display_weight_html = "<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_rebate_display_weight_"+(i+1)+"' value='0' checked='checked' /> Above Total in Portal <br /> \
+                                           <input style='display:inline; margin:5px 0 0;' type='radio' name='pro_rebate_display_weight_"+(i+1)+"' value='1' /> Below Total in Portal";
+					break;
+				case "1" :
+					display_weight_html = "<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_rebate_display_weight_"+(i+1)+"' value='0' /> Above Total in Portal <br /> \
+                                           <input style='display:inline; margin:5px 0 0;' type='radio' name='pro_rebate_display_weight_"+(i+1)+"' value='1' checked='checked' /> Below Total in Portal";
+					break;
+			}
+			
 			rebates_html += "<div class='form-column'> \
 								<label for='pro_rebate_type_"+(i+1)+"'>Rebate Type <a href='javascript:void(0);' title='Delete Rebate' class='lesser' style='vertical-align:bottom; padding:0 0 0 84px;'>&#10005;</a></label> \
 								"+type_html+" \
@@ -5849,7 +5869,9 @@ var Proposals = Module.extend({
 								<input type='text' id='pro_rebate_amnt_"+(i+1)+"' value='"+amnts[i]+"' /> \
 								<label for='pro_rebate_desc_"+(i+1)+"'>Rebate Description</label> \
 								<input type='text' id='pro_rebate_desc_"+(i+1)+"' value='"+descs[i]+"' /> \
-							</div>";
+								"+display_weight_html+" \
+							</div>";		
+
 		}
 		// yes or no selects
 		var pro_winter_selects = (data.pro_winter==1) ? "<option value='1' selected='selected'>yes</option><option value='0'>no</option>" : "<option value='1'>yes</option><option value='0' selected='selected'>no</option>";
