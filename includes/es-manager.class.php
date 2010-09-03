@@ -19,6 +19,7 @@ class EstimatorManager {
 	// constructor - create db object
 	public function EstimatorManager() {
 		$host = gethostbyaddr(gethostbyname($_SERVER["SERVER_NAME"]));
+		$host = $_SERVER['SERVER_NAME'];
 		preg_match('/\.([a-z,A-Z]{2,6})$/',$host,$tld);
 		switch($tld[1]) {
 			case "ld" : $this->_esdb = new DBConnection('localhost','root','solarone','keeper101'); break; // local

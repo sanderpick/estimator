@@ -306,6 +306,9 @@ function addProposal() {
 	$pro['pro_rebate_amnt'] = "";
 	$pro['pro_rebate_desc'] = "";
 	$pro['pro_rebate_type'] = "";
+	//@mcn
+	$pro['pro_rebate_display_weight'] = "";
+
 	foreach($pro as $key=>$val) {
 		if(substr($key,0,16)=="pro_rebate_amnt_") {
 			$pro['pro_rebate_amnt'] .= $val.",";
@@ -315,6 +318,10 @@ function addProposal() {
 			unset($pro[$key]);
 		} else if(substr($key,0,16)=="pro_rebate_type_") {
 			$pro['pro_rebate_type'] .= $val.",";
+			unset($pro[$key]);
+		}
+		else if(substr($key,0,26)=="pro_rebate_display_weight_") {
+			$pro['pro_rebate_display_weight'] .= $val.",";
 			unset($pro[$key]);
 		}
 	}
@@ -641,6 +648,10 @@ function updateProposal() {
 	$pro['pro_rebate_amnt'] = "";
 	$pro['pro_rebate_desc'] = "";
 	$pro['pro_rebate_type'] = "";
+
+	//@mcn
+	$pro['pro_rebate_display_weight'] = "";
+
 	foreach($pro as $key=>$val) {
 		if(substr($key,0,16)=="pro_rebate_amnt_") {
 			$pro['pro_rebate_amnt'] .= $val.",";
@@ -650,6 +661,11 @@ function updateProposal() {
 			unset($pro[$key]);
 		} else if(substr($key,0,16)=="pro_rebate_type_") {
 			$pro['pro_rebate_type'] .= $val.",";
+			unset($pro[$key]);
+		}
+		//@mcn
+		else if(substr($key,0,26)=="pro_rebate_display_weight_") {
+			$pro['pro_rebate_display_weight'] .= $val.",";
 			unset($pro[$key]);
 		}
 	}
@@ -1107,6 +1123,9 @@ function peakProposal() {
 	$pro['pro_rebate_amnt'] = "";
 	$pro['pro_rebate_desc'] = "";
 	$pro['pro_rebate_type'] = "";
+	//@mcn
+	$pro['pro_rebate_display_weight'] = "";
+
 	foreach($pro as $key=>$val) {
 		if(substr($key,0,16)=="pro_rebate_amnt_") {
 			$pro['pro_rebate_amnt'] .= $val.",";
@@ -1116,6 +1135,10 @@ function peakProposal() {
 			unset($pro[$key]);
 		} else if(substr($key,0,16)=="pro_rebate_type_") {
 			$pro['pro_rebate_type'] .= $val.",";
+			unset($pro[$key]);
+		}
+		else if(substr($key,0,26)=="pro_rebate_display_weight_") {
+			$pro['pro_rebate_display_weight'] .= $val.",";
 			unset($pro[$key]);
 		}
 	}
