@@ -5852,7 +5852,7 @@ var Proposals = Module.extend({
 					break;
 			}
 			switch(display_weights[i]) {
-				case "0":
+				case "0": case undefined :
 					display_weight_html = "<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_rebate_display_weight_"+(i+1)+"' value='0' checked='checked' /> Above Total in Portal <br /> \
                                            <input style='display:inline; margin:5px 0 0;' type='radio' name='pro_rebate_display_weight_"+(i+1)+"' value='1' /> Below Total in Portal";
 					break;
