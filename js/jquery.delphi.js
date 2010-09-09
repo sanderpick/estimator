@@ -5287,7 +5287,7 @@ var Proposals = Module.extend({
 				html += "</tr>";
 				html += "<tr class='light'>";
 				html += "<td style='color:#808080;'>Non-Inventory Margin:</td><td style='color:"+ni_margin_c+";' align='right'>"+ni_margin+"</td>";
-				html += "<td style='color:#808080;'>Install Labor:</td><td style='font-weight:bold;' align='right'>"+(Math.round(json.data.install_labor_hrs*100)/100)+" hrs</td>";
+				html += "<td style='color:#808080;'>Install Labor:</td><td style='font-weight:bold;' align='right'>"+$.addCommas(Math.round(json.data.install_labor_hrs*100)/100)+" hrs</td>";
 				html += "</tr>";
 				html += "<tr class='dark'>";
 				html += "<td style='color:#808080;'>Equipment Margin:</td><td style='color:"+e_margin_c+";' align='right'>"+e_margin+"</td>";
