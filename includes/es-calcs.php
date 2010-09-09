@@ -33,7 +33,8 @@ function estimate($pro) {
 	$pro_module_price = 0;
 	$pro_mounting_cost = 0;
 	$pro_mounting_price = 0;
-	$pro_rebate = 0;
+	$pro_rebate_bbl = 0;
+	$pro_rebate_abl = 0;
 	foreach($zones as $zone) {
 		$pro_size += $zone->zon_size;
 		$pro_production += $zone->zon_production;
@@ -45,7 +46,7 @@ function estimate($pro) {
 		$pro_module_price += $zone->zon_module_price;
 		$pro_mounting_cost += $zone->zon_racking_cost+$zone->zon_connection_cost;
 		$pro_mounting_price += $zone->zon_racking_price+$zone->zon_connection_price;
-		$pro_rebate += $zone->zon_rebate;
+		$pro_rebate_bbl += $zone->zon_rebate;
 	}
 	// make calcs
 	$labor_unit_cost = $off->off_labor_cost;
@@ -122,23 +123,26 @@ function estimate($pro) {
 	// parse additional rebates
 	$add_rebate_types = explode(",",substr($pro->pro_rebate_type,0,-1));
 	$add_rebate_amnts = explode(",",substr($pro->pro_rebate_amnt,0,-1));
+	$add_rebate_order = explode(",",substr($pro->pro_rebate_display_weight,0,-1));
 	for($i=0;$i<count($add_rebate_types);$i++) {
 		if($add_rebate_amnts[$i]!="") {
 			switch($add_rebate_types[$i]) {
 				case 0 :
-					$pro_rebate += $add_rebate_amnts[$i]*$pro_size*1000;
+					$pr = $add_rebate_amnts[$i]*$pro_size*1000;
 					break;
 				case 1 :
-					$pro_rebate += $add_rebate_amnts[$i]*$price*0.01;
+					$pr = $add_rebate_amnts[$i]*$price*0.01;
 					break;
 				case 2 :
-					$pro_rebate += $add_rebate_amnts[$i];
+					$pr = $add_rebate_amnts[$i];
 					break;
 			}
+			if($add_rebate_order[$i]==0) $pro_rebate_bbl += $pr;
+			else $pro_rebate_abl += $pr;
 		}
 	}
 	// credit
-	$credit = ($pro->pro_credit==1) ? ($price+$tax_price+$permit_price-$pro_rebate)*0.30 : 0;
+	$credit = ($pro->pro_credit==1) ? ($price+$tax_price+$permit_price-$pro_rebate_bbl)*0.30 : 0;
 	// set margins
 	$permit_margin = ($permit_price!=0) ? ($permit_price-$permit_cost) / $permit_price : 0;
 	$sub_margin = ($sub_price!=0) ? ($sub_price-$sub_cost) / $sub_price : 0;
@@ -150,9 +154,9 @@ function estimate($pro) {
 	$total_margin = ($price-$cost) / $price;
 	// price per watt
 	$ppw_gross = $price / $pro_size / 1000;
-	$ppw_net = ($price-$pro_rebate) / $pro_size / 1000;
+	$ppw_net = ($price-$pro_rebate_bbl-$pro_rebate_abl) / $pro_size / 1000;
 	// for customer
-	$cus_price = $price+$tax_price+$permit_price-$pro_rebate;
+	$cus_price = $price+$tax_price+$permit_price-$pro_rebate_bbl;
 	$ppw_cus_net = $cus_price / $pro_size / 1000;
 	// send back info
 	$vars = array(
@@ -160,6 +164,7 @@ function estimate($pro) {
 		'size'=>$pro_size,
 		'production'=>$pro_production,
 		'install_labor'=>number_format($install_labor_total_price),
+		'install_labor_nf'=>$install_labor_total_price,
 		'install_labor_hrs'=>($pro_install_labor_hrs+$add_labor_hrs),
 		'inventory'=>number_format($inventory_price),
 		'non_inventory'=>number_format($non_inventory_price),
@@ -167,7 +172,9 @@ function estimate($pro) {
 		'sub'=>number_format($sub_price),
 		'equip'=>number_format($equip_price),
 		'tax'=>number_format($tax_price),
+		'tax_nf'=>$tax_price,
 		'credit'=>number_format($credit),
+		'credit_nf'=>$credit,
 		'price'=>number_format($price),
 		'price_nf'=>$price,
 		// margins
@@ -183,14 +190,16 @@ function estimate($pro) {
 		'ppw_net'=>round($ppw_net*100)/100,
 		// for display only
 		'misc_materials'=>($non_inventory_price+$pro->pro_misc_materials+($pro->pro_misc_materials*$pro->pro_misc_materials_up*0.01)),
-		'comp_total'=>($inventory_price+$non_inventory_price+$equip_price+$pro->pro_misc_materials+($pro->pro_misc_materials*$pro->pro_misc_materials_up*0.01)),
+		'comp_total'=>$inventory_price+$non_inventory_price+$pro->pro_misc_materials+($pro->pro_misc_materials*$pro->pro_misc_materials_up*0.01),
 		'subtotal'=>number_format($cus_price-$tax_price),
 		'cus_price'=>number_format($cus_price),
-		'cus_after_credit'=>number_format($cus_price-$credit),
-		'cus_after_credit_nf'=>($cus_price-$credit),
-		'ppw_cus_net'=>round($ppw_cus_net*100)/100
+		'cus_price_nf'=>$cus_price,
+		'cus_after_credit'=>number_format($cus_price-$credit-$pro_rebate_abl),
+		'cus_after_credit_nf'=>$cus_price-$credit-$pro_rebate_abl,
+		'ppw_cus_net'=>round($ppw_cus_net*100)/100,
+		'credits_total'=>$pro_rebate_bbl+$pro_rebate_abl+$pro->pro_discount,
+		'fees_total'=>$permit_price+$sub_price+$equip_price+$pro->pro_inspection
 	);
-	//foreach($vars as $k=>$v) error_log($k.": ".$v);
 	return $vars;
 }
 ?>
