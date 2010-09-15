@@ -211,7 +211,7 @@ CREATE TABLE `es_zones` (
 	`zon_per_landscape` decimal(5,2),
 	`zon_num_cont_arrays` int(2),
 	
-	`zon_rebate` decimal(10,2),
+	`zon_rebate` decimal(10,6),
 	`zon_rebate_desc` varchar(255) NOT NULL default '',
 	
 	`zon_pvwatts` varchar(255) NOT NULL default '',

@@ -52,7 +52,7 @@ function login() {
 }
 // resume
 function resume() {
-	global $m,$r; 
+	global $m,$r;
 	session_start();
 	if(isset($_SESSION['ses_rep']) && isset($_SESSION['ses_id']) && isset($_SESSION['ses_ip']) && isset($_SESSION['ses_time'])) {
 		if($m->resume($_SESSION['ses_rep'])) {
@@ -70,7 +70,7 @@ function resume() {
 }
 // logout
 function logout() {
-	global $m,$r; 
+	global $m,$r;
 	session_start();
 	if($m->logout()) {
 		$r['did'] = "logout";
@@ -993,7 +993,7 @@ function makeZone($zone,$officeID) {
 	$module_unit_cost = $m->lastData()->mod_cost;
 	$module_unit_price = $m->lastData()->mod_price;
 	$module_rating = $m->lastData()->mod_stc;
-	$pvwatts_dcrate = round($module_rating*$zone['zon_num_modules']/10)/100;
+	$pvwatts_dcrate = $module_rating*$zone['zon_num_modules']/1000;
 	// get the tilt
 	if($zone['zon_tilt']!="custom") {
 		if(preg_match('|\({1}(.*?)\){1}|',$zone['zon_tilt'], $tm)) $zone_tilt = $tm[1];
