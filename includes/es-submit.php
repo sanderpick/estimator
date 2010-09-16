@@ -120,10 +120,10 @@ function browseAllJobs() {
 		foreach($r['data'] as $job) {
 			if($m->getRow("es_customers",$job->job_customerID)) {
 				$r['data2']['customer'][] = $m->lastData()->cus_name_first." ".$m->lastData()->cus_name_last;
-			} else $r['did'] = "no ".$table;
+			} else $r['data2']['customer'][] = "Customer Deleted!";
 			if($m->getRow("es_reps",$job->job_repID)) {
 				$r['data2']['rep'][] = $m->lastData()->rep_name_first." ".$m->lastData()->rep_name_last;
-			} else $r['did'] = "no ".$table;
+			} else $r['data2']['rep'][] = "Rep Deleted!";
 		}
 	} else $r['did'] = "no ".$table;
 }
@@ -1070,7 +1070,7 @@ function makeZone($zone,$officeID) {
 	$racking_cost = $racking_length*$racking_cost_ft + $racking_length*$racking_cost_ft*$off_inventory_up*0.01;
 	$racking_price = $racking_length*$racking_price_ft + $racking_length*$racking_price_ft*$off_inventory_up*0.01;
 	// calc connection costs
-	$num_connections = $racking_length/$zone['zon_support_dist'];
+	$num_connections = $zone['zon_support_dist']!=0 ? $racking_length/$zone['zon_support_dist'] : 0;
 	//$racking_method_labor_hrs = $racking_method_labor_hrs*$num_connections*0.005;
 	$connection_cost = $num_connections*$racking_method_cost_x + $num_connections*$racking_method_cost_x*$off_inventory_up*0.01;
 	$connection_price = $num_connections*$racking_method_price_x + $num_connections*$racking_method_price_x*$off_inventory_up*0.01;
