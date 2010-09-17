@@ -102,11 +102,13 @@ function estimate($pro) {
 	$install_labor_total_cost = $pro_install_labor_cost+$add_labor_cost+$winter_labor_cost+$others_labor_cost;
 	$install_labor_total_price = $pro_install_labor_price+$add_labor_price+$winter_labor_price+$others_labor_price;
 	// inventory items
-	$inventory_cost = ($pro_module_cost+$pro_mounting_cost)+($inverter_cost + $inverter_cost*$off->off_inventory_up*0.01);
-	$inventory_price = ($pro_module_price+$pro_mounting_price)+($inverter_price + $inverter_price*$off->off_inventory_up*0.01);
+	$inventory_cost = ($pro_module_cost+$pro_mounting_cost)+($inverter_cost+$inverter_cost*$off->off_inventory_up*0.01);
+	$inventory_price = ($pro_module_price+$pro_mounting_price)+($inverter_price+$inverter_price*$off->off_inventory_up*0.01);
+	$inventory_price += $inventory_price*$off->off_inventory_margin*0.01;
 	// non-inventory items
 	$non_inventory_cost = $conduit_cost + $conduit_cost*$off->off_non_inventory_up*0.01;
 	$non_inventory_price = $conduit_price + $conduit_price*$off->off_non_inventory_up*0.01;
+	$non_inventory_price += $non_inventory_price*$off->off_non_inventory_margin*0.01;
 	// fees
 	$permit_cost = $pro->pro_permit_fee; // not included in total
 	$permit_price = $permit_cost + $permit_cost*$off->off_permit_up*0.01;

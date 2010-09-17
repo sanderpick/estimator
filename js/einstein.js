@@ -1,6 +1,6 @@
 /*--------------------------------------------------------------------------.
 |  Software: Einstein Estimator		                                  		|
-|   Version: 1.1                                                            |
+|   Version: 1.1.1                                                          |
 |   Contact: spick@cleanenergysolutionsinc.com 								|                
 | ------------------------------------------------------------------------- |
 |     Admin: Sander Pick (project admininistrator)                          |
@@ -2804,6 +2804,52 @@ var Settings = Module.extend({
 							edit +=	"</form>";
 							edit += "</td>";
 							break;
+						case "off_inventory_margin" :
+							row += "<td colspan='1'>";
+							row += "<span style='font-weight:bold;'>Inventory Margin (%)</span><br /><span style='font-size:10px; color:#808080;'>(In addition to item margins.)</span><br />";
+							row += "<span class='edit-panel'>";
+							row += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
+							row += "</span>";
+							row += "</td>";
+							row += "<td colspan='1' align='right'>"+json.data.off_inventory_margin+"</td>";
+							edit += "<td colspan='2'>";
+							edit += "<form class='updateform' action='javascript:void(0);'>";
+							edit +=	"<h1 class='addform-header'>Quick Edit</h1>";
+							edit +=	"<br />";
+							edit +=	"<div class='form-column'>";
+							edit +=	"<label for='off_inventory_margin'>Inventory Margin (%)</label>";
+							edit +=	"<input class='required' type='text' id='off_inventory_margin' value='"+json.data.off_inventory_margin+"' />";
+							edit +=	"</div>";
+							edit +=	"<div class='clear'></div>";
+							edit +=	"<br />";
+							edit +=	"<input type='submit' title='Update' value='Update' />";
+							edit +=	"<input type='submit' title='CancelQ' value='Cancel' style='margin-left:3px;' />";
+							edit +=	"</form>";
+							edit += "</td>";
+							break;
+						case "off_non_inventory_margin" :
+							row += "<td colspan='1'>";
+							row += "<span style='font-weight:bold;'>Non-Inventory Margin (%)</span><br /><span style='font-size:10px; color:#808080;'>(In addition to item margins.)</span><br />";
+							row += "<span class='edit-panel'>";
+							row += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
+							row += "</span>";
+							row += "</td>";
+							row += "<td colspan='1' align='right'>"+json.data.off_non_inventory_margin+"</td>";
+							edit += "<td colspan='2'>";
+							edit += "<form class='updateform' action='javascript:void(0);'>";
+							edit +=	"<h1 class='addform-header'>Quick Edit</h1>";
+							edit +=	"<br />";
+							edit +=	"<div class='form-column'>";
+							edit +=	"<label for='off_non_inventory_margin'>Non-Inventory Margin (%)</label>";
+							edit +=	"<input class='required' type='text' id='off_non_inventory_margin' value='"+json.data.off_non_inventory_margin+"' />";
+							edit +=	"</div>";
+							edit +=	"<div class='clear'></div>";
+							edit +=	"<br />";
+							edit +=	"<input type='submit' title='Update' value='Update' />";
+							edit +=	"<input type='submit' title='CancelQ' value='Cancel' style='margin-left:3px;' />";
+							edit +=	"</form>";
+							edit += "</td>";
+							break;	
 						case "off_permit_up" :
 							row += "<td colspan='1'>";
 							row += "<span style='font-weight:bold;'>Permit Margin (%)</span><br /><span style='font-size:10px; color:#808080;'>(Determines the fixed margin.)</span><br />";
@@ -3098,7 +3144,7 @@ var Settings = Module.extend({
 				html += "</td>";
 				html += "</tr>";
 				///////////////////////////////////////////
-				// inventory
+				// inventory up-charge
 				html += "<tr id='show-off_inventory_up' class='"+color[0]+"'>";
 				html += "<td colspan='1'>";
 				html += "<span style='font-weight:bold;'>Inventory Up-Charge (%)</span><br /><span style='font-size:10px; color:#808080;'>(This does NOT effect margins.)</span><br />";
@@ -3108,7 +3154,7 @@ var Settings = Module.extend({
 				html += "</td>";
 				html += "<td colspan='1' align='right'>"+json.data.off_inventory_up+"</td>";
 				html += "</tr>";
-				// edit inventory
+				// edit inventory up-charge
 				html += "<tr id='edit-off_inventory_up' style='display:none;' class='quick-edit "+color[0]+"'>";
 				html += "<td colspan='2'>";
 				html += "<form class='updateform' action='javascript:void(0);'>";
@@ -3126,7 +3172,7 @@ var Settings = Module.extend({
 				html += "</td>";
 				html += "</tr>";
 				///////////////////////////////////////////
-				// non inventory
+				// non inventory up-charge
 				html += "<tr id='show-off_non_inventory_up' class='"+color[0]+"'>";
 				html += "<td colspan='1'>";
 				html += "<span style='font-weight:bold;'>Non-Inventory Up-Charge (%)</span><br /><span style='font-size:10px; color:#808080;'>(This does NOT effect margins.)</span><br />";
@@ -3136,7 +3182,7 @@ var Settings = Module.extend({
 				html += "</td>";
 				html += "<td colspan='1' align='right'>"+json.data.off_non_inventory_up+"</td>";
 				html += "</tr>";
-				// edit non inventory
+				// edit non inventory up-charge
 				html += "<tr id='edit-off_non_inventory_up' style='display:none;' class='quick-edit "+color[0]+"'>";
 				html += "<td colspan='2'>";
 				html += "<form class='updateform' action='javascript:void(0);'>";
@@ -3145,6 +3191,62 @@ var Settings = Module.extend({
 				html +=	"<div class='form-column'>";
 				html +=	"<label for='off_non_inventory_up'>Non-Inventory Up-Charge (%)</label>";
 				html +=	"<input class='required' type='text' id='off_non_inventory_up' value='"+json.data.off_non_inventory_up+"' />";
+				html +=	"</div>";
+				html +=	"<div class='clear'></div>";
+				html +=	"<br />";
+				html +=	"<input type='submit' title='Update' value='Update' />";
+				html +=	"<input type='submit' title='CancelQ' value='Cancel' style='margin-left:3px;' />";
+				html +=	"</form>";
+				html += "</td>";
+				html += "</tr>";
+				///////////////////////////////////////////
+				// inventory margin
+				html += "<tr id='show-off_inventory_margin' class='"+color[0]+"'>";
+				html += "<td colspan='1'>";
+				html += "<span style='font-weight:bold;'>Inventory Margin (%)</span><br /><span style='font-size:10px; color:#808080;'>(In addition to item margins.)</span><br />";
+				html += "<span class='edit-panel'>";
+				html += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
+				html += "</span>";
+				html += "</td>";
+				html += "<td colspan='1' align='right'>"+json.data.off_inventory_margin+"</td>";
+				html += "</tr>";
+				// edit inventory margin
+				html += "<tr id='edit-off_inventory_margin' style='display:none;' class='quick-edit "+color[0]+"'>";
+				html += "<td colspan='2'>";
+				html += "<form class='updateform' action='javascript:void(0);'>";
+				html +=	"<h1 class='addform-header'>Quick Edit</h1>";
+				html +=	"<br />";
+				html +=	"<div class='form-column'>";
+				html +=	"<label for='off_inventory_margin'>Inventory Margin (%)</label>";
+				html +=	"<input class='required' type='text' id='off_inventory_margin' value='"+json.data.off_inventory_margin+"' />";
+				html +=	"</div>";
+				html +=	"<div class='clear'></div>";
+				html +=	"<br />";
+				html +=	"<input type='submit' title='Update' value='Update' />";
+				html +=	"<input type='submit' title='CancelQ' value='Cancel' style='margin-left:3px;' />";
+				html +=	"</form>";
+				html += "</td>";
+				html += "</tr>";
+				///////////////////////////////////////////
+				// non inventory margin
+				html += "<tr id='show-off_non_inventory_margin' class='"+color[0]+"'>";
+				html += "<td colspan='1'>";
+				html += "<span style='font-weight:bold;'>Non-Inventory Margin (%)</span><br /><span style='font-size:10px; color:#808080;'>(In addition to item margins.)</span><br />";
+				html += "<span class='edit-panel'>";
+				html += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
+				html += "</span>";
+				html += "</td>";
+				html += "<td colspan='1' align='right'>"+json.data.off_non_inventory_margin+"</td>";
+				html += "</tr>";
+				// edit non inventory margin
+				html += "<tr id='edit-off_non_inventory_margin' style='display:none;' class='quick-edit "+color[0]+"'>";
+				html += "<td colspan='2'>";
+				html += "<form class='updateform' action='javascript:void(0);'>";
+				html +=	"<h1 class='addform-header'>Quick Edit</h1>";
+				html +=	"<br />";
+				html +=	"<div class='form-column'>";
+				html +=	"<label for='off_non_inventory_margin'>Non-Inventory Margin (%)</label>";
+				html +=	"<input class='required' type='text' id='off_non_inventory_margin' value='"+json.data.off_non_inventory_margin+"' />";
 				html +=	"</div>";
 				html +=	"<div class='clear'></div>";
 				html +=	"<br />";

@@ -967,6 +967,7 @@ function makeZone($zone,$officeID) {
 	$labor_unit_cost = $m->lastData()->off_labor_cost;
 	$labor_unit_price = $m->lastData()->off_labor_price;
 	$off_inventory_up = $m->lastData()->off_inventory_up;
+	$off_inventory_margin = $m->lastData()->off_inventory_margin;
 	$pvwatts_data = $zone['zon_pvwatts']!="" ? explode(":",$zone['zon_pvwatts']) : explode(":",$m->lastData()->off_pvwatts);
 	// determine mode from array type
 	switch($zone['zon_type']) {
@@ -1064,16 +1065,19 @@ function makeZone($zone,$officeID) {
 	// calc module costs
 	$module_cost = $module_unit_cost*$zone['zon_num_modules'] + $module_unit_cost*$zone['zon_num_modules']*$off_inventory_up*0.01;
 	$module_price = $module_unit_price*$zone['zon_num_modules'] + $module_unit_price*$zone['zon_num_modules']*$off_inventory_up*0.01;
+	$module_price += $module_price*$off_inventory_margin*0.01;
 	// calc racking costs
 	$racking_unit_length = 2*(((1-($zone['zon_per_landscape']/100))*$module_width)+(($zone['zon_per_landscape']/100)*$module_length))/12;
 	$racking_length = $racking_unit_length*$zone['zon_num_modules'];
 	$racking_cost = $racking_length*$racking_cost_ft + $racking_length*$racking_cost_ft*$off_inventory_up*0.01;
 	$racking_price = $racking_length*$racking_price_ft + $racking_length*$racking_price_ft*$off_inventory_up*0.01;
+	$racking_price += $racking_price*$off_inventory_margin*0.01;
 	// calc connection costs
 	$num_connections = $zone['zon_support_dist']!=0 ? $racking_length/$zone['zon_support_dist'] : 0;
 	//$racking_method_labor_hrs = $racking_method_labor_hrs*$num_connections*0.005;
 	$connection_cost = $num_connections*$racking_method_cost_x + $num_connections*$racking_method_cost_x*$off_inventory_up*0.01;
 	$connection_price = $num_connections*$racking_method_price_x + $num_connections*$racking_method_price_x*$off_inventory_up*0.01;
+	$connection_price += $connection_price*$off_inventory_margin*0.01;
 	// labor costs
 	$per_landscape_labor_hrs = $zone['zon_per_landscape']*0.005;
 	$num_cont_arrays_labor_hrs = ($zone['zon_num_cont_arrays']>8) ? 1 : ($zone['zon_num_cont_arrays']*0.125)-0.125;
