@@ -14,7 +14,7 @@
 	<script type="text/javascript" src="js/jquery.scrollTo-min.js"></script>
 	<script type="text/javascript" src="js/jquery.fancybox-1.3.1.pack.js"></script>
 	<script type="text/javascript" src="js/date.format.js"></script>
-	<script type="text/javascript" src="js/jquery.delphi.js"></script>
+	<script type="text/javascript" src="js/einstein.js"></script>
 </head>
 <body>
 	<div id="data"></div>

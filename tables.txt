@@ -42,6 +42,9 @@ CREATE TABLE `es_offices` (
 	`off_inventory_up` decimal(10,2) NOT NULL default '0.0',
 	`off_non_inventory_up` decimal(10,2) NOT NULL default '0.0',
 	
+	`off_inventory_margin` decimal(10,2) NOT NULL default '0.0',
+	`off_non_inventory_margin` decimal(10,2) NOT NULL default '0.0',
+	
 	`off_winter_up` decimal(10,2) NOT NULL default '5.0',
 	`off_others_up` decimal(10,2) NOT NULL default '7.5',
 	
