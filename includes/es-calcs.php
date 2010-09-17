@@ -98,6 +98,8 @@ function estimate($pro) {
 		$inverter_price += $m->lastData()->inv_price;
 	}
 	///////////////////////////////////////////////////////// TOTALS
+	$misc_materials_cost = $pro->pro_misc_materials + $pro->pro_misc_materials*$off->off_non_inventory_up*0.01;
+	$misc_materials_price = $misc_materials_cost + $misc_materials_cost*$pro->pro_misc_materials_up*0.01;
 	// install labor
 	$install_labor_total_cost = $pro_install_labor_cost+$add_labor_cost+$winter_labor_cost+$others_labor_cost;
 	$install_labor_total_price = $pro_install_labor_price+$add_labor_price+$winter_labor_price+$others_labor_price;
@@ -106,8 +108,8 @@ function estimate($pro) {
 	$inventory_price = ($pro_module_price+$pro_mounting_price)+($inverter_price+$inverter_price*$off->off_inventory_up*0.01);
 	$inventory_price += $inventory_price*$off->off_inventory_margin*0.01;
 	// non-inventory items
-	$non_inventory_cost = $conduit_cost + $conduit_cost*$off->off_non_inventory_up*0.01;
-	$non_inventory_price = $conduit_price + $conduit_price*$off->off_non_inventory_up*0.01;
+	$non_inventory_cost = $misc_materials_cost + $conduit_cost + $conduit_cost*$off->off_non_inventory_up*0.01;
+	$non_inventory_price = $misc_materials_price + $conduit_price + $conduit_price*$off->off_non_inventory_up*0.01;
 	$non_inventory_price += $non_inventory_price*$off->off_non_inventory_margin*0.01;
 	// fees
 	$permit_cost = $pro->pro_permit_fee; // not included in total
@@ -117,11 +119,11 @@ function estimate($pro) {
 	$equip_cost = $pro->pro_equip_rental;
 	$equip_price = $equip_cost + $equip_cost*$off->off_equip_up*0.01;
 	// tax
-	$tax_cost = ceil($pro->pro_taxrate*($inventory_cost+$non_inventory_cost+$pro->pro_misc_materials))/100;
-	$tax_price = ceil($pro->pro_taxrate*($inventory_price+$non_inventory_price+$pro->pro_misc_materials+($pro->pro_misc_materials*$pro->pro_misc_materials_up*0.01)))/100;
+	$tax_cost = ceil($pro->pro_taxrate*($inventory_cost+$non_inventory_cost+$misc_materials_cost))/100;
+	$tax_price = ceil($pro->pro_taxrate*($inventory_price+$non_inventory_price+$misc_materials_price))/100;
 	// total -- does not include permit or tax
-	$cost = $install_labor_total_cost+$inventory_cost+$non_inventory_cost+$sub_cost+$equip_cost+$pro->pro_misc_materials;
-	$price = $install_labor_total_price+$inventory_price+$non_inventory_price+$sub_price+$equip_price+$pro->pro_inspection+$pro->pro_misc_materials+($pro->pro_misc_materials*$pro->pro_misc_materials_up*0.01)-$pro->pro_discount;
+	$cost = $install_labor_total_cost+$inventory_cost+$non_inventory_cost+$sub_cost+$equip_cost+$misc_materials_cost;
+	$price = $install_labor_total_price+$inventory_price+$non_inventory_price+$sub_price+$equip_price+$pro->pro_inspection+$misc_materials_price-$pro->pro_discount;
 	// parse additional rebates
 	$add_rebate_types = explode(",",substr($pro->pro_rebate_type,0,-1));
 	$add_rebate_amnts = explode(",",substr($pro->pro_rebate_amnt,0,-1));
@@ -191,8 +193,8 @@ function estimate($pro) {
 		'ppw_gross'=>round($ppw_gross*100)/100,
 		'ppw_net'=>round($ppw_net*100)/100,
 		// for display only
-		'misc_materials'=>($non_inventory_price+$pro->pro_misc_materials+($pro->pro_misc_materials*$pro->pro_misc_materials_up*0.01)),
-		'comp_total'=>$inventory_price+$non_inventory_price+$pro->pro_misc_materials+($pro->pro_misc_materials*$pro->pro_misc_materials_up*0.01),
+		'misc_materials'=>$non_inventory_price,
+		'comp_total'=>$inventory_price+$non_inventory_price,
 		'subtotal'=>number_format($cus_price-$tax_price),
 		'cus_price'=>number_format($cus_price),
 		'cus_price_nf'=>$cus_price,
