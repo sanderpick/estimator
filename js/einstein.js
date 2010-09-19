@@ -67,12 +67,16 @@ var System = {
 System.init();
 // determine host
 var host = window.location.hostname;
+console.log(host);
 var tld = /\.([a-z,A-Z]{2,6})$/;
 // constants
 var Einstein = {};
 switch(host.match(tld)[1]) {
 	case "ld" : Einstein.PORTAL_URI = "http://lighthousesolar.ld/portal/"; break;
-	default : Einstein.PORTAL_URI = "http://mylighthousesolar.com/"; break;
+	default : 
+		if(host=="einstein-beta.cleanenergysolutionsinc.com") Einstein.PORTAL_URI = "http://beta.mylighthousesolar.com/";
+		else Einstein.PORTAL_URI = "http://mylighthousesolar.com/";
+		break;
 }
 Einstein.MARGIN_UPPER = 20;
 Einstein.MARGIN_LOWER = 20;

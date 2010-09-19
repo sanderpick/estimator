@@ -11,8 +11,13 @@ switch($tld[1]) {
 		$E->push("EINSTEIN_URI","http://lighthousesolar.ld/estimator/");
 		break;
 	default : 
-		$E->push("PORTAL_URI","http://mylighthousesolar.com/");
-		$E->push("EINSTEIN_URI","http://einstein.cleanenergysolutionsinc.com/");
+		if($host=='einstein-beta.cleanenergysolutionsinc.com') {
+			$E->push("PORTAL_URI","http://beta.mylighthousesolar.com/");
+			$E->push("EINSTEIN_URI","http://einstein-beta.cleanenergysolutionsinc.com/");
+		} else {
+			$E->push("PORTAL_URI","http://mylighthousesolar.com/");
+			$E->push("EINSTEIN_URI","http://einstein.cleanenergysolutionsinc.com/");
+		}
 		break;
 }
 $E->push("EINSTEIN_SMTP_SERVER","ssl://smtp.gmail.com");
