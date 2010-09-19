@@ -23,7 +23,8 @@ class EstimatorManager {
 		switch($tld[1]) {
 			case "ld" : $this->_esdb = new DBConnection('localhost','root','plebeian','ces_einstein'); break; // local
 			default : 
-				if($host=='einstein-beta.cleanenergysolutionsinc.com') $this->_esdb = new DBConnection('estimator.cleanenergysolutionsinc.com','ces_albert','V4rfvB5tgb','ces_einstein_beta');
+				if($host=='einstein-beta.cleanenergysolutionsinc.com' || $host=='beta.mylighthousesolar.com') 
+					$this->_esdb = new DBConnection('estimator.cleanenergysolutionsinc.com','ces_albert','V4rfvB5tgb','ces_einstein_beta');
 				else $this->_esdb = new DBConnection('estimator.cleanenergysolutionsinc.com','ces_albert','V4rfvB5tgb','ces_einstein'); 
 				break;
 		}
