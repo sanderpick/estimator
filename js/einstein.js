@@ -67,7 +67,6 @@ var System = {
 System.init();
 // determine host
 var host = window.location.hostname;
-console.log(host);
 var tld = /\.([a-z,A-Z]{2,6})$/;
 // constants
 var Einstein = {};
