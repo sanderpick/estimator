@@ -6,7 +6,8 @@ $m = new EstimatorManager();
 // ensure universal time
 date_default_timezone_set("UTC");
 #——————————————————————————————–—————————————————————––––– INIT VARS
-$IMG_WIDTHS = array('thumb'=>192, 'big'=>800);
+$IMG_WIDTHS = array('thumb'=>210, 'big'=>800);
+$IMG_HEIGHTS = array('thumb'=>118);
 $IMG_CORNER_RADIUS = 5;
 $up['up_caption'] = (isset($_POST['up_caption'])) ? $_POST['up_caption'] : "";
 $up['up_officeID'] = $_POST['up_officeID'];
@@ -69,18 +70,19 @@ if(isset($_FILES['Filedata']) && is_uploaded_file($_FILES['Filedata']['tmp_name'
 			$widths_str = $heights_str = "";
 			foreach($IMG_WIDTHS as $k=>$width) {
 				if($k=="thumb") {
-					$height = $width;
+					$height = $IMG_HEIGHTS['thumb'];
 					$image = imagecreatetruecolor($width,$height);
-					if($width_orig>$height_orig) {
-						$src_dim = $height_orig;
-						$x_off = ($width_orig - $height_orig) / 2;
+					if($width_orig > $height_orig) {
+						$width_orig_slice = $height_orig * (16/9);
+						$x_off = ($width_orig - $width_orig_slice) / 2;
 						$y_off = 0;
+						imagecopyresampled($image,$image_orig,0,0,$x_off,$y_off,$width,$height,$width_orig_slice,$height_orig);
 					} else {
-						$src_dim = $width_orig;
+						$height_orig_slice = $width_orig / (16/9);
 						$x_off = 0;
-						$y_off = ($height_orig - $width_orig) / 2;
+						$y_off = ($height_orig - $height_orig_slice) / 2;
+						imagecopyresampled($image,$image_orig,0,0,$x_off,$y_off,$width,$height,$width_orig,$height_orig_slice);
 					}
-					imagecopyresampled($image,$image_orig,0,0,$x_off,$y_off,$width,$height,$src_dim,$src_dim);
 					//imageroundcorners($image,$width,$height,$IMG_CORNER_RADIUS);
 					imagejpeg($image,$up_dir."/".$file_id."_thumb.jpg");
 				} else {

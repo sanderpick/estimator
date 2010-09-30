@@ -6,7 +6,7 @@ database: estimator101
 user: root
 pass: solarone
 
-#####################
+##################### *** NO FORM ***
 #### es_sessions ####
 #####################
 
@@ -94,7 +94,6 @@ CREATE TABLE `es_reps` (
 	
 	PRIMARY KEY (ID)
 );
-
 
 ###################### *** HAS FORM ***
 #### es_customers ####
@@ -202,14 +201,14 @@ CREATE TABLE `es_zones` (
 	`zon_derate` decimal(2,2),
 	`zon_erate` decimal(10,2),
 	
-	`zon_module` varchar(80) NOT NULL default '',
+	`zon_module` varchar(100) NOT NULL default '',
 	`zon_num_modules` int(3),
-	`zon_racking` varchar(80) NOT NULL default '',
-	`zon_mounting_method` varchar(80) NOT NULL default '',
+	`zon_racking` varchar(100) NOT NULL default '',
+	`zon_mounting_method` varchar(100) NOT NULL default '',
 	
 	`zon_pitch` varchar(20) NOT NULL default '',
 	`zon_custom_pitch` decimal(10,2),
-	`zon_mounting_medium` varchar(80) NOT NULL default '',
+	`zon_mounting_medium` varchar(100) NOT NULL default '',
 	`zon_support_dist` int(4),
 	`zon_per_landscape` decimal(5,2),
 	`zon_num_cont_arrays` int(2),
@@ -304,6 +303,9 @@ CREATE TABLE `es_proposals` (
 	`pro_incentive` int(1) NOT NULL default '0',
 	`pro_incentive_rate` decimal(4,3) NOT NULL default '0.0',
 	`pro_incentive_yrs` int(3) NOT NULL default '0',
+	
+	`pro_data_monitors` text NOT NULL default '',
+	`pro_data_monitor_types` text NOT NULL default '',
 	
 	`pro_cover_letter` text,
 	
@@ -430,7 +432,7 @@ CREATE TABLE `es_inter_comps` (
 	PRIMARY KEY (ID)
 );
 
-####################
+#################### *** NO FORM ***
 #### es_uploads ####
 ####################
 
@@ -458,9 +460,7 @@ CREATE TABLE `es_uploads` (
 	PRIMARY KEY (ID)
 );
 
------------------------------------------------------------------------- hidden
-
-###################
+################### *** HAS FORM ***
 #### es_arrays ####
 ###################
 
@@ -478,7 +478,7 @@ INSERT INTO es_arrays (arr_value) VALUES ('Fixed Tilt');
 INSERT INTO es_arrays (arr_value) VALUES ('1-Axis Tracking');
 INSERT INTO es_arrays (arr_value) VALUES ('2-Axis Tracking');
 
-###################
+################### *** HAS FORM ***
 #### es_angles ####
 ###################
 
@@ -510,7 +510,7 @@ INSERT INTO es_angles (ang_value, ang_labor) VALUES ('13:12 (47.29)','1.5');
 INSERT INTO es_angles (ang_value, ang_labor) VALUES ('14:12 (49.40)','1.5');
 INSERT INTO es_angles (ang_value, ang_labor) VALUES ('custom','0');
 
-#############################
+############################# *** HAS FORM ***
 #### es_mounting_methods ####
 #############################
 
@@ -518,6 +518,7 @@ CREATE TABLE `es_mounting_methods` (
 	`ID` int(6) NOT NULL AUTO_INCREMENT,
 	
 	`met_value` varchar(100) NOT NULL default '',
+	`met_desc` varchar(100) NOT NULL default '',
 	`met_cost` decimal(10,2),
 	`met_price` decimal(10,2),
 	`met_labor` decimal(10,2),
@@ -534,7 +535,7 @@ INSERT INTO es_mounting_methods (met_value, met_cost, met_price, met_labor) VALU
 INSERT INTO es_mounting_methods (met_value, met_cost, met_price, met_labor) VALUES ('Ground Mount', '0', '0', '1');
 INSERT INTO es_mounting_methods (met_value, met_cost, met_price, met_labor) VALUES ('Awning', '0', '0', '4');
 
-#############################
+############################# *** HAS FORM ***
 #### es_mounting_mediums ####
 #############################
 
@@ -559,3 +560,22 @@ INSERT INTO es_mounting_mediums (med_value, med_labor) VALUES ('Corrugated', '3'
 INSERT INTO es_mounting_mediums (med_value, med_labor) VALUES ('Tile Roof', '3');
 INSERT INTO es_mounting_mediums (med_value, med_labor) VALUES ('Steel Structure', '0');
 INSERT INTO es_mounting_mediums (med_value, med_labor) VALUES ('Caissons', '2');
+
+############################ *** HAS FORM ***
+#### es_data_monitoring ####
+############################
+
+CREATE TABLE `es_data_monitoring` (
+	`ID` int(6) NOT NULL AUTO_INCREMENT,
+
+	`dat_model_num` varchar(100) NOT NULL default '',
+	`dat_desc` varchar(100) NOT NULL default '',
+	`dat_unit` varchar(10) NOT NULL default '',
+	`dat_cost` decimal(10,2),
+	`dat_price` decimal(10,2),
+	`dat_labor` decimal(10,2),
+	
+	`active` int(1) NOT NULL default '1',
+	
+	PRIMARY KEY (ID)
+);
