@@ -58,6 +58,30 @@ function estimate($pro) {
 		$m->getRow('es_inter_comps',$im,'int_model_num');
 		$inter_labor_hrs += $m->lastData()->int_labor;
 	}
+	// parse data monitors
+	$data_monitors = explode(",",substr($pro->pro_data_monitors,0,-1));
+	$data_monitor_types = explode(",",substr($pro->pro_data_monitor_types,0,-1));
+	$data_monitors_cost = 0;
+	$data_monitors_price = 0;
+	$data_monitors_labor_hrs = 0;
+	for($i=0;$i<count($data_monitors);$i++) {
+		$m->getRow('es_data_monitoring',$data_monitors[$i],'dat_model_num');
+		$data_monitors_cost += $m->lastData()->dat_cost;
+		$data_monitors_price += $m->lastData()->dat_price;
+		$data_monitors_labor_hrs += $m->lastData()->dat_labor;
+		// if($data_monitor_types[$i]!="") {
+		// 	switch($data_monitor_types[$i]) {
+		// 		case 1 :
+		// 			
+		// 			break;
+		// 		case 0 :
+		// 			
+		// 			break;
+		// 	}
+		// }
+	}
+	$data_monitors_cost *= (1 + $off->off_inventory_up*0.01);
+	$data_monitors_price *= (1 + $off->off_inventory_up*0.01)*(1 + $off->off_inventory_margin*0.01);
 	// outside coduit
 	$m->getRow('es_conn_comps','1');
 	$conduit_labor_hrs = $m->lastData()->con_labor*$pro->pro_conduit_out/20;
@@ -78,8 +102,9 @@ function estimate($pro) {
 	// driving labor hours
 	$drive_labor_hrs = 2*($job->job_drive_time/60)*$pro->pro_num_trips*$pro->pro_num_installers;
 	// add up
+	// ***$add_labor_hrs = $inter_labor_hrs+$data_monitors_labor_hrs+$conduit_labor_hrs+$zones_labor_hrs+$drive_labor_hrs;
 	$add_labor_hrs = $inter_labor_hrs+$conduit_labor_hrs+$zones_labor_hrs+$drive_labor_hrs;
-	$add_labor_cost = ($add_labor_hrs*$labor_unit_cost);
+	$add_labor_cost = $add_labor_hrs*$labor_unit_cost;
 	$add_labor_price = ($add_labor_hrs*$labor_unit_price)+$pro->pro_fluctuation;
 	// account for off season
 	$winter_labor_cost = ($pro->pro_winter==1) ? ($pro_install_labor_cost+$add_labor_cost)*$off->off_winter_up*0.01 : 0;
@@ -97,27 +122,31 @@ function estimate($pro) {
 		$inverter_cost += $m->lastData()->inv_cost;
 		$inverter_price += $m->lastData()->inv_price;
 	}
+	$inverter_cost *= (1 + $off->off_inventory_up*0.01);
+	$inverter_price *= (1 + $off->off_inventory_up*0.01)*(1 + $off->off_inventory_margin*0.01);
+	// miscellaneous materials
+	$misc_materials_cost = $pro->pro_misc_materials;
+	$misc_materials_price = $misc_materials_cost*(1 + $pro->pro_misc_materials_up*0.01);
 	///////////////////////////////////////////////////////// TOTALS
-	$misc_materials_cost = $pro->pro_misc_materials + $pro->pro_misc_materials*$off->off_non_inventory_up*0.01;
-	$misc_materials_price = $misc_materials_cost + $misc_materials_cost*$pro->pro_misc_materials_up*0.01;
 	// install labor
 	$install_labor_total_cost = $pro_install_labor_cost+$add_labor_cost+$winter_labor_cost+$others_labor_cost;
 	$install_labor_total_price = $pro_install_labor_price+$add_labor_price+$winter_labor_price+$others_labor_price;
 	// inventory items
-	$inventory_cost = ($pro_module_cost+$pro_mounting_cost)+($inverter_cost+$inverter_cost*$off->off_inventory_up*0.01);
-	$inventory_price = ($pro_module_price+$pro_mounting_price)+($inverter_price+$inverter_price*$off->off_inventory_up*0.01);
-	$inventory_price += $inventory_price*$off->off_inventory_margin*0.01;
+	// ***$inventory_cost = $pro_module_cost+$pro_mounting_cost+$data_monitors_cost+$inverter_cost;
+	// ***$inventory_price = $pro_module_price+$pro_mounting_price+$data_monitors_price+$inverter_price;
+	$inventory_cost = $pro_module_cost+$pro_mounting_cost+$inverter_cost;
+	$inventory_price = $pro_module_price+$pro_mounting_price+$inverter_price;
 	// non-inventory items
-	$non_inventory_cost = $misc_materials_cost + $conduit_cost + $conduit_cost*$off->off_non_inventory_up*0.01;
-	$non_inventory_price = $misc_materials_price + $conduit_price + $conduit_price*$off->off_non_inventory_up*0.01;
+	$non_inventory_cost = ($misc_materials_cost + $conduit_cost)*(1 + $off->off_non_inventory_up*0.01);
+	$non_inventory_price = ($misc_materials_price + $conduit_price)*(1 + $off->off_non_inventory_up*0.01);
 	$non_inventory_price += $non_inventory_price*$off->off_non_inventory_margin*0.01;
 	// fees
 	$permit_cost = $pro->pro_permit_fee; // not included in total
-	$permit_price = $permit_cost + $permit_cost*$off->off_permit_up*0.01;
+	$permit_price = $permit_cost*(1 + $off->off_permit_up*0.01);
 	$sub_cost = $pro->pro_extra_fee+$pro->pro_engin_fee;
-	$sub_price = $sub_cost + $sub_cost*$off->off_sub_up*0.01;
+	$sub_price = $sub_cost*(1 + $off->off_sub_up*0.01);
 	$equip_cost = $pro->pro_equip_rental;
-	$equip_price = $equip_cost + $equip_cost*$off->off_equip_up*0.01;
+	$equip_price = $equip_cost*(1 + $off->off_equip_up*0.01);
 	// tax
 	$tax_cost = ceil($pro->pro_taxrate*($inventory_cost+$non_inventory_cost+$misc_materials_cost))/100;
 	$tax_price = ceil($pro->pro_taxrate*($inventory_price+$non_inventory_price+$misc_materials_price))/100;

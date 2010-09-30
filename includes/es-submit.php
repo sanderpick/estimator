@@ -125,10 +125,10 @@ function browseAllJobs() {
 		foreach($r['data'] as $job) {
 			if($m->getRow("es_customers",$job->job_customerID)) {
 				$r['data2']['customer'][] = $m->lastData()->cus_name_first." ".$m->lastData()->cus_name_last;
-			} else $r['data2']['customer'][] = "Customer Deleted!";
+			} else $r['data2']['customer'][] = "";
 			if($m->getRow("es_reps",$job->job_repID)) {
 				$r['data2']['rep'][] = $m->lastData()->rep_name_first." ".$m->lastData()->rep_name_last;
-			} else $r['data2']['rep'][] = "Rep Deleted!";
+			} else $r['data2']['rep'][] = "";
 		}
 	} else $r['did'] = "no ".$table;
 }
@@ -153,6 +153,10 @@ function browseAllZones() {
 			$m->getRow('es_modules',$zon->zon_module,"mod_model_num");
 			$mod_watts = $m->lastData()->mod_stc;
 			$zon->zon_rebate = $zon->zon_rebate / ($zon->zon_num_modules * $mod_watts);
+			// get material descriptions
+			$r['data2']['mod_desc'][] = $m->lastData()->mod_desc;
+			$m->getRow('es_racking',$zon->zon_racking,"rac_model_num");
+			$r['data2']['rac_desc'][] = $m->lastData()->rac_desc;
 		}
 	} else $r['did'] = "no ".$table;
 	// get zone menu options
@@ -184,6 +188,9 @@ function browseAllProposals() {
 			if($m->getAll("es_zones","ID,zon_name,zon_size","ID","zon_jobID='$jobID'")) {
 				$r['data2']['pro_zones'.$pro->ID] = $m->lastData();
 			} else $r['did'] = "failed ".$table." options";
+			if($m->getRow("es_reps",$pro->pro_repID)) {
+				$r['data2']['rep'][] = $m->lastData()->rep_name_first." ".$m->lastData()->rep_name_last;
+			} else $r['data2']['rep'][] = "";
 		}
 	} else $r['did'] = "no ".$table;
 	// get proposal menu options
@@ -311,9 +318,7 @@ function addProposal() {
 	$pro['pro_rebate_amnt'] = "";
 	$pro['pro_rebate_desc'] = "";
 	$pro['pro_rebate_type'] = "";
-	//@mcn
 	$pro['pro_rebate_display_weight'] = "";
-
 	foreach($pro as $key=>$val) {
 		if(substr($key,0,16)=="pro_rebate_amnt_") {
 			$pro['pro_rebate_amnt'] .= $val.",";
@@ -324,9 +329,20 @@ function addProposal() {
 		} else if(substr($key,0,16)=="pro_rebate_type_") {
 			$pro['pro_rebate_type'] .= $val.",";
 			unset($pro[$key]);
-		}
-		else if(substr($key,0,26)=="pro_rebate_display_weight_") {
+		} else if(substr($key,0,26)=="pro_rebate_display_weight_") {
 			$pro['pro_rebate_display_weight'] .= $val.",";
+			unset($pro[$key]);
+		}
+	}
+	// parse monitors
+	$pro['pro_data_monitors'] = "";
+	$pro['pro_data_monitor_types'] = "";
+	foreach($pro as $key=>$val) {
+		if(substr($key,0,18)=="pro_data_monitors_") {
+			$pro['pro_data_monitors'] .= $val.",";
+			unset($pro[$key]);
+		} else if(substr($key,0,23)=="pro_data_monitor_types_") {
+			$pro['pro_data_monitor_types'] .= $val.",";
 			unset($pro[$key]);
 		}
 	}
@@ -597,6 +613,10 @@ function updateZone() {
 	$_POST['zon_rebate'] = $_POST['zon_rebate'] * $_POST['zon_num_modules'] * $mod_watts;
 	// # landscape to %
 	$_POST['zon_per_landscape'] = (($_POST['zon_per_landscape'] / $_POST['zon_num_modules'])*100);
+	// store material descriptions
+	$mod_desc = $m->lastData()->mod_desc;
+	$m->getRow('es_racking',$_POST['zon_racking'],"rac_model_num");
+	$rac_desc = $m->lastData()->rac_desc;
 	// make the zone
 	$zone = makeZone($_POST,$old_zone->zon_officeID);
 	// update db
@@ -610,6 +630,9 @@ function updateZone() {
 			$m->getRow('es_modules',$r['data']->zon_module,"mod_model_num");
 			$mod_watts = $m->lastData()->mod_stc;
 			$r['data']->zon_rebate = $r['data']->zon_rebate / ($r['data']->zon_num_modules * $mod_watts);
+			// get material descriptions
+			$r['data2']['mod_desc'] = $mod_desc;
+			$r['data2']['rac_desc'] = $rac_desc;
 		} else $r['did'] = "failed ".$table." update";
 		// add zone id to upload
 		//if(isset($zone['zon_layout']))
@@ -653,10 +676,7 @@ function updateProposal() {
 	$pro['pro_rebate_amnt'] = "";
 	$pro['pro_rebate_desc'] = "";
 	$pro['pro_rebate_type'] = "";
-
-	//@mcn
 	$pro['pro_rebate_display_weight'] = "";
-
 	foreach($pro as $key=>$val) {
 		if(substr($key,0,16)=="pro_rebate_amnt_") {
 			$pro['pro_rebate_amnt'] .= $val.",";
@@ -667,10 +687,20 @@ function updateProposal() {
 		} else if(substr($key,0,16)=="pro_rebate_type_") {
 			$pro['pro_rebate_type'] .= $val.",";
 			unset($pro[$key]);
-		}
-		//@mcn
-		else if(substr($key,0,26)=="pro_rebate_display_weight_") {
+		} else if(substr($key,0,26)=="pro_rebate_display_weight_") {
 			$pro['pro_rebate_display_weight'] .= $val.",";
+			unset($pro[$key]);
+		}
+	}
+	// parse monitors
+	$pro['pro_data_monitors'] = "";
+	$pro['pro_data_monitor_types'] = "";
+	foreach($pro as $key=>$val) {
+		if(substr($key,0,18)=="pro_data_monitors_") {
+			$pro['pro_data_monitors'] .= $val.",";
+			unset($pro[$key]);
+		} else if(substr($key,0,23)=="pro_data_monitor_types_") {
+			$pro['pro_data_monitor_types'] .= $val.",";
 			unset($pro[$key]);
 		}
 	}
@@ -681,6 +711,9 @@ function updateProposal() {
 		if($m->getRow($table,$id)) {
 			$r['did'] = $table." updated";
 			$r['data'] = $m->lastData();
+			if($m->getRow("es_reps",$r['data']->pro_repID)) {
+				$r['data2']['rep'] = $m->lastData()->rep_name_first." ".$m->lastData()->rep_name_last;
+			} else $r['data2']['rep'] = "";
 		} else $r['did'] = "failed ".$table." update";
 	} else $r['did'] = "failed ".$table." update";
 	// get proposal menu options
@@ -740,6 +773,10 @@ function cloneProposal() {
 		$r['did'] = $table." cloned";
 		$m->getRow($table,$id);
 		$r['data'] = $m->lastData();
+		// get sales rep
+		if($m->getRow("es_reps",$r['data']->pro_repID)) {
+			$r['data2']['rep'] = $m->lastData()->rep_name_first." ".$m->lastData()->rep_name_last;
+		} else $r['data2']['rep'] = "";
 		//if(!$m->editCell("es_reps",1,"rep_num_props",$clone['pro_repID'],FALSE,TRUE)) $r['did'] = "failed ".$table." clone";
 		//if(!$m->editCell("es_customers",1,"cus_num_props",$clone['pro_customerID'],FALSE,TRUE)) $r['did'] = "failed ".$table." clone";
 		//if(!$m->editCell("es_jobs",1,"job_num_props",$clone['pro_jobID'],FALSE,TRUE)) $r['did'] = "failed ".$table." clone";
@@ -779,6 +816,10 @@ function submitProposal() {
 			$pro = $m->lastData();
 			$r['did'] = $table." submitted";
 			$r['data'] = $pro;
+			// get sales rep
+			if($m->getRow("es_reps",$r['data']->pro_repID)) {
+				$r['data2']['rep'] = $m->lastData()->rep_name_first." ".$m->lastData()->rep_name_last;
+			} else $r['data2']['rep'] = "";
 			// get zones
 			$jobID = $pro->pro_jobID;
 			if($m->getAll("es_zones","ID,zon_name,zon_size","ID","zon_jobID='$jobID'")) {
@@ -825,6 +866,10 @@ function publishProposal() {
 			$pro = $m->lastData();
 			$r['did'] = $table." published";
 			$r['data'] = $pro;
+			// get sales rep
+			if($m->getRow("es_reps",$r['data']->pro_repID)) {
+				$r['data2']['rep'] = $m->lastData()->rep_name_first." ".$m->lastData()->rep_name_last;
+			} else $r['data2']['rep'] = "";
 		} else $r['did'] = "failed ".$table." publish";
 	} else {	
 		$r['did'] = "invalid email";
@@ -1068,24 +1113,25 @@ function makeZone($zone,$officeID) {
 	$m->getRow('es_mounting_mediums',$zone['zon_mounting_medium'],"med_value");
 	$racking_medium_labor_hrs = $m->lastData()->med_labor;
 	// calc module costs
-	$module_cost = $module_unit_cost*$zone['zon_num_modules'] + $module_unit_cost*$zone['zon_num_modules']*$off_inventory_up*0.01;
-	$module_price = $module_unit_price*$zone['zon_num_modules'] + $module_unit_price*$zone['zon_num_modules']*$off_inventory_up*0.01;
+	$module_cost = $module_unit_cost*$zone['zon_num_modules']*(1 + $off_inventory_up*0.01);
+	$module_price = $module_unit_price*$zone['zon_num_modules']*(1 + $off_inventory_up*0.01);
 	$module_price += $module_price*$off_inventory_margin*0.01;
 	// calc racking costs
 	$racking_unit_length = 2*(((1-($zone['zon_per_landscape']/100))*$module_width)+(($zone['zon_per_landscape']/100)*$module_length))/12;
-	$racking_length = $racking_unit_length*$zone['zon_num_modules'];
-	$racking_cost = $racking_length*$racking_cost_ft + $racking_length*$racking_cost_ft*$off_inventory_up*0.01;
-	$racking_price = $racking_length*$racking_price_ft + $racking_length*$racking_price_ft*$off_inventory_up*0.01;
+	$racking_length = $racking_unit_length*$zone['zon_num_modules']*1.1;
+	$racking_cost = $racking_length*$racking_cost_ft*(1 + $off_inventory_up*0.01);
+	$racking_price = $racking_length*$racking_price_ft*(1 + $off_inventory_up*0.01);
 	$racking_price += $racking_price*$off_inventory_margin*0.01;
 	// calc connection costs
-	$num_connections = $zone['zon_support_dist']!=0 ? $racking_length/$zone['zon_support_dist'] : 0;
-	//$racking_method_labor_hrs = $racking_method_labor_hrs*$num_connections*0.005;
-	$connection_cost = $num_connections*$racking_method_cost_x + $num_connections*$racking_method_cost_x*$off_inventory_up*0.01;
-	$connection_price = $num_connections*$racking_method_price_x + $num_connections*$racking_method_price_x*$off_inventory_up*0.01;
+	$num_connections = $zone['zon_support_dist']!=0 ? ceil($racking_length/$zone['zon_support_dist']) : 0;
+	$racking_method_labor_hrs = $racking_method_labor_hrs*$num_connections;
+	$connection_cost = $num_connections*$racking_method_cost_x*(1 + $off_inventory_up*0.01);
+	$connection_price = $num_connections*$racking_method_price_x*(1 + $off_inventory_up*0.01);
 	$connection_price += $connection_price*$off_inventory_margin*0.01;
 	// labor costs
-	$per_landscape_labor_hrs = $zone['zon_per_landscape']*0.005;
-	$num_cont_arrays_labor_hrs = ($zone['zon_num_cont_arrays']>8) ? 1 : ($zone['zon_num_cont_arrays']*0.125)-0.125;
+	$per_landscape_labor_hrs = 0; //$zone['zon_per_landscape']*0.005;
+	//$num_cont_arrays_labor_hrs = $zone['zon_num_cont_arrays'] > 8 ? 1 : ($zone['zon_num_cont_arrays']*0.125)-0.125;
+	$num_cont_arrays_labor_hrs = 0;
 	$labor_unit_hrs = $module_labor_hrs + $racking_method_labor_hrs + $racking_medium_labor_hrs + $pitch_labor_hrs + $per_landscape_labor_hrs + $num_cont_arrays_labor_hrs;
 	$labor_hrs = $labor_unit_hrs*$zone['zon_num_modules'];
 	$labor_cost = $labor_unit_hrs*$labor_unit_cost*$zone['zon_num_modules'];
@@ -1101,6 +1147,7 @@ function makeZone($zone,$officeID) {
 	$zone['zon_module_price'] = $module_price;
 	$zone['zon_racking_cost'] = $racking_cost;
 	$zone['zon_racking_price'] = $racking_price;
+	$zone['zon_num_connections'] = $num_connections;
 	$zone['zon_connection_cost'] = $connection_cost;
 	$zone['zon_connection_price'] = $connection_price;
 	// done
@@ -1132,9 +1179,7 @@ function peakProposal() {
 	$pro['pro_rebate_amnt'] = "";
 	$pro['pro_rebate_desc'] = "";
 	$pro['pro_rebate_type'] = "";
-	//@mcn
 	$pro['pro_rebate_display_weight'] = "";
-
 	foreach($pro as $key=>$val) {
 		if(substr($key,0,16)=="pro_rebate_amnt_") {
 			$pro['pro_rebate_amnt'] .= $val.",";
@@ -1145,9 +1190,20 @@ function peakProposal() {
 		} else if(substr($key,0,16)=="pro_rebate_type_") {
 			$pro['pro_rebate_type'] .= $val.",";
 			unset($pro[$key]);
-		}
-		else if(substr($key,0,26)=="pro_rebate_display_weight_") {
+		} else if(substr($key,0,26)=="pro_rebate_display_weight_") {
 			$pro['pro_rebate_display_weight'] .= $val.",";
+			unset($pro[$key]);
+		}
+	}
+	// parse monitors
+	$pro['pro_data_monitors'] = "";
+	$pro['pro_data_monitor_types'] = "";
+	foreach($pro as $key=>$val) {
+		if(substr($key,0,18)=="pro_data_monitors_") {
+			$pro['pro_data_monitors'] .= $val.",";
+			unset($pro[$key]);
+		} else if(substr($key,0,23)=="pro_data_monitor_types_") {
+			$pro['pro_data_monitor_types'] .= $val.",";
 			unset($pro[$key]);
 		}
 	}

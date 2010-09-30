@@ -1251,8 +1251,8 @@ var Racking = Module.extend({
 				html += "<tr>";
 				html += "<th colspan='1'>Model #</th>";
 				html += "<th colspan='1'>Description</th>";
-				html += "<th colspan='1' align='right'>Cost ($)</th>";
-				html += "<th colspan='1' align='right'>Price ($)</th>";
+				html += "<th colspan='1' align='right' style='white-space:nowrap;'>Cost ($)</th>";
+				html += "<th colspan='1' align='right' style='white-space:nowrap;'>Price ($)</th>";
 				html += "<th colspan='1' align='right'>Active</th>";
 				html += "</tr>";
 				html += "</thead>";
@@ -2036,7 +2036,7 @@ var Angles = Module.extend({
 	},
   	show:function(holder) { this._super(holder); },
 	hide:function() { this._super(); },
-	begin:function() { 
+	begin:function() {
 		this._super(); 
 		this.show(".dashboard-right"); 
 		// get all the modules
@@ -2267,7 +2267,7 @@ var MountingMethods = Module.extend({
 						<input class='required' type='text' id='met_cost' value='' /> \
 						<label for='met_price'>Price ($)</label> \
 						<input class='required' type='text' id='met_price' value='' /> \
-						<label for='met_labor'>Labor (hrs/module)</label> \
+						<label for='met_labor'>Labor (hrs/connection)</label> \
 						<input class='required' type='text' id='met_labor' value='' /> \
 						<label for='active'>Active</label> \
 						<select class='required' id='active'> \
@@ -2310,7 +2310,7 @@ var MountingMethods = Module.extend({
 				html += "<th colspan='1'>Method</th>";
 				html += "<th colspan='1' align='right'>Cost ($)</th>";
 				html += "<th colspan='1' align='right'>Price ($)</th>";
-				html += "<th colspan='1' align='right'>Labor (hrs/module)</th>";
+				html += "<th colspan='1' align='right'>Labor (hrs/connection)</th>";
 				html += "<th colspan='1' align='right'>Active</th>";
 				html += "</tr>";
 				html += "</thead>";
@@ -2374,7 +2374,7 @@ var MountingMethods = Module.extend({
 						<input class='required' type='text' id='met_cost' value='"+data.met_cost+"' /> \
 						<label for='met_price'>Price ($)</label> \
 						<input class='required' type='text' id='met_price' value='"+data.met_price+"' /> \
-						<label for='met_labor'>Labor (hrs/module)</label> \
+						<label for='met_labor'>Labor (hrs/connection)</label> \
 						<input class='required' type='text' id='met_labor' value='"+data.met_labor+"' /> \
 						<label for='active'>Active</label> \
 						<select class='required' id='active'> \
@@ -2443,7 +2443,7 @@ var MountingMediums = Module.extend({
 	},
   	show:function(holder) { this._super(holder); },
 	hide:function() { this._super(); },
-	begin:function() { 
+	begin:function() {
 		this._super(); 
 		this.show(".dashboard-left"); 
 		// get all the modules
@@ -2577,6 +2577,240 @@ var MountingMediums = Module.extend({
 						<select class='required' id='active'> \
 							<option value='1' "+sel_yes+">yes</option> \
 							<option value='0' "+sel_no+">no</option> \
+						</select> \
+					</div> \
+					<div class='clear'></div> \
+					<br /> \
+					<input type='submit' title='Update' value='Update' /> \
+					<input type='submit' title='CancelQ' value='Cancel' /> \
+				</form>";
+		edit += "</td>";
+		return edit;
+	}
+});
+/////////////////////////////////////////////////////////////////////// data monitoring : super
+var DataMonitoring = Module.extend({
+  	init:function(el,io) {
+		this._super(el,io);
+		var t = this;
+		// new item
+		$("a[title='New']",$(t.el)).live("click",function() {
+			$(".dashboard-item-content",$(t.el)).html(t.itemForm());
+		});
+		// cancel add
+		$("input[title='Cancel']",$(t.el)).live("click",function() {
+			t.io.request(t,"table="+t.dbTable+"&order="+t.dbOrder+"&es_do=browseAll");
+		});
+		// add new
+		$("input[title='Add']",$(t.el)).live("click",function() {
+			var ds = $(this).closest("form").postify();
+			if(ds=="") return false;
+			t.io.request(t,ds+"table="+t.dbTable+"&es_do=addItem");
+		});
+		// hover over rows
+		$("tr",$(t.el)).live("mouseenter",function() {
+			$(".edit-panel",this).css("visibility","visible");
+		});
+		$("tr",$(t.el)).live("mouseleave",function() {
+			$(".edit-panel",this).css("visibility","hidden");
+		});
+		// edit link
+		$("a[title='Edit']",$(t.el)).live("click",function() {
+			$("#"+this.parentNode.parentNode.parentNode.id).hide();
+			$("#edit-"+this.parentNode.parentNode.parentNode.id).show();
+		});
+		// cancel update
+		$("input[title='CancelQ']",$(t.el)).live("click",function() {
+			$("#"+this.parentNode.parentNode.parentNode.id).hide();
+			$("#"+this.parentNode.parentNode.parentNode.id.substring(5)).show();
+		});
+		// update
+		$("input[title='Update']",$(t.el)).live("click",function() {
+			t.currentRowID = this.parentNode.parentNode.parentNode.id.substring(8);
+			var ds = $(this).closest("form").postify();
+			if(ds=="") return false;
+			t.io.request(t,ds+"id="+t.currentRowID+"&table="+t.dbTable+"&es_do=updateItem");
+		});
+		// trash link
+		$("a[title='Trash']",$(t.el)).live("click",function() {
+			t.currentRowID = this.parentNode.parentNode.parentNode.id.substring(3);
+			if(!confirm("Are you sure you want to delete this item? This cannot be undone.")) return false;
+			t.io.request(t,"id="+t.currentRowID+"&table="+t.dbTable+"&es_do=deleteItem");
+		});
+	},
+  	show:function(holder) { this._super(holder); },
+	hide:function() { this._super(); },
+	begin:function() {
+		this._super(); 
+		this.show(".dashboard-right"); 
+		// get all the modules
+		this.io.request(this,"table="+this.dbTable+"&order="+this.dbOrder+"&es_do=browseAll");
+	},
+	clear:function() { this._super(); },
+	iHTML:function() {
+		this._super();
+		// returns the initial html for this module
+		return "<div class='dashboard-item'> \
+					<div class='dashboard-item-header'> \
+						<a href='javascript:void(0);' class='dashboard-link' title='New'>+</a> \
+						<h1 class='dashboard-header'>Data Monitoring</h1> \
+					</div> \
+					<div class='dashboard-item-content'><p style='padding:10px; color:#808080;'>Loading...</p></div> \
+				</div>";
+	},
+	dbTable:"es_data_monitoring",
+	dbOrder:"dat_model_num",
+	itemForm:function() {
+		this._super();
+		// returns the form
+		return "<form class='addform' action='javascript:void(0);'> \
+					<h1 class='addform-header'>Data Monitoring Info:</h1> \
+					<br /> \
+					<div class='form-column'> \
+						<label for='dat_model_num'>Model #</label> \
+						<input class='required' type='text' id='dat_model_num' value='' /> \
+						<label for='dat_desc'>Description</label> \
+						<input class='required' type='text' id='dat_desc' value='' /> \
+					</div> \
+					<div class='form-column'> \
+						<label for='dat_unit'>Price Unit</label> \
+						<input class='required' type='text' id='dat_unit' value='' /> \
+						<label for='dat_cost'>Cost ($)</label> \
+						<input class='required' type='text' id='dat_cost' value='' /> \
+					</div> \
+					<div class='form-column'> \
+						<label for='dat_price'>Price ($)</label> \
+						<input class='required' type='text' id='dat_price' value='' /> \
+						<label for='dat_labor'>Labor (hrs)</label> \
+						<input class='required' type='text' id='dat_labor' value='' /> \
+					</div> \
+					<div class='form-column-right'> \
+						<label for='active'>Active</label> \
+						<select class='required' id='active'> \
+							<option value='' selected='selected'>--select--</option> \
+							<option value='1'>yes</option> \
+							<option value='0'>no</option> \
+						</select> \
+					</div> \
+					<div class='clear'></div> \
+					<br /> \
+					<input type='submit' title='Add' value='Add New' /> \
+					<input type='submit' title='Cancel' value='Cancel' /> \
+				</form>";
+	},
+	receive:function(json) {
+		this._super();
+		// build vars
+		var html = "";
+		switch(json.did) {
+			case this.dbTable+" added" :
+				// show the list again
+				$(".dashboard-item-content",$(this.el)).html("");
+				this.io.request(this,"table="+this.dbTable+"&order="+this.dbOrder+"&es_do=browseAll");
+				break;
+			case this.dbTable+" updated" :
+				// set active
+				json.data.active = json.data.active==1 ? "yes" : "no";
+				// make rows
+				$("#dat"+this.currentRowID).html(this.rowContent(json.data)).show();
+				$("#edit-dat"+this.currentRowID).html(this.editRowContent(json.data)).hide();
+				break;
+			case this.dbTable+" deleted" :
+				$("#dat"+this.currentRowID).remove();
+				$("#edit-dat"+this.currentRowID).remove();
+				break;
+			case "found "+this.dbTable :
+				var html = "<table cellpadding='0' cellspacing='0'>";
+				// build the titles
+				html += "<thead>";
+				html += "<tr>";
+				html += "<th colspan='1'>Model #</th>";
+				html += "<th colspan='1'>Description</th>";
+				html += "<th colspan='1' align='right'>Cost ($)</th>";
+				html += "<th colspan='1' align='right'>Price ($)</th>";
+				html += "<th colspan='1' align='right'>Labor (hrs)</th>";
+				html += "<th colspan='1' align='right'>Active</th>";
+				html += "</tr>";
+				html += "</thead>";
+				html += "<tbody>";
+				// loop over each result
+				var color = ["light","dark"];
+				for(var i=0;i<json.data.length;i++) {
+					// set active
+					json.data[i].active = (json.data[i].active==1) ? "yes" : "no";
+					// make rows
+					html += "<tr id='dat"+json.data[i].ID+"' class='"+color[(i+1)%2]+"'>";
+					html += this.rowContent(json.data[i]);
+					html += "</tr>";
+					html += "<tr id='edit-dat"+json.data[i].ID+"' style='display:none;' class='quick-edit "+color[(i+1)%2]+"'>";
+					html += this.editRowContent(json.data[i]);
+					html += "</tr>";
+				}
+				html += "</tbody>";
+				html += "</table>";
+				// add to page
+				$(".dashboard-item-content", $(this.el)).html(html);
+				break;
+			case "no "+this.dbTable :
+				// clear the list
+				$(".dashboard-item-content",$(this.el)).html("<p style='padding:10px; color:#808080;'>There is no Data Monitoring in your system at the moment.</p>");
+				break;
+			//-----------------------------------//
+			default :
+				console.log(json.did+" from "+this.dbTable);
+				break;
+		}
+	},
+	rowContent:function(data) {
+		this._super();
+		// create the row
+		var row = "<td colspan='1'>";
+		row += "<span style='font-weight:bold;'>"+data.dat_model_num+"</span><br />";
+		row += "<span class='edit-panel'>";
+		row += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a> | ";
+		row += "<a href='javascript:void(0);' class='trash-link' title='Trash'>Trash</a>";
+		row += "</span>";
+		row += "</td>";
+		row += "<td colspan='1'>"+data.dat_desc+"</td>";
+		row += "<td colspan='1' align='right'>"+data.dat_cost+"</td>";
+		row += "<td colspan='1' align='right'>"+data.dat_price+"</td>";
+		row += "<td colspan='1' align='right'>"+data.dat_labor+"</td>";
+		row += "<td colspan='1' align='right'>"+data.active+"</td>";
+		return row;
+	},
+	editRowContent:function(data) {
+		this._super();
+		// active selects
+		var active_sel_yes = (data.active=="yes") ? "selected='selected'" : "";
+		var active_sel_no = (data.active=="no") ? "selected='selected'" : "";
+		// create the edit row
+		var edit = "<td colspan='6'>";
+		edit += "<form class='updateform' action='javascript:void(0);'> \
+					<h1 class='addform-header'>Quick Edit</h1> \
+					<br /> \
+					<div class='form-column'> \
+						<label for='dat_model_num'>Model #</label> \
+						<input class='required' type='text' id='dat_model_num' value='"+data.dat_model_num+"' /> \
+						<label for='dat_desc'>Description</label> \
+						<input class='required' type='text' id='dat_desc' value='"+data.dat_desc+"' /> \
+					</div> \
+					<div class='form-column'> \
+						<label for='dat_unit'>Price Unit</label> \
+						<input class='required' type='text' id='dat_unit' value='"+data.dat_unit+"' /> \
+						<label for='dat_cost'>Cost ($)</label> \
+						<input class='required' type='text' id='dat_cost' value='"+data.dat_cost+"' /> \
+					</div> \
+					<div class='form-column'> \
+						<label for='dat_price'>Price ($)</label> \
+						<input class='required' type='text' id='dat_price' value='"+data.dat_price+"' /> \
+						<label for='dat_labor'>Labor (hrs)</label> \
+						<input class='required' type='text' id='dat_labor' value='"+data.dat_labor+"' /> \
+					</div> \
+					<div class='form-column-right'> \
+						<label for='active'>Active</label> \
+						<select class='required' id='active'> \
+							<option value='1' "+active_sel_yes+">yes</option> \
+							<option value='0' "+active_sel_no+">no</option> \
 						</select> \
 					</div> \
 					<div class='clear'></div> \
@@ -3772,7 +4006,7 @@ var Customers = Module.extend({
 		return "<div class='dashboard-item'> \
 					<div class='dashboard-item-header'> \
 						"+adder+" \
-						<input type='input' class='dashboard-search' value='search...' "+search_margin+" /> \
+						<input type='text' class='dashboard-search' value='search...' "+search_margin+" /> \
 						<h1 class='dashboard-header'>"+$("#data").data("city")+" Contacts</h1> \
 					</div> \
 					<div class='dashboard-item-content'><p style='padding:10px; color:#808080;'>Loading...</p></div> \
@@ -3977,14 +4211,14 @@ var Customers = Module.extend({
 	rowContent:function(data) {
 		this._super();
 		// build info string
-		var info = "<span style='font-weight:bold;'>"+data.cus_name_last+", "+data.cus_name_first+" ("+data.cus_num_jobs+")</span><br />";
+		var info = "<span style='font-weight:bold;'>"+data.cus_name_last+", "+data.cus_name_first+"</span><br />";
 		info += (data.cus_company!="") ? data.cus_company+"<br />" : "";
 		info += (data.cus_phone1!="") ? data.cus_phone1+" (1)<br />" : "";
 		info += (data.cus_phone2!="") ? data.cus_phone2+" (2)<br />" : "";
 		info += (data.cus_phone_mobile!="") ? data.cus_phone_mobile+" (m)<br />" : "";
 		info += (data.cus_fax!="") ? data.cus_fax+" (f)<br />" : "";
 		info += (data.cus_email1!="") ? data.cus_email1+" (1)<br />" : "";
-		info += (data.cus_email2!="") ? data.cus_email2+" (2)" : "";
+		info += (data.cus_email2!="") ? data.cus_email2+" (2)<br />" : "";
 		// create the row
 		var row = "<td colspan='1'>";
 		row += info;
@@ -4202,7 +4436,7 @@ var Jobs = Module.extend({
 		// returns the initial html for this module
 		return "<div class='dashboard-item'> \
 					<div class='dashboard-item-header'> \
-						<input type='input' class='dashboard-search' value='search...' style='margin-right:4px;' /> \
+						<input type='text' class='dashboard-search' value='search...' style='margin-right:4px;' /> \
 						<h1 class='dashboard-header'>"+$("#data").data("city")+" Projects</h1> \
 					</div> \
 					<div class='dashboard-item-content'><p style='padding:10px; color:#808080;'>Loading...</p></div> \
@@ -4418,11 +4652,16 @@ var Jobs = Module.extend({
 		}
 	},
 	rowContent:function(data,customer,rep) {
+		// warn if cusomer deleted
+		if(customer=="") customer = "<span style='color:red;'>Warning: Customer Deleted</span>";
+		// warn if no rep
+		if(rep=="") rep = "<span style='color:red;'>Warning: Rep Deleted</span>";
 		// build contact
 		var contact = data.job_contact;
 		contact += contact=="" ? data.job_company : "";
 		contact += contact=="" ? customer : "";
 		if(contact=="") contact = "n / a";
+		// determine if email is available for job
 		var email = data.job_email!="" ? data.job_email : "<span style='color:red;'>Warning: No Email</span>";
 		// hide proposal button if no zones
 		var prop_butt_vis = (data.job_num_zones==0) ? "style='display:none;'" : "style='margin-right:5px;'";
@@ -4672,6 +4911,28 @@ var Zones = Module.extend({
 				$("#zon_custom_pitch",$(this).closest("form")).hide().removeClass("required");
 			}
 		});
+		// landscape input
+		$("#zon_num_modules,#zon_per_landscape,#zon_support_dist",$(t.el)).live("keydown",function() {
+			if(!$(this).intify()) return false;
+		});
+		$("#zon_num_modules,#zon_per_landscape,#zon_support_dist",$(t.el)).live("blur",function() {
+			if(this.value=="") this.value = 0;
+		});
+		$("#zon_num_modules",$(t.el)).live("keyup",function() {
+			var tot = parseInt(this.value);
+			var land = parseInt(this.nextElementSibling.nextElementSibling.value);
+			// toggle landscape if value is OK
+			if(tot > 0 && this.value!="") $("#zon_per_landscape").attr("disabled","").css("opacity","1");
+			else $("#zon_per_landscape").attr("disabled","disabled").css("opacity","0.2").val(0);
+			// check landscape and reset if not OK
+			if(land > tot) this.nextElementSibling.nextElementSibling.value = tot; 
+		});
+		$("#zon_per_landscape",$(t.el)).live("keyup",function() {
+			var tot = parseInt(this.previousElementSibling.previousElementSibling.value);
+			var land = parseInt(this.value);
+			// check total and reset if not OK
+			if(land > tot) this.value = tot;
+		});
 		// uploads
 		$(".file-input",$(t.el)).live("mouseenter",function() {
 			$(this.parentNode.nextElementSibling).css("border","1px solid #808080");
@@ -4703,8 +4964,8 @@ var Zones = Module.extend({
 			var ref = this.id;
 			var id = ref.substring(3);
 			// show loading gif
-			$("#zon_layout-"+id).hide(50,function() {
-				$(this).css({position:"relative",width:"66px",top:"58px",left:"63px"}).attr("src","gfx/uploading.gif").show();
+			$("#zon_layout-"+id).fadeOut(50,function() {
+				$(this).css({position:"relative",top:"26px",left:"72px"}).attr("src","gfx/uploading.gif").attr("width","66").attr("height","66").show();
 			});
 			// create a dynamic iframe
 			var iframe = $("<iframe id='f-"+ref+"' name='f-"+ref+"' src='' style='display:none;' />");
@@ -4717,7 +4978,7 @@ var Zones = Module.extend({
 				// show image
 				var big_src = $("#f-"+ref).contents().find("body").html()+"_sized_800.jpg";
 				var small_src = $("#f-"+ref).contents().find("body").html()+"_thumb.jpg";
-				$("#zon_layout-"+id).hide(50,function() {
+				$("#zon_layout-"+id).fadeOut(50,function() {
 					if($(this.parentNode).hasClass("fancybox")) {
 						$(this.parentNode).attr("href",big_src);
 					} else {
@@ -4727,7 +4988,7 @@ var Zones = Module.extend({
 						$("#file_butt_edit-"+id).show();
 						$("#tl-"+id).show();
 					}
-					$(this).css({position:"static",width:"auto",top:"auto",left:"auto"}).attr("src",small_src).fadeIn("fast");
+					$(this).css({position:"static",top:"auto",left:"auto"}).attr("src",small_src).attr("width","210").attr("height","118").fadeIn("fast");
 				});
 				// clean up
 				setTimeout(function() {
@@ -4774,9 +5035,9 @@ var Zones = Module.extend({
 			// remove trash link
 			$(this).remove();
 			// hide thumb
-			$("#zon_layout-"+id).hide(50,function() {
+			$("#zon_layout-"+id).fadeOut(50,function() {
 				// replace image
-				$(this).css({position:"static",width:"auto",top:"auto",left:"auto"}).attr("src","gfx/layout.jpg").unwrap().fadeIn("fast");
+				$(this).css({position:"static",top:"auto",left:"auto"}).attr("src","gfx/layout.jpg").attr("width","210").attr("height","118").unwrap().fadeIn("fast");
 				// switch butts
 				$("#file_butt_edit-"+id).hide();
 				$("#file_butt_new-"+id).show();
@@ -4829,7 +5090,7 @@ var Zones = Module.extend({
 				$("#view-job"+this.jobID).data("jc-disabled",false);
 				// show the single item
 				this.waiting = null;
-				$("#zon"+this.currentRowID).html(this.rowContent(json.data)).show();
+				$("#zon"+this.currentRowID).html(this.rowContent(json.data,json.data2.mod_desc,json.data2.rac_desc)).show();
 				$("#edit-zon"+this.currentRowID).html(this.editRowContent(json.data,json.data2)).hide();
 				// fancybox support
 				$("a.fancybox",$(this.el)).fancybox({ autoScale:true, titleShow:false });
@@ -4855,7 +5116,7 @@ var Zones = Module.extend({
 				for(var i=0;i<json.data.length;i++) {
 					// write the rows
 					html += "<tr id='zon"+json.data[i].ID+"' class='"+color[(i+1)%2]+" zonehover'>";
-					html += this.rowContent(json.data[i]);
+					html += this.rowContent(json.data[i],json.data2.mod_desc[i],json.data2.rac_desc[i]);
 					html += "</tr>";
 					html += "<tr id='edit-zon"+json.data[i].ID+"' style='display:none;' class='quick-edit "+color[(i+1)%2]+"'>";
 					html += this.editRowContent(json.data[i],json.data2);
@@ -4914,7 +5175,7 @@ var Zones = Module.extend({
 								<label for='zon_num_modules'># Modules (total)</label> \
 								<input class='required' type='text' id='zon_num_modules' value='' /> \
 								<label for='zon_per_landscape'># <span style='font-weight:bold;'>Landscape</span> Modules</label> \
-								<input class='required' type='text' id='zon_per_landscape' value='0' /> \
+								<input class='required' disabled='disabled' type='text' id='zon_per_landscape' value='0' /> \
 								<label for='zon_racking'>Racking Type</label> \
 								<select class='required' id='zon_racking'>"+selects.zon_racking+"</select> \
 							</div> \
@@ -4926,12 +5187,12 @@ var Zones = Module.extend({
 								<input type='text' id='zon_custom_pitch' value='' style='width:25%; display:none;'/><label for='zon_custom_pitch' style='padding-left:4px; display:none;'>º</label> \
 								<label for='zon_mounting_medium'>Mounting Medium</label> \
 								<select class='required' id='zon_mounting_medium'>"+selects.zon_mounting_medium+"</select> \
-								<label for='zon_support_dist'>Distance Between Supports (ft)</label> \
+								<label for='zon_support_dist'>Dist. Between Supports (ft)</label> \
 								<input class='required' type='text' id='zon_support_dist' value='4' /> \
 							</div> \
 							<div class='form-column-right'> \
-								<label for='zon_num_cont_arrays'>Contiguous Arrays</label> \
-								<input class='required' type='text' id='zon_num_cont_arrays' value='1' /> \
+								<!--<label for='zon_num_cont_arrays'>Contiguous Arrays</label> \
+								<input class='required' type='text' id='zon_num_cont_arrays' value='1' />--> \
 								<label for='zon_rebate'>Rebate ($/W)</label> \
 								<input class='required' type='text' id='zon_rebate' value='0' /> \
 								<label for='zon_rebate_desc'>Rebate Description</label> \
@@ -5004,7 +5265,7 @@ var Zones = Module.extend({
 				break;
 		}
 	},
-	rowContent:function(data) {
+	rowContent:function(data,mod_desc,rac_desc) {
 		this._super();
 		// input field
 		var butts = "<div style='position:relative; top:5px;'>";
@@ -5014,14 +5275,14 @@ var Zones = Module.extend({
 		// image
 		var pic, trash;
 		if(data.zon_layout && data.zon_layout!=0) {
-			pic = "<a class='fancybox' href='"+data.zon_layout+"_sized_800.jpg'><img id='zon_layout-"+data.ID+"' src='"+data.zon_layout+"_thumb.jpg' title='"+data.zon_name+" Layout' alt='zone layout' /></a>";
-			trash = "<a id='tl-"+data.ID+"' href='javascript:void(0);' class='trash-link' title='TrashLayout' style='font-size:10px; text-align:right; padding:0 0 0 158px;'>Trash</a>";
+			pic = "<a class='fancybox' href='"+data.zon_layout+"_sized_800.jpg'><img id='zon_layout-"+data.ID+"' src='"+data.zon_layout+"_thumb.jpg' title='"+data.zon_name+" Layout' alt='zone layout' width='210' height='118' /></a>";
+			trash = "<a id='tl-"+data.ID+"' href='javascript:void(0);' class='trash-link' title='TrashLayout' style='font-size:10px; text-align:right; padding:0 0 0 168px;'>Trash</a>";
 			butts += "<input id='file_butt_new-"+data.ID+"' type='submit' title='AddLayout' value='+ Layout' style='position:absolute; right:10px; z-index:0; display:none;' />";
 			butts += "<input id='file_butt_edit-"+data.ID+"' type='submit' title='AddLayout' value='&#9998; Layout' style='position:absolute; right:10px; z-index:0;' />";
 		}
 		else {
-			pic = "<img id='zon_layout-"+data.ID+"' src='gfx/layout.jpg' title='"+data.zon_name+" Layout' alt='zone layout' />";
-			trash = "<a id='tl-"+data.ID+"' href='javascript:void(0);' class='trash-link' title='TrashLayout' style='font-size:10px; text-align:right; padding:0 0 0 158px; display:none;'>Trash</a>";
+			pic = "<img id='zon_layout-"+data.ID+"' src='gfx/layout.jpg' title='"+data.zon_name+" Layout' alt='zone layout' width='210' height='118' />";
+			trash = "<a id='tl-"+data.ID+"' href='javascript:void(0);' class='trash-link' title='TrashLayout' style='font-size:10px; text-align:right; padding:0 0 0 168px; display:none;'>Trash</a>";
 			butts += "<input id='file_butt_new-"+data.ID+"' type='submit' title='AddLayout' value='+ Layout' style='position:absolute; right:10px; z-index:0;' />";
 			butts += "<input id='file_butt_edit-"+data.ID+"' type='submit' title='AddLayout' value='&#9998; Layout' style='position:absolute; right:10px; z-index:0; display:none;' />";
 		}
@@ -5031,6 +5292,10 @@ var Zones = Module.extend({
 		panel += "<a href='javascript:void(0);' class='edit-link' title='EditZone'>Edit</a> | ";
 		panel += "<a href='javascript:void(0);' class='trash-link' title='TrashZone'>Trash</a>";
 		panel += "</div>";
+		// tilt
+		var zon_tilt = data.zon_tilt=="custom" ? data.zon_custom_tilt : data.zon_tilt;
+		// rebate desc
+		var rebate_desc = data.zon_rebate_desc!="" ? "("+data.zon_rebate_desc+")" : "";
 		// write it
 		var row = "<td style='border-top:1px solid #eee;'>";
 		row += "<div style='font-weight:bold; font-size:14px; padding:5px 0 0 10px; float:left;'>"+data.zon_name+"</div>";
@@ -5038,42 +5303,61 @@ var Zones = Module.extend({
 		row += "<div class='clear'></div>";
 		row += "<table cellpadding='0' cellspacing='0' style='width:100%; margin:0; padding:10px;'>";
 		row += "<thead>";
-		row += "<th colspan='2' style='padding:5px 0; border-bottom:1px solid grey;'>Parameters</th>";
-		row += "<th colspan='1' style='padding:5px 0; border-bottom:1px solid grey;'>Layout"+trash+"</th>";
+		// Parameters and Layout
+		row += "<th colspan='3' style='padding:5px 0; border-bottom:1px solid grey; font-weight:bold;'>Parameters:</th>";
+		row += "<th colspan='1' style='padding:5px 0; border-bottom:1px solid grey; font-weight:bold;'>Layout:"+trash+"</th>";
 		row += "</thead>";
 		row += "<tbody>";
 		row += "<tr class='dark'>";
-		row += "<td colspan='1' style='color:#808080; border:none;'>Zone Size:</td>";
-		row += "<td colspan='1' style='font-weight:bold; border:none;' align='right'>"+$.addCommas(data.zon_size)+" kW</td>";
-		row += "<td rowspan='8' width='192' style='color:#808080; padding:10px 10px 0 10px; border-top:none; border-left:1px solid grey;'>"+pic+"</td>";
+		row += "<td colspan='1' style='color:#808080; border:none;'>Zone Size</td>";
+		row += "<td colspan='2' style='font-weight:bold; border:none;' align='right'>"+$.addCommas(data.zon_size)+" kW</td>";
+		row += "<td colspan='1' rowspan='6' width='210' style='color:#808080; padding:10px 10px 0 10px; border-top:none; border-left:1px solid grey;'>"+pic+"</td>";
 		row += "</tr>";
 		row += "<tr class='light'>";
-		row += "<td colspan='1' style='color:#808080;'>Annual Production:</td>";
-		row += "<td colspan='1' style='font-weight:bold;' align='right'>"+$.addCommas(data.zon_production)+" kWh</td>";
+		row += "<td colspan='1' style='color:#808080; border-top:none;'>Array Type</td>";
+		row += "<td colspan='2' style='font-weight:bold; border-top:none;' align='right'>"+data.zon_type+"</td>";
 		row += "</tr>";
 		row += "<tr class='dark'>";
-		row += "<td colspan='1' style='color:#808080;'>Install Labor:</td>";
-		row += "<td colspan='1' style='font-weight:bold;' align='right'>"+$.addCommas(data.zon_install_labor_hrs)+" hrs</td>";
+		row += "<td colspan='1' style='color:#808080; border-top:none;'>Array Tilt</td>";
+		row += "<td colspan='2' style='font-weight:bold; border-top:none;' align='right'>"+zon_tilt+"º</td>";
 		row += "</tr>";
 		row += "<tr class='light'>";
-		row += "<td colspan='1' style='color:#808080;'>Rebate:</td>";
-		row += "<td colspan='1' style='font-weight:bold;' align='right'>$"+data.zon_rebate+"/W</td>";
+		row += "<td colspan='1' style='color:#808080; border-top:none;'>Annual Production</td>";
+		row += "<td colspan='2' style='font-weight:bold; border-top:none;' align='right'>"+$.addCommas(Math.round(data.zon_production))+" kWh</td>";
 		row += "</tr>";
 		row += "<tr class='dark'>";
-		row += "<td colspan='1' style='color:#808080;'>Modules (p / c):</td>";
-		row += "<td colspan='1' style='font-weight:bold;' align='right'>$"+$.addCommas(data.zon_module_price)+" <span style='font-weight:normal;'>/ $"+$.addCommas(data.zon_module_cost)+"</span></td>";
+		row += "<td colspan='1' style='color:#808080; border-top:none;'>Rebate "+rebate_desc+"</td>";
+		row += "<td colspan='2' style='font-weight:bold; border-top:none;' align='right'>$"+data.zon_rebate+"/W</td>";
 		row += "</tr>";
 		row += "<tr class='light'>";
-		row += "<td colspan='1' style='color:#808080;'>Racking (p / c):</td>";
-		row += "<td colspan='1' style='font-weight:bold;' align='right'>$"+$.addCommas(data.zon_racking_price)+" <span style='font-weight:normal;'>/ $"+$.addCommas(data.zon_racking_cost)+"</span></td>";
+		row += "<td colspan='1' style='color:#808080; border-top:none;'>Mounting Medium</td>";
+		row += "<td colspan='2' style='font-weight:bold; border-top:none;' align='right'>"+data.zon_mounting_medium+"</td>";
+		row += "</tr>";
+		// Materials
+		row += "<tr class='light'>";
+		row += "<td colspan='2' style='color:#808080; font-size:10px; padding:10px 0 5px 0; border-top:none; font-weight:bold;'>Materials:</td>";
+		row += "<td colspan='2' align='right' style='color:#808080; font-size:9px; padding:10px 10px 5px 0; border-top:none;'>cost / price</td>";
 		row += "</tr>";
 		row += "<tr class='dark'>";
-		row += "<td colspan='1' style='color:#808080;'>Install Labor (p / c):</td>";
-		row += "<td colspan='1' style='font-weight:bold;' align='right'>$"+$.addCommas(data.zon_install_labor_price)+" <span style='font-weight:normal;'>/ $"+$.addCommas(data.zon_install_labor_cost)+"</span></td>";
+		row += "<td colspan='2' style='color:#808080; border-top:1px solid grey;'><em>"+$.addCommas(data.zon_num_modules)+"</em> - "+mod_desc+"</td>";
+		row += "<td colspan='2' style='font-weight:bold; border-top:1px solid grey;' align='right'><span style='font-weight:normal;'>$"+$.addCommas(data.zon_module_cost)+" / </span>$"+$.addCommas(data.zon_module_price)+"</td>";
 		row += "</tr>";
 		row += "<tr class='light'>";
-		row += "<td colspan='1' style='color:#808080;'>Connections (p / c):</td>";
-		row += "<td colspan='1' style='font-weight:bold;' align='right'>$"+$.addCommas(data.zon_connection_price)+" <span style='font-weight:normal;'>/ $"+$.addCommas(data.zon_connection_cost)+"</span></td>";
+		row += "<td colspan='2' style='color:#808080; border-top:none;'><em>"+$.addCommas(data.zon_racking_length)+" ft.</em> - "+rac_desc+"</td>";
+		row += "<td colspan='2' style='font-weight:bold; border-top:none;' align='right'><span style='font-weight:normal;'>$"+$.addCommas(data.zon_racking_cost)+" / </span>$"+$.addCommas(data.zon_racking_price)+"</td>";
+		row += "</tr>";
+		row += "<tr class='dark'>";
+		row += "<td colspan='2' style='color:#808080; border-top:none;'><em>"+$.addCommas(data.zon_num_connections)+"</em> - "+data.zon_mounting_method+" - "+data.zon_support_dist+"' OC</td>";
+		row += "<td colspan='2' style='font-weight:bold; border-top:none;' align='right'><span style='font-weight:normal;'>$"+$.addCommas(data.zon_connection_cost)+" / </span>$"+$.addCommas(data.zon_connection_price)+"</td>";
+		row += "</tr>";
+		// Labor
+		row += "<tr class='light'>";
+		row += "<td colspan='2' style='color:#808080; font-size:10px; padding:10px 0 5px 0; border-top:none; font-weight:bold;'>Installation Labor:</td>";
+		row += "<td colspan='2' align='right' style='color:#808080; font-size:9px; padding:10px 10px 5px 0; border-top:none;'>cost / price</td>";
+		row += "</tr>";
+		row += "<tr class='dark'>";
+		row += "<td colspan='2' style='color:#808080; border-top:1px solid grey;'><em>"+$.addCommas(data.zon_install_labor_hrs)+" hrs</em></td>";
+		row += "<td colspan='2' style='font-weight:bold; border-top:1px solid grey;' align='right'><span style='font-weight:normal;'>$"+$.addCommas(data.zon_install_labor_cost)+" / </span>$"+$.addCommas(data.zon_install_labor_price)+"</td>";
 		row += "</tr>";
 		row += "</tbody>";
 		row += "</table>";
@@ -5137,12 +5421,12 @@ var Zones = Module.extend({
 						<input type='text' id='zon_custom_pitch' value='"+data.zon_custom_pitch+"' style='width:25%; "+custom_pitch_style+"' /><label for='zon_custom_pitch' style='padding-left:4px; "+custom_pitch_style+"'>º</label> \
 						<label for='zon_mounting_medium'>Mounting Medium</label> \
 						<select class='required' id='zon_mounting_medium'>"+selects.zon_mounting_medium+"</select> \
-						<label for='zon_support_dist'>Distance Between Supports (ft)</label> \
+						<label for='zon_support_dist'>Dist. Between Supports (ft)</label> \
 						<input class='required' type='text' id='zon_support_dist' value='"+data.zon_support_dist+"' /> \
 					</div> \
 					<div class='form-column-right'> \
-						<label for='zon_num_cont_arrays'>Contiguous Arrays</label> \
-						<input class='required' type='text' id='zon_num_cont_arrays' value='"+data.zon_num_cont_arrays+"' /> \
+						<!--<label for='zon_num_cont_arrays'>Contiguous Arrays</label> \
+						<input class='required' type='text' id='zon_num_cont_arrays' value='"+data.zon_num_cont_arrays+"' />--> \
 						<label for='zon_rebate'>Rebate ($/W)</label> \
 						<input class='required' type='text' id='zon_rebate' value='"+data.zon_rebate+"' /> \
 						<label for='zon_rebate_desc'>Rebate Description</label> \
@@ -5231,7 +5515,7 @@ var Proposals = Module.extend({
 		// view link -- controlled by href
 		// edit link
 		$("a[title='Edit']",$(t.el)).live("click",function() {
-			$("#data").data("inter-holder-id",this.parentNode.parentNode.parentNode.id.substring(3));
+			//$("#data").data("inter-holder-id",this.parentNode.parentNode.parentNode.id.substring(3));
 			$("#"+this.parentNode.parentNode.parentNode.id).hide();
 			$("#edit-"+this.parentNode.parentNode.parentNode.id).show();
 			$("input[title='PreviewQ']",$("#edit-"+this.parentNode.parentNode.parentNode.id)).click();
@@ -5288,7 +5572,7 @@ var Proposals = Module.extend({
 			var num = this.parentNode.nextElementSibling.childElementCount+1;
 			var clear = num%4==1 ? "clear" : "";
 			var ai = "<div class='form-column "+clear+"'> \
-							<label style='padding-bottom:5px;' for='pro_inter_method_"+num+"'>Interconnection Method <a href='javascript:void(0);' title='Delete Inverter(s)' class='lesser' style='vertical-align:bottom; padding:0 0 0 52px;'>&#10005;</a></label> \
+							<label style='padding-bottom:5px;' for='pro_inter_method_"+num+"'>Interconnection Method <a href='javascript:void(0);' title='Delete Inverter(s)' class='lesser' style='vertical-align:bottom; padding:0 0 0 5px;'>&#10005;</a></label> \
 							<select class='required' id='pro_inter_method_"+num+"'>"+$('#data').data('inter_methods')+"</select> \
 							<label style='padding-bottom:5px;' for='pro_inverter_"+num+"'>Inverter Type</label> \
 							<select class='required inverter-select' id='pro_inverter_"+num+"'>"+$('#data').data('inverters')+"</select> \
@@ -5309,7 +5593,7 @@ var Proposals = Module.extend({
 		$("a[title='Add Rebate']",$(t.el)).live("click",function() {
 			var num = this.parentNode.nextElementSibling.childElementCount+1;
 			var ar = "<div class='form-column'> \
-						<label for='pro_rebate_type_"+num+"'>Rebate Type <a href='javascript:void(0);' title='Delete Rebate' class='lesser' style='vertical-align:bottom; padding:0 0 0 84px;'>&#10005;</a></label> \
+						<label for='pro_rebate_type_"+num+"'>Rebate Type <a href='javascript:void(0);' title='Delete Rebate' class='lesser' style='vertical-align:bottom; padding:0 0 0 5px;'>&#10005;</a></label> \
 						<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_rebate_type_"+num+"' value='0' checked='checked' /> $/W \
 						<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_rebate_type_"+num+"' value='1' /> Percent \
 						<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_rebate_type_"+num+"' value='2' /> Fixed \
@@ -5317,12 +5601,36 @@ var Proposals = Module.extend({
 						<input type='text' id='pro_rebate_amnt_"+num+"' value='' /> \
 						<label for='pro_rebate_desc_"+num+"'>Rebate Description</label> \
 						<input type='text' id='pro_rebate_desc_"+num+"' value='' /> \
-						<!-- @mcn --> \
-						<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_rebate_display_weight_"+num+"' value='0' checked='checked' /> Above Total in Portal<br /> \
-						<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_rebate_display_weight_"+num+"' value='1' /> Below Total in Portal \					</div>";
+						<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_rebate_display_weight_"+num+"' value='0' checked='checked' /> Take before total<br /> \
+						<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_rebate_display_weight_"+num+"' value='1' /> Take after total \
+					</div>";
 			$(this.parentNode.nextElementSibling).append($(ar));
 		});
 		$("a[title='Delete Rebate']",$(t.el)).live("click",function() {
+			$(this.parentNode.parentNode).remove();
+		});
+		// data monitors
+		$("a[title='Add Data Monitor']",$(t.el)).live("click",function() {
+			var kids = $(this.parentNode.nextElementSibling).children();
+			var num = 1;
+			if(kids.length > 0) {
+				kids.each(function(i) {
+					var n = this.id.substring(8);
+					if(n = num) num = n+1;
+					console.log(n,num);
+				});
+			}
+			
+			
+			var am = "<div class='form-column' id='monitor_"+num+"'> \
+						<label style='padding-bottom:5px;' for='pro_data_monitors_"+num+"'>Monitor Model <a href='javascript:void(0);' title='Delete Data Monitor' class='lesser' style='vertical-align:bottom; padding:0 0 0 5px;'>&#10005;</a></label> \
+						<select class='required' id='pro_data_monitors_"+num+"'>"+$('#data').data('data_monitors')+"</select> \
+						<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_data_monitor_types_"+num+"' value='1' checked='checked' /> Fee built-in<br /> \
+						<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_data_monitor_types_"+num+"' value='0' /> Fee not built-in \
+					</div>";
+			$(this.parentNode.nextElementSibling).append($(am));
+		});
+		$("a[title='Delete Data Monitor']",$(t.el)).live("click",function() {
 			$(this.parentNode.parentNode).remove();
 		});
 		// incentive
@@ -5359,7 +5667,7 @@ var Proposals = Module.extend({
 		this.io.request(this,this.itemFormOptions()+"&table="+this.dbTable+"&jobID="+$($("#data").data("job")).data("ID")+"&offID="+$($("#data").data("job")).data("officeID")+"&es_do=getOptions");
 	},
 	itemFormOptions:function() {
-		return "menus=pro_zones,pro_inter_method,pro_inverter&sources=es_zones,es_inter_comps,es_inverters&columns=ID,int_model_num,inv_model_num";
+		return "menus=pro_zones,pro_inter_method,pro_inverter,pro_data_monitors&sources=es_zones,es_inter_comps,es_inverters,es_data_monitoring&columns=ID,int_model_num,inv_model_num,dat_model_num";
 	},
 	receive:function(json) {
 		this._super();
@@ -5420,7 +5728,7 @@ var Proposals = Module.extend({
 				this.io.request(this,"table="+this.dbTable+"&order="+this.dbOrder+"&wc="+this.s.filter+"!!pro_officeID='"+$('#data').data('rep').rep_officeID+"'&"+this.itemFormOptions()+"&es_do=browseAllProposals");
 				break;
 			case this.dbTable+" updated" :
-				$("#pro"+this.currentRowID).html(this.rowContent(json.data)).show();
+				$("#pro"+this.currentRowID).html(this.rowContent(json.data,json.data2.rep)).show();
 				$("#edit-pro"+this.currentRowID).html(this.editRowContent(json.data,json.data2)).hide();
 				// get the calculations
 				this.io.request(this,"id="+this.currentRowID+"&es_do=getPropCalcs");
@@ -5437,7 +5745,7 @@ var Proposals = Module.extend({
 				var drafts = this.drafts || this;
 				// create the row
 				var html = "<tr id='pro"+json.data.ID+"' class='cloned-row'>";
-				html += drafts.rowContent(json.data);
+				html += drafts.rowContent(json.data,json.data2.rep);
 				html += "</tr>";
 				html += "<tr id='edit-pro"+json.data.ID+"' style='display:none;' class='quick-edit cloned-row'>";
 				html += drafts.editRowContent(json.data,json.data2);
@@ -5466,6 +5774,7 @@ var Proposals = Module.extend({
 					html += "<tr>";
 					html += "<th colspan='1'>#</th>";
 					html += "<th colspan='1'>Project Name</th>";
+					html += "<th colspan='1'>Sales Rep</th>";
 					html += "<th colspan='1' align='right'>System Size (kW)</th>";
 					html += "<th colspan='1' align='right'>Price ($)</th>";
 					html += "<th colspan='1' align='right'>PPW Gross ($/W)</th>";
@@ -5482,7 +5791,7 @@ var Proposals = Module.extend({
 				}
 				// write the row
 				var row = "<tr id='pro"+json.data.ID+"' class='moved'>";
-				row += this.submitted.rowContent(json.data);
+				row += this.submitted.rowContent(json.data,json.data2.rep);
 				row += "</tr>";
 				row += "<tr id='edit-pro"+json.data.ID+"' style='display:none;' class='quick-edit moved'>";
 				row += this.submitted.editRowContent(json.data,json.data2);
@@ -5513,6 +5822,7 @@ var Proposals = Module.extend({
 					html += "<tr>";
 					html += "<th colspan='1'>#</th>";
 					html += "<th colspan='1'>Project Name</th>";
+					html += "<th colspan='1'>Sales Rep</th>";
 					html += "<th colspan='1' align='right'>System Size (kW)</th>";
 					html += "<th colspan='1' align='right'>Price ($)</th>";
 					html += "<th colspan='1' align='right'>PPW Gross ($/W)</th>";
@@ -5529,7 +5839,7 @@ var Proposals = Module.extend({
 				}
 				// write the row
 				var row = "<tr id='pro"+json.data.ID+"' class='moved'>";
-				row += this.published.rowContent(json.data);
+				row += this.published.rowContent(json.data,json.data2.rep);
 				row += "</tr>";
 				// remove from proposal drafts
 				$("#pro"+this.currentRowID).remove();
@@ -5556,6 +5866,7 @@ var Proposals = Module.extend({
 				html += "<tr>";
 				html += "<th colspan='1'>#</th>";
 				html += "<th colspan='1'>Project Name</th>";
+				html += "<th colspan='1'>Sales Rep</th>";
 				html += "<th colspan='1' align='right'>System Size (kW)</th>";
 				html += "<th colspan='1' align='right'>Price ($)</th>";
 				html += "<th colspan='1' align='right'>PPW Gross ($/W)</th>";
@@ -5570,7 +5881,7 @@ var Proposals = Module.extend({
 				for(var i=0;i<json.data.length;i++) {
 					// write the rows
 					html += "<tr id='pro"+json.data[i].ID+"' class='"+color[(i+1)%2]+"'>";
-					html += this.rowContent(json.data[i]);
+					html += this.rowContent(json.data[i],json.data2.rep[i]);
 					html += "</tr>";
 					html += "<tr id='edit-pro"+json.data[i].ID+"' style='display:none;' class='quick-edit "+color[(i+1)%2]+"'>";
 					html += this.editRowContent(json.data[i],json.data2);
@@ -5631,24 +5942,30 @@ var Proposals = Module.extend({
 				var default_cover_letter = json.data.pro_cover_letter;
 				// make the form
 				var form = "<form class='addproposalform' action='javascript:void(0);'> \
-							<h1 class='add-proposal-section'>Zone Info</h1> \
+							<div class='form-break'></div> \
+							<br /> \
+							<h1 class='add-proposal-section'>Zones</h1> \
 							<div class='form-column'> \
 								<label id='pro_zones'>Choose Project Zones:</label> \
 								"+selects.pro_zones+" \
 							</div> \
 							<div class='clear'></div> \
 							<br /> \
+							<div class='form-break'></div> \
+							<br /> \
 							\
 							<h1 class='add-proposal-section'>Inverters&nbsp;&nbsp;<a class='adder' title='Add Inverter(s)' href='javascript:void(0);'>+</a></h1> \
 							<div> \
 								<div class='form-column'> \
-									<label style='padding-bottom:5px;' for='pro_inter_method_1'>Interconnection Method <a href='javascript:void(0);' title='Delete Inverter(s)' class='lesser' style='vertical-align:bottom; padding:0 0 0 52px;'>&#10005;</a></label> \
+									<label style='padding-bottom:5px;' for='pro_inter_method_1'>Interconnection Method <a href='javascript:void(0);' title='Delete Inverter(s)' class='lesser' style='vertical-align:bottom; padding:0 0 0 5px;'>&#10005;</a></label> \
 									<select class='required' id='pro_inter_method_1'>"+selects.pro_inter_method+"</select> \
 									<label style='padding-bottom:5px;' for='pro_inverter_1'>Inverter Type</label> \
 									<select class='required inverter-select' id='pro_inverter_1'>"+selects.pro_inverter+"</select> \
 								</div> \
 							</div> \
 							<div class='clear'></div> \
+							<br /> \
+							<div class='form-break'></div> \
 							<br /> \
 							\
 							<h1 class='add-proposal-section'>Miscellaneous</h1> \
@@ -5680,6 +5997,8 @@ var Proposals = Module.extend({
 							</div> \
 							<div class='clear'></div> \
 							<br /> \
+							<div class='form-break'></div> \
+							<br /> \
 							\
 							<h1 class='add-proposal-section'>Other Costs & Fees</h1> \
 							<div class='form-column'> \
@@ -5701,7 +6020,7 @@ var Proposals = Module.extend({
 							<div class='form-column'> \
 								<label for='pro_misc_materials'>Misc. Materials ($)</label> \
 								<input type='text' id='pro_misc_materials' value='0' /> \
-								<label for='pro_misc_materials_up'>Misc. Materials Margin (%)</label> \
+								<label for='pro_misc_materials_up'>Misc. Mat. Extra Margin (%)</label> \
 								<input type='text' id='pro_misc_materials_up' value='0' /> \
 								<label for='pro_misc_materials_desc'>Misc. Materials Description</label> \
 								<input type='text' id='pro_misc_materials_desc' value='' /> \
@@ -5720,11 +6039,13 @@ var Proposals = Module.extend({
 							</div> \
 							<div class='clear'></div> \
 							<br /> \
+							<div class='form-break'></div> \
+							<br /> \
 							\
 							<h1 class='add-proposal-section'>Additional Rebates&nbsp;&nbsp;<a class='adder' title='Add Rebate' href='javascript:void(0);'>+</a></h1> \
 							<div> \
 								<div class='form-column'> \
-									<label for='pro_rebate_type_1'>Rebate Type <a href='javascript:void(0);' title='Delete Rebate' class='lesser' style='vertical-align:bottom; padding:0 0 0 84px;'>&#10005;</a></label> \
+									<label for='pro_rebate_type_1'>Rebate Type <a href='javascript:void(0);' title='Delete Rebate' class='lesser' style='vertical-align:bottom; padding:0 0 0 5px;'>&#10005;</a></label> \
 									<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_rebate_type_1' value='0' checked='checked' /> $/W \
 									<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_rebate_type_1' value='1' /> Percent \
 									<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_rebate_type_1' value='2' /> Fixed \
@@ -5732,12 +6053,27 @@ var Proposals = Module.extend({
 									<input type='text' id='pro_rebate_amnt_1' value='' /> \
 									<label for='pro_rebate_desc_1'>Rebate Description</label> \
 									<input type='text' id='pro_rebate_desc_1' value='' /> \
-									<!-- @mcn --> \
-									<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_rebate_display_weight_1' value='0' checked='checked' /> Above Total in Portal<br /> \
-									<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_rebate_display_weight_1' value='1' /> Below Total in Portal \
+									<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_rebate_display_weight_1' value='0' checked='checked' /> Take before total<br /> \
+									<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_rebate_display_weight_1' value='1' /> Take after total \
 								</div> \
 							</div> \
 							<div class='clear'></div> \
+							<br /> \
+							<div class='form-break'></div> \
+							<br /> \
+							\
+							<h1 class='add-proposal-section'>Data Monitors&nbsp;&nbsp;<a class='adder' title='Add Data Monitor' href='javascript:void(0);'>+</a></h1> \
+							<div> \
+								<div class='form-column' id='monitor_1'> \
+									<label style='padding-bottom:5px;' for='pro_data_monitors_1'>Monitor Model <a href='javascript:void(0);' title='Delete Data Monitor' class='lesser' style='vertical-align:bottom; padding:0 0 0 5px;'>&#10005;</a></label> \
+									<select class='required' id='pro_data_monitors_1'>"+selects.pro_data_monitors+"</select> \
+									<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_data_monitor_types_1' value='1' checked='checked' /> Fee built-in<br /> \
+									<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_data_monitor_types_1' value='0' /> Fee not built-in \
+								</div> \
+							</div> \
+							<div class='clear'></div> \
+							<br /> \
+							<div class='form-break'></div> \
 							<br /> \
 							\
 							<h1 class='add-proposal-section'>Options</h1> \
@@ -5752,10 +6088,14 @@ var Proposals = Module.extend({
 							</div> \
 							<div class='clear'></div> \
 							<br /> \
+							<div class='form-break'></div> \
+							<br /> \
 							\
 							<h1 class='add-proposal-section'>Cover Letter</h1> \
 							<textarea id='pro_cover_letter' style='width:100%; height:200px;'>"+default_cover_letter+"</textarea> \
 							<div class='clear'></div> \
+							<br /> \
+							<div class='form-break'></div> \
 							<br /> \
 							<input type='submit' title='Preview' value='Preview' /> \
 							<input type='submit' title='Add' value='Add New' /> \
@@ -5764,9 +6104,9 @@ var Proposals = Module.extend({
 						</form>";
 						// write the form
 						$(".dashboard-item-content",$(this.el)).html("<h1 id='proposals-header' class='addform-header'>New Proposal Info:</h1><br />"+form);
-						// add data for interconnections
-						$("#data").data("inter_methods",selects.pro_inter_method).data("inverters",selects.pro_inverter);
-						$("#data").data("inter-holder-id","new");
+						// add data for interconnections and monitors
+						$("#data").data("inter_methods",selects.pro_inter_method).data("inverters",selects.pro_inverter).data("data_monitors",selects.pro_data_monitors);
+						//$("#data").data("inter-holder-id","new");
 						// go to it
 						$.scrollTo(this.el);
 				break;
@@ -5776,7 +6116,7 @@ var Proposals = Module.extend({
 				break;
 		}
 	},
-	rowContent:function(data) {
+	rowContent:function(data,rep) {
 		this._super();
 		// vars
 		var panel, action;
@@ -5812,12 +6152,13 @@ var Proposals = Module.extend({
 		row += panel;
 		row += "</td>";
 		row += "<td colspan='1'>"+data.pro_name+"</td>";
+		row += "<td colspan='1'>"+rep+"</td>";
 		row += "<td id='pro_size-"+data.ID+"' colspan='1' align='right'><img src='gfx/emailing.gif' alt='loading...' /></td>";
 		row += "<td id='pro_price-"+data.ID+"' colspan='1' align='right'><img src='gfx/emailing.gif' alt='loading...' /></td>";
 		row += "<td id='pro_ppw_gross-"+data.ID+"' colspan='1' align='right'><img src='gfx/emailing.gif' alt='loading...' /></td>";
 		row += "<td id='pro_ppw_net-"+data.ID+"' colspan='1' align='right'><img src='gfx/emailing.gif' alt='loading...' /></td>";
 		row += "<td id='pro_margin-"+data.ID+"' colspan='1' align='right'><img src='gfx/emailing.gif' alt='loading...' /></td>";
-		row += "<td colspan='1' align='right'>"+$.tsToDate(data[this.s.date.src])+"</td>";
+		row += "<td colspan='1' class='date-txt' align='right'>"+$.tsToDate(data[this.s.date.src])+"</td>";
 		row += action;
 		return row;
 	},
@@ -5835,7 +6176,7 @@ var Proposals = Module.extend({
 					menu += "<input style='display:inline;' type='checkbox' id='choose-zone"+data2[set][options].ID+"' class='choose-zones' value='' "+checked+" /> "+data2[set][options].zon_name+" ("+data2[set][options].zon_size+" kW)<br />";
 				}
 				selects['pro_zones'] = menu;
-			} else if(set=="pro_inter_method" || set=="pro_inverter") {
+			} else if(set=="pro_inter_method" || set=="pro_inverter" || set=="pro_data_monitors") {
 				var parsed = data[set].substring(0,data[set].length-1).split(",");
 				// clean up, remove duplicates
 				if(set=="pro_inverter") {
@@ -5883,7 +6224,7 @@ var Proposals = Module.extend({
 			}
 		}
 		// add inverters
-		var inverters = data.pro_inverter.substring(0,data.pro_inverter.length-1).split(",");
+		var inverters = data.pro_inverter ? data.pro_inverter.substring(0,data.pro_inverter.length-1).split(",") : [];
 		var duplicates = [];
 		for(i in inverters) duplicates[i] = 0;
 		for(i in inverters) {
@@ -5921,7 +6262,7 @@ var Proposals = Module.extend({
 			var clear = (i+1)%4==1 ? "clear" : ""; var qnty;
 			qnty = duplicates[i]!=-1 ? "<div class='inverter-qnty-holder'><span style='color:#808080;'>x </span>&nbsp;<input style='display:inline; width:30px; text-align:right;' type='text' id='qnty-pro_inverter_"+(i+1)+"' value='"+duplicates[i]+"' /></div>" : "";
 			inverters_html += "<div class='form-column "+clear+"'> \
-								<label style='padding-bottom:5px;' for='pro_inter_method_"+(i+1)+"'>Interconnection Method <a href='javascript:void(0);' title='Delete Inverter(s)' class='lesser' style='vertical-align:bottom; padding:0 0 0 52px;'>&#10005;</a></label> \
+								<label style='padding-bottom:5px;' for='pro_inter_method_"+(i+1)+"'>Interconnection Method <a href='javascript:void(0);' title='Delete Inverter(s)' class='lesser' style='vertical-align:bottom; padding:0 0 0 5px;'>&#10005;</a></label> \
 						   		<select class='required' id='pro_inter_method_"+(i+1)+"'>"+selects['pro_inter_method_'+(i+1)]+"</select> \
 						   		<label style='padding-bottom:5px;' for='pro_inverter_"+(i+1)+"'>Inverter Type</label> \
 						   		<select class='required inverter-select' id='pro_inverter_"+(i+1)+"'>"+selects['pro_inverter_'+(i+1)]+"</select> \
@@ -5933,9 +6274,8 @@ var Proposals = Module.extend({
 		var types = data.pro_rebate_type ? data.pro_rebate_type.substring(0,data.pro_rebate_type.length-1).split(",") : [];
 		var amnts = data.pro_rebate_amnt ? data.pro_rebate_amnt.substring(0,data.pro_rebate_amnt.length-1).split(",") : [];
 		var descs = data.pro_rebate_desc ? data.pro_rebate_desc.substring(0,data.pro_rebate_desc.length-1).split(",") : [];
-		// @mcn
 		var display_weights = data.pro_rebate_display_weight ? data.pro_rebate_display_weight.substring(0,data.pro_rebate_display_weight.length-1).split(",") : [];
-		
+		// build rebates
 		for(i=0;i<types.length;i++) {
 			var type_html = "";
 			var display_weight_html = "";
@@ -5958,25 +6298,45 @@ var Proposals = Module.extend({
 			}
 			switch(display_weights[i]) {
 				case "0": case undefined :
-					display_weight_html = "<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_rebate_display_weight_"+(i+1)+"' value='0' checked='checked' /> Above Total in Portal <br /> \
-                                           <input style='display:inline; margin:5px 0 0;' type='radio' name='pro_rebate_display_weight_"+(i+1)+"' value='1' /> Below Total in Portal";
+					display_weight_html = "<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_rebate_display_weight_"+(i+1)+"' value='0' checked='checked' /> Take before total <br /> \
+                                           <input style='display:inline; margin:5px 0 0;' type='radio' name='pro_rebate_display_weight_"+(i+1)+"' value='1' /> Take after total";
 					break;
 				case "1" :
-					display_weight_html = "<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_rebate_display_weight_"+(i+1)+"' value='0' /> Above Total in Portal <br /> \
-                                           <input style='display:inline; margin:5px 0 0;' type='radio' name='pro_rebate_display_weight_"+(i+1)+"' value='1' checked='checked' /> Below Total in Portal";
+					display_weight_html = "<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_rebate_display_weight_"+(i+1)+"' value='0' /> Take before total <br /> \
+                                           <input style='display:inline; margin:5px 0 0;' type='radio' name='pro_rebate_display_weight_"+(i+1)+"' value='1' checked='checked' /> Take after total";
 					break;
 			}
-			
 			rebates_html += "<div class='form-column'> \
-								<label for='pro_rebate_type_"+(i+1)+"'>Rebate Type <a href='javascript:void(0);' title='Delete Rebate' class='lesser' style='vertical-align:bottom; padding:0 0 0 84px;'>&#10005;</a></label> \
+								<label for='pro_rebate_type_"+(i+1)+"'>Rebate Type <a href='javascript:void(0);' title='Delete Rebate' class='lesser' style='vertical-align:bottom; padding:0 0 0 5px;'>&#10005;</a></label> \
 								"+type_html+" \
 								<label for='pro_rebate_amnt_"+(i+1)+"' style='padding:5px 0 2px;'>Rebate Amount</label> \
 								<input type='text' id='pro_rebate_amnt_"+(i+1)+"' value='"+amnts[i]+"' /> \
 								<label for='pro_rebate_desc_"+(i+1)+"'>Rebate Description</label> \
 								<input type='text' id='pro_rebate_desc_"+(i+1)+"' value='"+descs[i]+"' /> \
 								"+display_weight_html+" \
-							</div>";		
-
+							</div>";
+		}
+		// data monitors
+		var monitors_html = "";
+		var monitors = data.pro_data_monitors ? data.pro_data_monitors.substring(0,data.pro_data_monitors.length-1).split(",") : [];
+		var types = data.pro_data_monitor_types ? data.pro_data_monitor_types.substring(0,data.pro_data_monitor_types.length-1).split(",") : [];
+		// built data monitors
+		for(i=0;i<monitors.length;i++) {
+			switch(types[i]) {
+				case "1": case undefined :
+					monitor_types_html = "<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_data_monitor_types_"+(i+1)+"' value='1' checked='checked' /> Fee built-in<br /> \
+										  <input style='display:inline; margin:5px 0 0;' type='radio' name='pro_data_monitor_types_"+(i+1)+"' value='0' /> Fee not built-in";
+					break;
+				case "0" :
+					monitor_types_html = "<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_data_monitor_types_"+(i+1)+"' value='1' /> Fee built-in<br /> \
+										  <input style='display:inline; margin:5px 0 0;' type='radio' name='pro_data_monitor_types_"+(i+1)+"' value='0' checked='checked' /> Fee not built-in";
+					break;
+			}
+			monitors_html += "<div class='form-column' id='monitor_"+(i+1)+"'> \
+								<label style='padding-bottom:5px;' for='pro_data_monitors_"+(i+1)+"'>Monitor Model <a href='javascript:void(0);' title='Delete Data Monitor' class='lesser' style='vertical-align:bottom; padding:0 0 0 5px;'>&#10005;</a></label> \
+								<select class='required' id='pro_data_monitors_"+(i+1)+"'>"+selects['pro_data_monitors_'+(i+1)]+"</select> \
+								"+monitor_types_html+" \
+							</div>";
 		}
 		// yes or no selects
 		var pro_winter_selects = (data.pro_winter==1) ? "<option value='1' selected='selected'>yes</option><option value='0'>no</option>" : "<option value='1'>yes</option><option value='0' selected='selected'>no</option>";
@@ -5989,17 +6349,22 @@ var Proposals = Module.extend({
 		if(data.pro_cover_letter==null) data.pro_cover_letter = "";
 		else data.pro_cover_letter = data.pro_cover_letter.replace(/#amp;/g,"&");
 		// add data for interconnections
-		$("#data").data("inter_methods",selects.pro_inter_method).data("inverters",selects.pro_inverter);
+		$("#data").data("inter_methods",selects.pro_inter_method).data("inverters",selects.pro_inverter).data("data_monitors",selects.pro_data_monitors);
 		// create the quick edit form
-		var edit = "<td colspan='9'>";
+		var edit = "<td colspan='10'>";
 		edit += "<form class='updateproposalform' action='javascript:void(0);'> \
-					<h1 class='addform-header'>Quick Edit</h1> \
+					<h1 class='addform-header'>Quick Edit - <span style='text-transform:none;'>"+data.pro_name+", #"+data.ID+"</span>:</h1> \
 					<br /> \
+					<div class='form-break'></div> \
+					<br /> \
+					<h1 class='add-proposal-section'>Zones</h1> \
 					<div class='form-column'> \
-						<label id='pro_zones"+data.ID+"'>Choose Project Zones:</label> \
+						<label style='line-height:16px;' id='pro_zones"+data.ID+"'>Choose Project Zones:</label> \
 						"+selects.pro_zones+" \
 					</div> \
 					<div class='clear'></div> \
+					<br /> \
+					<div class='form-break'></div> \
 					<br /> \
 					\
 					<h1 class='add-proposal-section'>Inverters&nbsp;&nbsp;<a class='adder' title='Add Inverter(s)' href='javascript:void(0);'>+</a></h1> \
@@ -6007,6 +6372,8 @@ var Proposals = Module.extend({
 						"+inverters_html+" \
 					</div> \
 					<div class='clear'></div> \
+					<br /> \
+					<div class='form-break'></div> \
 					<br /> \
 					\
 					<h1 class='add-proposal-section'>Miscellaneous</h1> \
@@ -6036,6 +6403,8 @@ var Proposals = Module.extend({
 					</div> \
 					<div class='clear'></div> \
 					<br /> \
+					<div class='form-break'></div> \
+					<br /> \
 					\
 					<h1 class='add-proposal-section'>Other Costs & Fees</h1> \
 					<div class='form-column'> \
@@ -6057,7 +6426,7 @@ var Proposals = Module.extend({
 					<div class='form-column'> \
 						<label for='pro_misc_materials'>Misc. Materials ($)</label> \
 						<input type='text' id='pro_misc_materials' value='"+data.pro_misc_materials+"' /> \
-						<label for='pro_misc_materials_up'>Misc. Materials Margin (%)</label> \
+						<label for='pro_misc_materials_up'>Misc. Mat. Extra Margin (%)</label> \
 						<input type='text' id='pro_misc_materials_up' value='"+data.pro_misc_materials_up+"' /> \
 						<label for='pro_misc_materials_desc'>Misc. Materials Description</label> \
 						<input type='text' id='pro_misc_materials_desc' value='"+data.pro_misc_materials_desc+"' /> \
@@ -6076,12 +6445,25 @@ var Proposals = Module.extend({
 					</div> \
 					<div class='clear'></div> \
 					<br /> \
+					<div class='form-break'></div> \
+					<br /> \
 					\
 					<h1 class='add-proposal-section'>Additional Rebates&nbsp;&nbsp;<a class='adder' title='Add Rebate' href='javascript:void(0);'>+</a></h1> \
 					<div> \
 						"+rebates_html+" \
 					</div> \
 					<div class='clear'></div> \
+					<br /> \
+					<div class='form-break'></div> \
+					<br /> \
+					\
+					<h1 class='add-proposal-section'>Data Monitors&nbsp;&nbsp;<a class='adder' title='Add Data Monitor' href='javascript:void(0);'>+</a></h1> \
+					<div> \
+						"+monitors_html+" \
+					</div> \
+					<div class='clear'></div> \
+					<br /> \
+					<div class='form-break'></div> \
 					<br /> \
 					\
 					<h1 class='add-proposal-section'>Options</h1> \
@@ -6096,10 +6478,14 @@ var Proposals = Module.extend({
 					</div> \
 					<div class='clear'></div> \
 					<br /> \
+					<div class='form-break'></div> \
+					<br /> \
 					\
 					<h1 class='add-proposal-section'>Cover Letter</h1> \
 					<textarea id='pro_cover_letter' style='width:100%; height:200px;'>"+data.pro_cover_letter+"</textarea> \
 					<div class='clear'></div> \
+					<br /> \
+					<div class='form-break'></div> \
 					<br /> \
 					<input type='submit' title='PreviewQ' value='Preview' /> \
 					<input type='submit' title='Update' value='Update' /> \
@@ -6190,7 +6576,7 @@ $(function() {
 			var time = d.getTime();
 			var tz = $.getTimeZone();
 			var l = new Date(time+(3600000*tz));
-			return l.format("shortDate")+" "+l.format("longTime");
+			return l.format("shortDate")+"<br />"+l.format("longTime");
 		},
 		getTimeZone:function() {
 			var rightNow = new Date();
@@ -6247,9 +6633,9 @@ $(function() {
 			if(code==27) { this.blur(); return false; }
 			// ignore if shift is pressed
 			if(e.shiftKey==1) return false;
-			// ignore if they are press other keys
+			// ignore if they press other keys
 			// strange because code: 39 is the down key AND ' key... and DEL also equals .
-			if(!e.ctrlKey && code!=13 && code!=9 && code!=8 && code!=36 && code!=37 && code!=38 && (code!=39 || (code==39 && character=="'")) && code!=40)
+			if(!e.ctrlKey && !e.metaKey && code!=13 && code!=9 && code!=8 && code!=36 && code!=37 && code!=38 && (code!=39 || (code==39 && character=="'")) && code!=40 && code!=91)
 				return (character.match(/[1234567890]/g)) ? true : false;
 			else return true;
 		},
@@ -6277,6 +6663,7 @@ $(function() {
 	var _angles_io = new IO();
 	var _mounting_met_io = new IO();
 	var _mounting_med_io = new IO();
+	var _data_monitoring_io = new IO();
 	// create super objects
 	var offices = new Offices("#m_offices",_offices_io);
 	var modules = new Modules("#m_modules",_modules_io);
@@ -6288,6 +6675,7 @@ $(function() {
 	var angles = new Angles("#m_angles",_angles_io);
 	var mounting_met = new MountingMethods("#m_mounting_met",_mounting_met_io);
 	var mounting_med = new MountingMediums("#m_mounting_med",_mounting_med_io);
+	var data_monitoring = new DataMonitoring("#m_data_monitoring",_data_monitoring_io);
 	// create office io
 	var _settings_io = new IO();
 	var _reps_io = new IO();
@@ -6369,7 +6757,7 @@ $(function() {
 	published.drafts = drafts;
 	approved.drafts = drafts;
 	// try to resume login
-	login.isSuper = [offices, modules, inverters, racking, connects, inters, types, angles, mounting_met, mounting_med];
+	login.isSuper = [offices, modules, inverters, racking, connects, inters, types, angles, mounting_met, mounting_med, data_monitoring];
 	login.isOffice = [settings, reps];
 	login.isAdmin = [customers, jobs, drafts, submitted, published, approved];
 	login.isRep = [customers, jobs, drafts, submitted, published, approved];
