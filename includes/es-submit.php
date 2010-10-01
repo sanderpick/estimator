@@ -1132,7 +1132,7 @@ function makeZone($zone,$officeID) {
 	$per_landscape_labor_hrs = 0; //$zone['zon_per_landscape']*0.005;
 	//$num_cont_arrays_labor_hrs = $zone['zon_num_cont_arrays'] > 8 ? 1 : ($zone['zon_num_cont_arrays']*0.125)-0.125;
 	$num_cont_arrays_labor_hrs = 0;
-	$labor_unit_hrs = $module_labor_hrs + $racking_method_labor_hrs + $racking_medium_labor_hrs + $pitch_labor_hrs + $per_landscape_labor_hrs + $num_cont_arrays_labor_hrs;
+	$labor_unit_hrs = $module_labor_hrs+$racking_method_labor_hrs+$racking_medium_labor_hrs+$pitch_labor_hrs+$per_landscape_labor_hrs+$num_cont_arrays_labor_hrs;
 	$labor_hrs = $labor_unit_hrs*$zone['zon_num_modules'];
 	$labor_cost = $labor_unit_hrs*$labor_unit_cost*$zone['zon_num_modules'];
 	$labor_price = $labor_unit_hrs*$labor_unit_price*$zone['zon_num_modules'];
