@@ -521,7 +521,7 @@ CREATE TABLE `es_mounting_methods` (
 	`met_desc` varchar(100) NOT NULL default '',
 	`met_cost` decimal(10,2),
 	`met_price` decimal(10,2),
-	`met_labor` decimal(10,2),
+	`met_labor` decimal(10,3),
 	
 	`active` int(1) NOT NULL default '1',
 
