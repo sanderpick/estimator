@@ -2315,9 +2315,9 @@ var MountingMethods = Module.extend({
 				html += "<tr>";
 				html += "<th colspan='1'>Method</th>";
 				html += "<th colspan='1'>Description</th>";
-				html += "<th colspan='1' align='right'>Cost ($)</th>";
-				html += "<th colspan='1' align='right'>Price ($)</th>";
-				html += "<th colspan='1' align='right'>Labor (hrs/connection)</th>";
+				html += "<th colspan='1' align='right' style='white-space:nowrap;'>Cost ($)</th>";
+				html += "<th colspan='1' align='right' style='white-space:nowrap;'>Price ($)</th>";
+				html += "<th colspan='1' align='right' style='white-space:nowrap;'>Labor (hrs/connection)</th>";
 				html += "<th colspan='1' align='right'>Active</th>";
 				html += "</tr>";
 				html += "</thead>";
