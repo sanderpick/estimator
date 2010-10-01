@@ -2263,10 +2263,16 @@ var MountingMethods = Module.extend({
 					<div class='form-column'> \
 						<label for='met_value'>Method</label> \
 						<input class='required' type='text' id='met_value' value='' /> \
+						<label for='met_desc'>Description</label> \
+						<input class='required' type='text' id='met_desc' value='' /> \
+					</div> \
+					<div class='form-column'> \
 						<label for='met_cost'>Cost ($)</label> \
 						<input class='required' type='text' id='met_cost' value='' /> \
 						<label for='met_price'>Price ($)</label> \
 						<input class='required' type='text' id='met_price' value='' /> \
+					</div> \
+					<div class='form-column-right'> \
 						<label for='met_labor'>Labor (hrs/connection)</label> \
 						<input class='required' type='text' id='met_labor' value='' /> \
 						<label for='active'>Active</label> \
@@ -2308,6 +2314,7 @@ var MountingMethods = Module.extend({
 				html += "<thead>";
 				html += "<tr>";
 				html += "<th colspan='1'>Method</th>";
+				html += "<th colspan='1'>Description</th>";
 				html += "<th colspan='1' align='right'>Cost ($)</th>";
 				html += "<th colspan='1' align='right'>Price ($)</th>";
 				html += "<th colspan='1' align='right'>Labor (hrs/connection)</th>";
@@ -2352,6 +2359,7 @@ var MountingMethods = Module.extend({
 		row += "<a href='javascript:void(0);' class='trash-link' title='Trash'>Trash</a>";
 		row += "</span>";
 		row += "</td>";
+		row += "<td colspan='1'>"+data.met_desc+"</td>";
 		row += "<td colspan='1' align='right'>"+data.met_cost+"</td>";
 		row += "<td colspan='1' align='right'>"+data.met_price+"</td>";
 		row += "<td colspan='1' align='right'>"+data.met_labor+"</td>";
@@ -2363,17 +2371,23 @@ var MountingMethods = Module.extend({
 		// create the edit row
 		var sel_yes = (data.active=="yes") ? "selected='selected'" : "";
 		var sel_no = (data.active=="no") ? "selected='selected'" : "";
-		var edit = "<td colspan='5'>";
+		var edit = "<td colspan='6'>";
 		edit += "<form class='updateform' action='javascript:void(0);'> \
 					<h1 class='addform-header'>Quick Edit</h1> \
 					<br /> \
 					<div class='form-column'> \
 						<label for='met_value'>Method</label> \
 						<input class='required' type='text' id='met_value' value='"+data.met_value+"' /> \
+						<label for='met_desc'>Description</label> \
+						<input class='required' type='text' id='met_desc' value='"+data.met_desc+"' /> \
+					</div> \
+					<div class='form-column'> \
 						<label for='met_cost'>Cost ($)</label> \
 						<input class='required' type='text' id='met_cost' value='"+data.met_cost+"' /> \
 						<label for='met_price'>Price ($)</label> \
 						<input class='required' type='text' id='met_price' value='"+data.met_price+"' /> \
+					</div> \
+					<div class='form-column-right'> \
 						<label for='met_labor'>Labor (hrs/connection)</label> \
 						<input class='required' type='text' id='met_labor' value='"+data.met_labor+"' /> \
 						<label for='active'>Active</label> \
@@ -5569,9 +5583,16 @@ var Proposals = Module.extend({
 		});
 		// interconnections
 		$("a[title='Add Inverter(s)']",$(t.el)).live("click",function() {
-			var num = this.parentNode.nextElementSibling.childElementCount+1;
-			var clear = num%4==1 ? "clear" : "";
-			var ai = "<div class='form-column "+clear+"'> \
+			var kids = $(this.parentNode.nextElementSibling).children();
+			var num = 1;
+			if(kids.length > 0) {
+				kids.each(function(i) {
+					var id = parseInt(this.id.substring(9));
+					if(id > num) num = id;
+				});
+				num++;
+			}
+			var ai = "<div class='form-column' id='inverter_"+num+"'> \
 							<label style='padding-bottom:5px;' for='pro_inter_method_"+num+"'>Interconnection Method <a href='javascript:void(0);' title='Delete Inverter(s)' class='lesser' style='vertical-align:bottom; padding:0 0 0 5px;'>&#10005;</a></label> \
 							<select class='required' id='pro_inter_method_"+num+"'>"+$('#data').data('inter_methods')+"</select> \
 							<label style='padding-bottom:5px;' for='pro_inverter_"+num+"'>Inverter Type</label> \
@@ -5591,8 +5612,16 @@ var Proposals = Module.extend({
 		});
 		// rebates
 		$("a[title='Add Rebate']",$(t.el)).live("click",function() {
-			var num = this.parentNode.nextElementSibling.childElementCount+1;
-			var ar = "<div class='form-column'> \
+			var kids = $(this.parentNode.nextElementSibling).children();
+			var num = 1;
+			if(kids.length > 0) {
+				kids.each(function(i) {
+					var id = parseInt(this.id.substring(7));
+					if(id > num) num = id;
+				});
+				num++;
+			}
+			var ar = "<div class='form-column' id='rebate_"+num+"'> \
 						<label for='pro_rebate_type_"+num+"'>Rebate Type <a href='javascript:void(0);' title='Delete Rebate' class='lesser' style='vertical-align:bottom; padding:0 0 0 5px;'>&#10005;</a></label> \
 						<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_rebate_type_"+num+"' value='0' checked='checked' /> $/W \
 						<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_rebate_type_"+num+"' value='1' /> Percent \
@@ -5615,13 +5644,11 @@ var Proposals = Module.extend({
 			var num = 1;
 			if(kids.length > 0) {
 				kids.each(function(i) {
-					var n = this.id.substring(8);
-					if(n = num) num = n+1;
-					console.log(n,num);
+					var id = parseInt(this.id.substring(8));
+					if(id > num) num = id;
 				});
+				num++;
 			}
-			
-			
 			var am = "<div class='form-column' id='monitor_"+num+"'> \
 						<label style='padding-bottom:5px;' for='pro_data_monitors_"+num+"'>Monitor Model <a href='javascript:void(0);' title='Delete Data Monitor' class='lesser' style='vertical-align:bottom; padding:0 0 0 5px;'>&#10005;</a></label> \
 						<select class='required' id='pro_data_monitors_"+num+"'>"+$('#data').data('data_monitors')+"</select> \
@@ -5956,7 +5983,7 @@ var Proposals = Module.extend({
 							\
 							<h1 class='add-proposal-section'>Inverters&nbsp;&nbsp;<a class='adder' title='Add Inverter(s)' href='javascript:void(0);'>+</a></h1> \
 							<div> \
-								<div class='form-column'> \
+								<div class='form-column' id='inverter_1'> \
 									<label style='padding-bottom:5px;' for='pro_inter_method_1'>Interconnection Method <a href='javascript:void(0);' title='Delete Inverter(s)' class='lesser' style='vertical-align:bottom; padding:0 0 0 5px;'>&#10005;</a></label> \
 									<select class='required' id='pro_inter_method_1'>"+selects.pro_inter_method+"</select> \
 									<label style='padding-bottom:5px;' for='pro_inverter_1'>Inverter Type</label> \
@@ -6044,7 +6071,7 @@ var Proposals = Module.extend({
 							\
 							<h1 class='add-proposal-section'>Additional Rebates&nbsp;&nbsp;<a class='adder' title='Add Rebate' href='javascript:void(0);'>+</a></h1> \
 							<div> \
-								<div class='form-column'> \
+								<div class='form-column' id='rebate_1'> \
 									<label for='pro_rebate_type_1'>Rebate Type <a href='javascript:void(0);' title='Delete Rebate' class='lesser' style='vertical-align:bottom; padding:0 0 0 5px;'>&#10005;</a></label> \
 									<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_rebate_type_1' value='0' checked='checked' /> $/W \
 									<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_rebate_type_1' value='1' /> Percent \
@@ -6259,9 +6286,9 @@ var Proposals = Module.extend({
 		// write inverters
 		var inverters_html = "";
 		for(i=0;i<inverters.length;i++) {
-			var clear = (i+1)%4==1 ? "clear" : ""; var qnty;
+			var qnty;
 			qnty = duplicates[i]!=-1 ? "<div class='inverter-qnty-holder'><span style='color:#808080;'>x </span>&nbsp;<input style='display:inline; width:30px; text-align:right;' type='text' id='qnty-pro_inverter_"+(i+1)+"' value='"+duplicates[i]+"' /></div>" : "";
-			inverters_html += "<div class='form-column "+clear+"'> \
+			inverters_html += "<div class='form-column' id='inverter_"+(i+1)+"'> \
 								<label style='padding-bottom:5px;' for='pro_inter_method_"+(i+1)+"'>Interconnection Method <a href='javascript:void(0);' title='Delete Inverter(s)' class='lesser' style='vertical-align:bottom; padding:0 0 0 5px;'>&#10005;</a></label> \
 						   		<select class='required' id='pro_inter_method_"+(i+1)+"'>"+selects['pro_inter_method_'+(i+1)]+"</select> \
 						   		<label style='padding-bottom:5px;' for='pro_inverter_"+(i+1)+"'>Inverter Type</label> \
@@ -6306,7 +6333,7 @@ var Proposals = Module.extend({
                                            <input style='display:inline; margin:5px 0 0;' type='radio' name='pro_rebate_display_weight_"+(i+1)+"' value='1' checked='checked' /> Take after total";
 					break;
 			}
-			rebates_html += "<div class='form-column'> \
+			rebates_html += "<div class='form-column' id='rebate_"+(i+1)+"'> \
 								<label for='pro_rebate_type_"+(i+1)+"'>Rebate Type <a href='javascript:void(0);' title='Delete Rebate' class='lesser' style='vertical-align:bottom; padding:0 0 0 5px;'>&#10005;</a></label> \
 								"+type_html+" \
 								<label for='pro_rebate_amnt_"+(i+1)+"' style='padding:5px 0 2px;'>Rebate Amount</label> \

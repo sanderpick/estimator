@@ -31,6 +31,8 @@ function estimate($pro) {
 	$pro_install_labor_price = 0;
 	$pro_module_cost = 0;
 	$pro_module_price = 0;
+	$pro_racking_cost = 0;
+	$pro_racking_price = 0;
 	$pro_mounting_cost = 0;
 	$pro_mounting_price = 0;
 	$pro_rebate_bbl = 0;
@@ -44,8 +46,10 @@ function estimate($pro) {
 		$pro_install_labor_price += $zone->zon_install_labor_price;
 		$pro_module_cost += $zone->zon_module_cost;
 		$pro_module_price += $zone->zon_module_price;
-		$pro_mounting_cost += $zone->zon_racking_cost+$zone->zon_connection_cost;
-		$pro_mounting_price += $zone->zon_racking_price+$zone->zon_connection_price;
+		$pro_racking_cost += $zone->zon_racking_cost;
+		$pro_racking_price += $zone->zon_racking_price;
+		$pro_mounting_cost += $zone->zon_connection_cost;
+		$pro_mounting_price += $zone->zon_connection_price;
 		$pro_rebate_bbl += $zone->zon_rebate;
 	}
 	// make calcs
@@ -61,25 +65,26 @@ function estimate($pro) {
 	// parse data monitors
 	$data_monitors = explode(",",substr($pro->pro_data_monitors,0,-1));
 	$data_monitor_types = explode(",",substr($pro->pro_data_monitor_types,0,-1));
+	$data_monitors_bi_cost = 0;
+	$data_monitors_bi_price = 0;
 	$data_monitors_cost = 0;
 	$data_monitors_price = 0;
 	$data_monitors_labor_hrs = 0;
 	for($i=0;$i<count($data_monitors);$i++) {
-		$m->getRow('es_data_monitoring',$data_monitors[$i],'dat_model_num');
-		$data_monitors_cost += $m->lastData()->dat_cost;
-		$data_monitors_price += $m->lastData()->dat_price;
-		$data_monitors_labor_hrs += $m->lastData()->dat_labor;
-		// if($data_monitor_types[$i]!="") {
-		// 	switch($data_monitor_types[$i]) {
-		// 		case 1 :
-		// 			
-		// 			break;
-		// 		case 0 :
-		// 			
-		// 			break;
-		// 	}
-		// }
+		if($m->getRow('es_data_monitoring',$data_monitors[$i],'dat_model_num')) {
+			if($data_monitor_types[$i]!="") {
+				if($data_monitor_types[$i]==1) {
+					$data_monitors_bi_cost += $m->lastData()->dat_cost;
+					$data_monitors_bi_price += $m->lastData()->dat_price;
+				}
+			}
+			$data_monitors_cost += $m->lastData()->dat_cost;
+			$data_monitors_price += $m->lastData()->dat_price;
+			$data_monitors_labor_hrs += $m->lastData()->dat_labor;
+		}
 	}
+	$data_monitors_bi_cost *= (1 + $off->off_inventory_up*0.01);
+	$data_monitors_bi_price *= (1 + $off->off_inventory_up*0.01)*(1 + $off->off_inventory_margin*0.01);
 	$data_monitors_cost *= (1 + $off->off_inventory_up*0.01);
 	$data_monitors_price *= (1 + $off->off_inventory_up*0.01)*(1 + $off->off_inventory_margin*0.01);
 	// outside coduit
@@ -102,8 +107,7 @@ function estimate($pro) {
 	// driving labor hours
 	$drive_labor_hrs = 2*($job->job_drive_time/60)*$pro->pro_num_trips*$pro->pro_num_installers;
 	// add up
-	// ***$add_labor_hrs = $inter_labor_hrs+$data_monitors_labor_hrs+$conduit_labor_hrs+$zones_labor_hrs+$drive_labor_hrs;
-	$add_labor_hrs = $inter_labor_hrs+$conduit_labor_hrs+$zones_labor_hrs+$drive_labor_hrs;
+	$add_labor_hrs = $inter_labor_hrs+$data_monitors_labor_hrs+$conduit_labor_hrs+$zones_labor_hrs+$drive_labor_hrs;
 	$add_labor_cost = $add_labor_hrs*$labor_unit_cost;
 	$add_labor_price = ($add_labor_hrs*$labor_unit_price)+$pro->pro_fluctuation;
 	// account for off season
@@ -132,10 +136,8 @@ function estimate($pro) {
 	$install_labor_total_cost = $pro_install_labor_cost+$add_labor_cost+$winter_labor_cost+$others_labor_cost;
 	$install_labor_total_price = $pro_install_labor_price+$add_labor_price+$winter_labor_price+$others_labor_price;
 	// inventory items
-	// ***$inventory_cost = $pro_module_cost+$pro_mounting_cost+$data_monitors_cost+$inverter_cost;
-	// ***$inventory_price = $pro_module_price+$pro_mounting_price+$data_monitors_price+$inverter_price;
-	$inventory_cost = $pro_module_cost+$pro_mounting_cost+$inverter_cost;
-	$inventory_price = $pro_module_price+$pro_mounting_price+$inverter_price;
+	$inventory_cost = $pro_module_cost+$pro_racking_cost+$pro_mounting_cost+$data_monitors_cost+$inverter_cost;
+	$inventory_price = $pro_module_price+$pro_racking_price+$pro_mounting_price+$data_monitors_price+$inverter_price;
 	// non-inventory items
 	$non_inventory_cost = ($misc_materials_cost + $conduit_cost)*(1 + $off->off_non_inventory_up*0.01);
 	$non_inventory_price = ($misc_materials_price + $conduit_price)*(1 + $off->off_non_inventory_up*0.01);
@@ -151,8 +153,8 @@ function estimate($pro) {
 	$tax_cost = ceil($pro->pro_taxrate*($inventory_cost+$non_inventory_cost+$misc_materials_cost))/100;
 	$tax_price = ceil($pro->pro_taxrate*($inventory_price+$non_inventory_price+$misc_materials_price))/100;
 	// total -- does not include permit or tax
-	$cost = $install_labor_total_cost+$inventory_cost+$non_inventory_cost+$sub_cost+$equip_cost+$misc_materials_cost;
-	$price = $install_labor_total_price+$inventory_price+$non_inventory_price+$sub_price+$equip_price+$pro->pro_inspection+$misc_materials_price-$pro->pro_discount;
+	$cost = $install_labor_total_cost+$inventory_cost+$non_inventory_cost+$sub_cost+$equip_cost;
+	$price = $install_labor_total_price+$inventory_price+$non_inventory_price+$sub_price+$equip_price+$pro->pro_inspection-$pro->pro_discount;
 	// parse additional rebates
 	$add_rebate_types = explode(",",substr($pro->pro_rebate_type,0,-1));
 	$add_rebate_amnts = explode(",",substr($pro->pro_rebate_amnt,0,-1));
@@ -222,7 +224,7 @@ function estimate($pro) {
 		'ppw_gross'=>round($ppw_gross*100)/100,
 		'ppw_net'=>round($ppw_net*100)/100,
 		// for display only
-		'misc_materials'=>$non_inventory_price,
+		'misc_materials'=>$non_inventory_price+$data_monitors_bi_price,
 		'comp_total'=>$inventory_price+$non_inventory_price,
 		'subtotal'=>number_format($cus_price-$tax_price),
 		'cus_price'=>number_format($cus_price),
