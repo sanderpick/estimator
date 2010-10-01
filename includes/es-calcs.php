@@ -71,16 +71,17 @@ function estimate($pro) {
 	$data_monitors_price = 0;
 	$data_monitors_labor_hrs = 0;
 	for($i=0;$i<count($data_monitors);$i++) {
-		$m->getRow('es_data_monitoring',$data_monitors[$i],'dat_model_num');
-		if($data_monitor_types[$i]!="") {
-			if($data_monitor_types[$i]==1) {
-				$data_monitors_bi_cost += $m->lastData()->dat_cost;
-				$data_monitors_bi_price += $m->lastData()->dat_price;
+		if($m->getRow('es_data_monitoring',$data_monitors[$i],'dat_model_num')) {
+			if($data_monitor_types[$i]!="") {
+				if($data_monitor_types[$i]==1) {
+					$data_monitors_bi_cost += $m->lastData()->dat_cost;
+					$data_monitors_bi_price += $m->lastData()->dat_price;
+				}
 			}
+			$data_monitors_cost += $m->lastData()->dat_cost;
+			$data_monitors_price += $m->lastData()->dat_price;
+			$data_monitors_labor_hrs += $m->lastData()->dat_labor;
 		}
-		$data_monitors_cost += $m->lastData()->dat_cost;
-		$data_monitors_price += $m->lastData()->dat_price;
-		$data_monitors_labor_hrs += $m->lastData()->dat_labor;
 	}
 	$data_monitors_bi_cost *= (1 + $off->off_inventory_up*0.01);
 	$data_monitors_bi_price *= (1 + $off->off_inventory_up*0.01)*(1 + $off->off_inventory_margin*0.01);
