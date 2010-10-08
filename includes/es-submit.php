@@ -1266,6 +1266,7 @@ function sendProposal() {
 		// make messages
 		$cus_message = Swift_Message::newInstance("Your Lighthousesolar Proposal #".$pro->ID.": \"".$pro->pro_name."\" is pending contract review.")
 		  ->setFrom(array($rep->rep_email => $rep->rep_name_first." ".$rep->rep_name_last))
+		  ->setReplyTo(array($rep->rep_email => $rep->rep_name_first." ".$rep->rep_name_last))
 		  ->setTo(array($cus_address => $cus_name))
 		  ->setBody($cus_email);
 		$tse_message = Swift_Message::newInstance("[LHS ".$off->off_city.", ".$off->off_state." – Einstein] Proposal #".$pro->ID.": \"".$pro->pro_name."\""." Approved.")
@@ -1296,6 +1297,7 @@ function sendProposal() {
 		// make messages
 		$cus_message = Swift_Message::newInstance("Your Lighthousesolar Proposal #".$pro->ID.": \"".$pro->pro_name."\" is ready for review.")
 		  ->setFrom(array($rep->rep_email => $rep->rep_name_first." ".$rep->rep_name_last))
+		  ->setReplyTo(array($rep->rep_email => $rep->rep_name_first." ".$rep->rep_name_last))
 		  ->setTo(array($cus_address => $cus_name))
 		  ->setBcc(array($off->off_manager_list => "General Manager, Lighthouse ".$off->off_city.", ".$off->off_state))
 		  ->setBody($cus_email)
@@ -1357,6 +1359,7 @@ function sendProposal() {
 		// make messages
 		$sm_message = Swift_Message::newInstance("[LHS ".$off->off_city.", ".$off->off_state." – Einstein] Please moderate Proposal #".$pro->ID.": \"".$pro->pro_name."\"")
 		  ->setFrom(array($rep->rep_email => $rep->rep_name_first." ".$rep->rep_name_last))
+		  ->setReplyTo(array($rep->rep_email => $rep->rep_name_first." ".$rep->rep_name_last))
 		  ->setTo(array($off->off_manager_list => "General Manager, Lighthouse ".$off->off_city.", ".$off->off_state))
 		  ->setBody($sm_email);
 		$tse_message = Swift_Message::newInstance("[LHS ".$off->off_city.", ".$off->off_state." – Einstein] Proposal #".$pro->ID.": \"".$pro->pro_name."\""." Submitted.")
