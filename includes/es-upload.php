@@ -6,7 +6,7 @@ $m = new EstimatorManager();
 // ensure universal time
 date_default_timezone_set("UTC");
 #——————————————————————————————–—————————————————————––––– INIT VARS
-$IMG_WIDTHS = array('thumb'=>210, 'big'=>800);
+$IMG_WIDTHS = array('thumb'=>210, 'big'=>800, 'tall'=>650);
 $IMG_HEIGHTS = array('thumb'=>118);
 $IMG_CORNER_RADIUS = 5;
 $up['up_caption'] = (isset($_POST['up_caption'])) ? $_POST['up_caption'] : "";
@@ -63,39 +63,65 @@ if(isset($_FILES['Filedata']) && is_uploaded_file($_FILES['Filedata']['tmp_name'
 			list($width_orig,$height_orig) = getimagesize($file);
 			$asp = $width_orig/$height_orig;
 			switch($file_extension) {
-				case "jpg" : case "jpeg" : $image_orig = imagecreatefromjpeg($file); break;
-				case "png" : $image_orig = imagecreatefrompng($file); break;
-				case "gif" : $image_orig = imagecreatefromgif($file); break;
+				case "jpg" : case "jpeg" : 
+					$image_orig = imagecreatefromjpeg($file);
+					$image_orig_ls = imagerotate(imagecreatefromjpeg($file),90,0);
+					break;
+				case "png" : 
+					$image_orig = imagecreatefrompng($file);
+					$image_orig_ls = imagerotate(imagecreatefrompng($file),90,0);
+					break;
+				case "gif" : 
+					$image_orig = imagecreatefromgif($file);
+					$image_orig_ls = imagerotate(imagecreatefromgif($file),90,0);
+					break;
 			}
 			$widths_str = $heights_str = "";
 			foreach($IMG_WIDTHS as $k=>$width) {
-				if($k=="thumb") {
-					$height = $IMG_HEIGHTS['thumb'];
-					$image = imagecreatetruecolor($width,$height);
-					if($width_orig > $height_orig) {
-						$width_orig_slice = $height_orig * (16/9);
-						$x_off = ($width_orig - $width_orig_slice) / 2;
-						$y_off = 0;
-						imagecopyresampled($image,$image_orig,0,0,$x_off,$y_off,$width,$height,$width_orig_slice,$height_orig);
-					} else {
-						$height_orig_slice = $width_orig / (16/9);
-						$x_off = 0;
-						$y_off = ($height_orig - $height_orig_slice) / 2;
-						imagecopyresampled($image,$image_orig,0,0,$x_off,$y_off,$width,$height,$width_orig,$height_orig_slice);
-					}
-					//imageroundcorners($image,$width,$height,$IMG_CORNER_RADIUS);
-					imagejpeg($image,$up_dir."/".$file_id."_thumb.jpg");
-				} else {
-					$height = round(1000*$width/$asp)/1000;
-					$image = imagecreatetruecolor($width,$height);
-					imagecopyresampled($image,$image_orig,0,0,0,0,$width,$height,$width_orig,$height_orig);
-					imagejpeg($image,$up_dir."/".$file_id."_sized_".$width.".jpg");
+				switch($k) {
+					case "thumb" :
+						// make thumb
+						$height = $IMG_HEIGHTS['thumb'];
+						$image = imagecreatetruecolor($width,$height);
+						if($width_orig > $height_orig) {
+							$width_orig_slice = $height_orig * (16/9);
+							$x_off = ($width_orig - $width_orig_slice) / 2;
+							$y_off = 0;
+							imagecopyresampled($image,$image_orig,0,0,$x_off,$y_off,$width,$height,$width_orig_slice,$height_orig);
+						} else {
+							$height_orig_slice = $width_orig / (16/9);
+							$x_off = 0;
+							$y_off = ($height_orig - $height_orig_slice) / 2;
+							imagecopyresampled($image,$image_orig,0,0,$x_off,$y_off,$width,$height,$width_orig,$height_orig_slice);
+						}
+						//imageroundcorners($image,$width,$height,$IMG_CORNER_RADIUS);
+						imagejpeg($image,$up_dir."/".$file_id."_thumb.jpg");
+						break;
+					case "big" :
+						// portrait
+						$height = round(1000*$width/$asp)/1000;
+						$image = imagecreatetruecolor($width,$height);
+						imagecopyresampled($image,$image_orig,0,0,0,0,$width,$height,$width_orig,$height_orig);
+						imagejpeg($image,$up_dir."/".$file_id."_sized_".$width.".jpg");
+						break;
+					case "tall" :
+						// landscape
+						$height = round(1000*$width*$asp)/1000;
+						if($height > 630) { 
+							$height = 630;
+							$width = round(1000*$height/$asp)/1000;
+						}
+						$image = imagecreatetruecolor($width,$height);
+						imagecopyresampled($image,$image_orig_ls,0,0,0,0,$width,$height,$height_orig,$width_orig);
+						imagejpeg($image,$up_dir."/".$file_id."_sized_tall.jpg");
+						break;
 				}
 				$widths_str .= (string)$width.","; $heights_str .= (string)$height.",";
 				imagedestroy($image);
 			}
 			// clean up
 			imagedestroy($image_orig);
+			imagedestroy($image_orig_ls);
 			unlink($file);
 		}
 		// clean up
