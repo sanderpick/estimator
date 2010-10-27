@@ -7,10 +7,12 @@ require_once("es-object.class.php");
 $E = new Object();
 switch($tld[1]) {
 	case "ld" : // local
+		$E->push("IS_LOCAL",TRUE);
 		$E->push("PORTAL_URI","http://lighthousesolar.ld/portal/");
 		$E->push("EINSTEIN_URI","http://lighthousesolar.ld/estimator/");
 		break;
-	default : 
+	default :
+		$E->push("IS_LOCAL",FALSE);
 		if($host=='einstein-beta.cleanenergysolutionsinc.com') {
 			$E->push("PORTAL_URI","http://beta.mylighthousesolar.com/");
 			$E->push("EINSTEIN_URI","http://einstein-beta.cleanenergysolutionsinc.com/");
@@ -25,6 +27,7 @@ $E->push("EINSTEIN_SMTP_PORT",465);
 $E->push("EINSTEIN_SMTP_USER","lhadmin@lighthousesolar.com");
 $E->push("EINSTEIN_SMTP_PASS","l1gh7h0u53!");
 $E->push("EINSTEIN_SMTP_FROM","lhadmin@lighthousesolar.com");
+$E->push("LHS_LOC","http://lighthousesolar.com");
 #——————————————————————————————–—————————————————————–– INIT MANAGER
 require_once("es-manager.class.php");
 $m = new EstimatorManager();
@@ -184,10 +187,12 @@ function browseAllProposals() {
 		$r['did'] = "found ".$table;
 		$r['data'] = $m->lastData();
 		foreach($r['data'] as $pro) {
-			$jobID = $pro->pro_jobID;
-			if($m->getAll("es_zones","ID,zon_name,zon_size","ID","zon_jobID='$jobID'")) {
-				$r['data2']['pro_zones'.$pro->ID] = $m->lastData();
-			} else $r['did'] = "failed ".$table." options";
+			if($pro->pro_published!=1) {
+				$jobID = $pro->pro_jobID;
+				if($m->getAll("es_zones","ID,zon_name,zon_size","ID","zon_jobID='$jobID'")) {
+					$r['data2']['pro_zones'.$pro->ID] = $m->lastData();
+				} else $r['did'] = "failed ".$table." options";
+			}
 			if($m->getRow("es_reps",$pro->pro_repID)) {
 				$r['data2']['rep'][] = $m->lastData()->rep_name_first." ".$m->lastData()->rep_name_last;
 			} else $r['data2']['rep'][] = "";
@@ -198,10 +203,10 @@ function browseAllProposals() {
 	$sources = explode(",",$_POST['sources']);
 	$columns = explode(",",$_POST['columns']);
 	for($i=0;$i<count($menus);$i++) {
-		if($sources[$i]!="es_zones") {
+		if($sources[$i]!="es_zones" && $sources[$i]!="es_jobs") {
 			if($m->getAll($sources[$i],$columns[$i],"ID","active='1'")) {
 				$r['data2'][$menus[$i]] = $m->lastData();
-			} else $r['did'] = "failed ".$table." options";
+			}
 		}
 	}
 }
@@ -500,7 +505,19 @@ function deleteLayout() {
 function deleteProposal() {
 	global $m,$r;
 	$table = $_POST['table'];
-	if($m->deleteRow($table,$_POST['id'])) {
+	$id = $_POST['id'];
+	$m->getRow($table,$id);
+	$pro = $m->lastData();
+	// delete statics if published
+	if($pro->pro_published) {
+		// delete the static job
+		$m->deleteRow("es_jobs_s",$pro->pro_jobID);
+		// delete the static zones
+		$zoneIDs = explode(",",substr($pro->pro_zones,0,-1));
+		foreach($zoneIDs as $zoneID) $m->deleteRow("es_zones_s",$zoneID);
+	}
+	// delete proposal
+	if($m->deleteRow($table,$id)) {
 		$r['did'] = $table." deleted";
 		//if(!$m->editCell("es_reps",-1,"rep_num_props",$_POST['pro_repID'],FALSE,TRUE)) $r['did'] = "failed ".$table." delete";
 		//if(!$m->editCell("es_customers",-1,"cus_num_props",$_POST['pro_customerID'],FALSE,TRUE)) $r['did'] = "failed ".$table." delete";
@@ -723,7 +740,8 @@ function updateProposal() {
 			if($m->getAll($sources[$i],"ID,zon_name,zon_size","ID","zon_jobID='$jobID'")) {
 				$r['data2']['pro_zones'.$r['data']->ID] = $m->lastData();
 			}
-		} else if($m->getAll($sources[$i],$columns[$i],"ID","active='1'")) {
+		} else if($sources[$i]=="es_jobs") {  }
+		else if($m->getAll($sources[$i],$columns[$i],"ID","active='1'")) {
 			$r['data2'][$menus[$i]] = $m->lastData();
 		} else $r['did'] = "failed ".$table." options";
 	}
@@ -759,6 +777,18 @@ function cloneProposal() {
 	$m->getRow($table,$tid);
 	$clone = array();
 	foreach($m->lastData() as $k=>$v) if($k!="ID") $clone[$k] = $v;
+	// reset original job and zones if published
+	if($clone['pro_published']) {
+		$clone['pro_jobID'] = $clone['pro_jobID_o'];
+		$clone['pro_jobID_o'] = "NULL";
+		$clone['pro_zones'] = $clone['pro_zones_o'];
+		$clone['pro_zones_o'] = "";
+		// clear static fields
+		foreach($clone as $k=>$v) {
+			$end = substr($k,-2);
+			if($end=="_s") unset($clone[$k]);
+		}
+	}
 	// set date
 	$clone['pro_date'] = date('Y-m-d H:i:s');
 	// reset submitted, published, and approved
@@ -789,7 +819,8 @@ function cloneProposal() {
 			if($m->getAll($sources[$i],"ID,zon_name,zon_size","ID","zon_jobID='$jobID'")) {
 				$r['data2']['pro_zones'.$r['data']->ID] = $m->lastData();
 			}
-		} else if($m->getAll($sources[$i],$columns[$i],"ID","active='1'")) {
+		} else if($sources[$i]=="es_jobs") {  }
+		else if($m->getAll($sources[$i],$columns[$i],"ID","active='1'")) {
 			$r['data2'][$menus[$i]] = $m->lastData();
 		} else $r['did'] = "failed ".$table." options";
 	}
@@ -830,10 +861,10 @@ function submitProposal() {
 			$sources = explode(",",$_POST['sources']);
 			$columns = explode(",",$_POST['columns']);
 			for($i=0;$i<count($menus);$i++) {
-				if($sources[$i]!="es_zones") {
+				if($sources[$i]!="es_zones" && $sources[$i]!="es_jobs") {
 					if($m->getAll($sources[$i],$columns[$i],"ID","active='1'")) {
 						$r['data2'][$menus[$i]] = $m->lastData();
-					} else $r['did'] = "failed ".$table." options";
+					}
 				}
 			}
 		} else $r['did'] = "failed ".$table." submit";
@@ -859,11 +890,15 @@ function publishProposal() {
 	$job = $m->lastData();
 	// validate email address for job associated with proposal
 	if(validateEmail($job->job_email)) {
+		// make the calcs that will become static
+		require_once("es-calcs.php");
+		estimate($pro,TRUE);
 		// set published value
 		if($m->editCell($table,1,"pro_published",$id) && $m->editCell($table,$del_date,"pro_published_date",$id)) {
 			// get updated proposal
 			$m->getRow("es_proposals",$id);
 			$pro = $m->lastData();
+			// save
 			$r['did'] = $table." published";
 			$r['data'] = $pro;
 			// get sales rep
@@ -967,14 +1002,16 @@ function getProZones() {
 	$caller = $_POST['caller'];
 	$id = $_POST['id'];
 	$r['data']['es_proposals'] = array();
-	if($m->getAll("es_proposals","ID,pro_zones","ID")) {
+	if($m->getAll("es_proposals","ID,pro_zones,pro_zones_o","ID")) {
 		foreach($m->lastData() as $pro) {
 			$zoneIDs = explode(",",substr($pro->pro_zones,0,-1));
+			$zoneIDs_o = explode(",",substr($pro->pro_zones_o,0,-1));
 			$matchID = "";
-			foreach($zoneIDs as $zoneID) {
-				if($zoneID==$id) $matchID = $pro->ID;
-			}
+			$matchID_o = "";
+			foreach($zoneIDs as $zoneID) if($zoneID==$id) $matchID = $pro->ID;
+			foreach($zoneIDs_o as $zoneID_o) if($zoneID_o==$id) $matchID_o = $pro->ID;
 			if($matchID!="") $r['data']['es_proposals'][] = array('ID'=>$matchID);
+			if($matchID_o!="") $r['data']['es_proposals'][] = array('ID'=>$matchID_o);
 		}
 	}
 	$r['did'] = "found ".$caller." dependents";
@@ -982,7 +1019,7 @@ function getProZones() {
 
 // get menu options
 function getOptions() {
-	global $m,$r;
+	global $E,$m,$r;
 	$table = $_POST['table'];
 	$menus = explode(",",$_POST['menus']);
 	$sources = explode(",",$_POST['sources']);
@@ -994,6 +1031,12 @@ function getOptions() {
 				$r['did'] = "got ".$table." options";
 				$r['data']['pro_zones'] = $m->lastData();
 			}
+		} else if($sources[$i]=="es_jobs") {
+			$jobID = $_POST['jobID'];
+			if($m->getRow($sources[$i],$jobID)) {
+				$r['did'] = "got ".$table." options";
+				$r['data']['pro_name'] = $m->lastData()->$columns[$i];
+			}
 		} else if($m->getAll($sources[$i],$columns[$i],"ID","active='1'")) {
 			$r['did'] = "got ".$table." options";
 			$r['data'][$menus[$i]] = $m->lastData();
@@ -1001,11 +1044,23 @@ function getOptions() {
 	}
 	// for cover letter
 	if(isset($_POST['offID'])) {
-		$offID = $_POST['offID'];
-		if($m->getRow("es_offices",$offID)) {
-			$r['did'] = "got ".$table." options";
-			$r['data']['pro_cover_letter'] = $m->lastData()->off_cover_letter;
-		}
+		if($m->getRow("es_offices",$_POST['offID'])) $off = $m->lastData();
+		if($m->getRow("es_jobs",$jobID)) $job = $m->lastData();
+		if($m->getRow("es_customers",$job->job_customerID)) $cus = $m->lastData();
+		if($m->getRow("es_reps",$job->job_repID)) $rep = $m->lastData();
+		// write TO
+		$customer_title = $cus->cus_company!="" ? $cus->cus_company : $cus->cus_name_first." ".$cus->cus_name_last;
+		$job_title = $job->job_company!="" ? $job->job_company : ($job->job_contact!="" ? $job->job_contact : $customer_title);
+		// write letter
+		$cover_letter = "Dear ".$job_title.",\n\n".$off->off_cover_letter;
+		$cover_letter .= "\n\nYours truly,\n".$rep->rep_name_first." ".$rep->rep_name_last.", <em>".$rep->rep_title."</em>\n\n";
+		$cover_letter .= "<a href='".$E->LHS_LOC."' target='_blank'><strong>Lighthouse</strong>solar</a>\n";
+		$cover_letter .= $off->off_city.", ".$off->off_state." ".$off->off_zip."\n";
+		$cover_letter .= "<a href='mailto:".$rep->rep_email."'>".$rep->rep_email."</a> (e)\n";
+		$cover_letter .= $rep->rep_phone!="" ? $rep->rep_phone." (p)" : $off->off_phone." (p)";
+		// done
+		$r['did'] = "got ".$table." options";
+		$r['data']['pro_cover_letter'] = $cover_letter;
 	}
 }
 
@@ -1207,6 +1262,8 @@ function peakProposal() {
 			unset($pro[$key]);
 		}
 	}
+	// for statics compatability
+	$pro['pro_published'] = 0;
 	// convert to object
 	$pro_obj = new Object();
 	foreach($pro as $k=>$v) {
@@ -1234,6 +1291,11 @@ function getPropCalcs() {
 function sendProposal() {
 	global $E,$m,$r;
 	$id = $_POST['id'];
+	// check local
+	if($E->IS_LOCAL) {
+		$r['did'] = "sent proposal";
+		return TRUE;
+	}
 	// include mailer
 	require_once("swift/lib/swift_required.php");
 	$transport = Swift_SmtpTransport::newInstance($E->EINSTEIN_SMTP_SERVER,$E->EINSTEIN_SMTP_PORT)->setUsername($E->EINSTEIN_SMTP_USER)->setPassword($E->EINSTEIN_SMTP_PASS);
@@ -1241,7 +1303,8 @@ function sendProposal() {
 	// get info
 	$m->getRow("es_proposals",$id);
 	$pro = $m->lastData();
-	$m->getRow("es_jobs",$pro->pro_jobID);
+	if($pro->pro_published) $m->getRow("es_jobs_s",$pro->pro_jobID);
+	else $m->getRow("es_jobs",$pro->pro_jobID);
 	$job = $m->lastData();
 	$m->getRow("es_reps",$pro->pro_repID);
 	$rep = $m->lastData();
@@ -1332,8 +1395,8 @@ function sendProposal() {
 		$sm_email = "I just submitted a new Proposal. Here are the details:\n\n";
 		$tse_email = "Here are the details of the Proposal you just submitted:\n\n";
 		$details = "System Size: ".$figures['size']." kW\n";
-		$details .= "Labor Hours: ".$figures['install_labor_hrs']." hrs\n";
-		$details .= "Price: $".$figures['price']."\n";
+		$details .= "Labor Hours: ".(round(100*$figures['install_labor_hrs'])/100)." hrs\n";
+		$details .= "Price: $".number_format($figures['price'])."\n";
 		$details .= "PPW Gross: $".$figures['ppw_gross']."/W\n";
 		$details .= "PPW Net: $".$figures['ppw_net']."/W\n";
 		$details .= "Permit Margin: ".$figures['permit_margin']."\n";
