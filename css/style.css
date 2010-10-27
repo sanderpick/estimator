@@ -167,7 +167,9 @@ input[type='file'] { border:none; width:80px; }
 .media { color:black; margin:0 0 0 10px; cursor:pointer; font-weight:normal; text-transform:none; }
 .media:hover { color:red; }
 
-.date-txt { font-size:9px; line-height:12px; }
+.date-txt { font-size:9px; line-height:12px; width:100px; }
+
+.prop-dash-head { white-space:nowrap; }
 
 /*---------------------------------*/
 h1.main-header { 
@@ -224,11 +226,16 @@ h1.add-proposal-section { font-size:10px; text-transform:uppercase; padding:0 0 
 /*--------------------------------main*/
 #main { padding:20px; width:97%; min-height:650px; }
 
-#extra-nav { font-size:11px; margin:-15px 0 0 0; }
-#extra-nav ul { text-align:right }
-#extra-nav li { list-style-type:none; display:inline; padding:0 0 0 20px; }
-#extra-nav li a { text-decoration:none; font-style:normal; font-weight:bold; }
-#extra-nav li a:hover { color:#808080; }
+#extra-nav-left { font-size:11px; margin:0 50% 0 400px; width:50%; }
+#extra-nav-left li { list-style-type:none; display:inline; padding:0 20px 0 0; }
+#extra-nav-left li a { text-decoration:none; font-style:normal; font-weight:bold; }
+#extra-nav-left li a:hover { color:#808080; }
+
+#extra-nav-right { font-size:11px; width:50%; float:right; }
+#extra-nav-right ul { text-align:right }
+#extra-nav-right li { list-style-type:none; display:inline; padding:0 0 0 20px; }
+#extra-nav-right li a { text-decoration:none; font-style:normal; font-weight:bold; }
+#extra-nav-right li a:hover { color:#808080; }
 
 .extra-nav-hover { color:#B1CD49; }
 
