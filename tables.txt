@@ -197,7 +197,7 @@ CREATE TABLE `es_zones` (
 	`zon_size` decimal(10,3),
 	`zon_tilt` varchar(20) NOT NULL default '',
 	`zon_custom_tilt` decimal(10,2),
-	`zon_azimuth` int(3),
+	`zon_azimuth` decimal(10,2),
 	`zon_derate` decimal(2,2),
 	`zon_erate` decimal(10,2),
 	
@@ -213,7 +213,7 @@ CREATE TABLE `es_zones` (
 	`zon_per_landscape` decimal(5,2),
 	`zon_num_cont_arrays` int(2),
 	
-	`zon_rebate` decimal(10,6),
+	`zon_rebate` decimal(10,2),
 	`zon_rebate_desc` varchar(255) NOT NULL default '',
 	
 	`zon_pvwatts` varchar(255) NOT NULL default '',
@@ -245,6 +245,7 @@ CREATE TABLE `es_zones` (
 	`zon_racking_cost` decimal(10,2),
 	`zon_racking_price` decimal(10,2),
 	
+	`zon_num_connections` int(6) NOT NULL default '0',
 	`zon_connection_cost` decimal(10,2),
 	`zon_connection_price` decimal(10,2),
 	
@@ -274,6 +275,7 @@ CREATE TABLE `es_proposals` (
 	`pro_num_trips` int(2),
 	`pro_num_installers` int(4),
 	`pro_zones` varchar(100) NOT NULL default '',
+	`pro_zones_o` varchar(100) NOT NULL default '',
 	`pro_num_inter` int(3),
 	`pro_inter_method` text,
 	`pro_inverter` text,
@@ -322,6 +324,164 @@ CREATE TABLE `es_proposals` (
 	`pro_repID` int(6),
 	`pro_customerID` int(6),
 	`pro_jobID` int(6),
+	`pro_jobID_o` int(6),
+	
+	# STATIC PUBLISHED
+	
+	`pro_size_s` decimal(10,3),
+	`pro_production_s` decimal(10,2),
+	`pro_install_labor_s` decimal(10,2),
+	`pro_install_labor_hrs_s` decimal(10,2),
+	`pro_inventory_s` decimal(10,2),
+	`pro_non_inventory_s` decimal(10,2),
+	`pro_permit_s` decimal(10,2),
+	`pro_sub_s` decimal(10,2),
+	`pro_equip_s` decimal(10,2),
+	`pro_tax_s` decimal(10,2),
+	`pro_credit_s` decimal(10,2),
+	`pro_price_s` decimal(10,2),
+	`pro_permit_margin_s` decimal(10,2),
+	`pro_sub_margin_s` decimal(10,2),
+	`pro_equip_margin_s` decimal(10,2),
+	`pro_install_labor_margin_s` decimal(10,2),
+	`pro_inventory_margin_s` decimal(10,2),
+	`pro_non_inventory_margin_s` decimal(10,2),
+	`pro_total_margin_s` decimal(10,2),
+	`pro_ppw_gross_s` decimal(10,2),
+	`pro_ppw_net_s` decimal(10,2),
+	`pro_misc_materials_s` decimal(10,2),
+	`pro_comp_total_s` decimal(10,2),
+	`pro_subtotal_s` decimal(10,2),
+	`pro_cus_price_s` decimal(10,2),
+	`pro_cus_after_credit_s` decimal(10,2),
+	`pro_ppw_cus_net_s` decimal(10,2),
+	`pro_credits_total_s` decimal(10,2),
+	`pro_fees_total_s` decimal(10,2),
+	
+	PRIMARY KEY (ID)
+);
+
+################### *** NO FORM ***
+#### es_jobs_s ####
+###################
+
+CREATE TABLE `es_jobs_s` (
+	`ID` int(6) NOT NULL AUTO_INCREMENT,
+	
+	`job_name` varchar(100) NOT NULL default '',
+	`job_company` varchar(255) NOT NULL default '',
+	`job_contact` varchar(100) NOT NULL default '',
+	`job_phone` varchar(20) NOT NULL default '',
+	
+	`job_fax` varchar(20) NOT NULL default '',
+	`job_email` varchar(40) NOT NULL default '',
+	
+	`job_drive_time` int(4) NOT NULL default '0',
+	`job_kwh_load` int(10),
+	
+	`job_address1` varchar(60) NOT NULL default '',
+	`job_address2` varchar(60) NOT NULL default '',
+	`job_city` varchar(40) NOT NULL default '',
+	`job_state` varchar(20) NOT NULL default '',
+	`job_zip` char(5) NOT NULL default '',
+	`job_country` varchar(40) NOT NULL default 'United States',
+	`job_lat` decimal(10,2),
+	`job_long` decimal(10,2),
+	
+	`job_bill_1` decimal(10,2) NOT NULL default '0',
+	`job_bill_2` decimal(10,2) NOT NULL default '0',
+	`job_bill_3` decimal(10,2) NOT NULL default '0',
+	`job_bill_4` decimal(10,2) NOT NULL default '0',
+	`job_bill_5` decimal(10,2) NOT NULL default '0',
+	`job_bill_6` decimal(10,2) NOT NULL default '0',
+	`job_bill_7` decimal(10,2) NOT NULL default '0',
+	`job_bill_8` decimal(10,2) NOT NULL default '0',
+	`job_bill_9` decimal(10,2) NOT NULL default '0',
+	`job_bill_10` decimal(10,2) NOT NULL default '0',
+	`job_bill_11` decimal(10,2) NOT NULL default '0',
+	`job_bill_12` decimal(10,2) NOT NULL default '0',
+	
+	`job_num_zones` int(4) NOT NULL default '0',
+  # `job_num_props` int(4) NOT NULL default '0',
+	
+	`job_officeID` int(6),
+	`job_repID` int(6),
+	`job_customerID` int(6),
+	
+	PRIMARY KEY (ID)
+);
+
+#################### *** NO FORM ***
+#### es_zones_s ####
+####################
+
+CREATE TABLE `es_zones_s` (
+	`ID` int(6) NOT NULL AUTO_INCREMENT,
+	
+	`zon_name` varchar(100) NOT NULL default '',
+	
+	`zon_type` varchar(40) NOT NULL default '',
+	`zon_size` decimal(10,3),
+	`zon_tilt` varchar(20) NOT NULL default '',
+	`zon_custom_tilt` decimal(10,2),
+	`zon_azimuth` decimal(10,3),
+	`zon_derate` decimal(2,2),
+	`zon_erate` decimal(10,2),
+	
+	`zon_module` varchar(100) NOT NULL default '',
+	`zon_num_modules` int(3),
+	`zon_racking` varchar(100) NOT NULL default '',
+	`zon_mounting_method` varchar(100) NOT NULL default '',
+	
+	`zon_pitch` varchar(20) NOT NULL default '',
+	`zon_custom_pitch` decimal(10,2),
+	`zon_mounting_medium` varchar(100) NOT NULL default '',
+	`zon_support_dist` int(4),
+	`zon_per_landscape` decimal(5,2),
+	`zon_num_cont_arrays` int(2),
+	
+	`zon_rebate` decimal(10,2),
+	`zon_rebate_desc` varchar(255) NOT NULL default '',
+	
+	`zon_pvwatts` varchar(255) NOT NULL default '',
+	
+	`zon_pvwatts_m1` varchar(20) NOT NULL default '',
+	`zon_pvwatts_m2` varchar(20) NOT NULL default '',
+	`zon_pvwatts_m3` varchar(20) NOT NULL default '',
+	`zon_pvwatts_m4` varchar(20) NOT NULL default '',
+	`zon_pvwatts_m5` varchar(20) NOT NULL default '',
+	`zon_pvwatts_m6` varchar(20) NOT NULL default '',
+	`zon_pvwatts_m7` varchar(20) NOT NULL default '',
+	`zon_pvwatts_m8` varchar(20) NOT NULL default '',
+	`zon_pvwatts_m9` varchar(20) NOT NULL default '',
+	`zon_pvwatts_m10` varchar(20) NOT NULL default '',
+	`zon_pvwatts_m11` varchar(20) NOT NULL default '',
+	`zon_pvwatts_m12` varchar(20) NOT NULL default '',
+	`zon_pvwatts_mt` varchar(20) NOT NULL default '',
+	
+	`zon_racking_length` decimal(10,2),
+	`zon_production` decimal(10,2),
+	
+	`zon_install_labor_hrs` decimal(10,2),
+	`zon_install_labor_cost` decimal(10,2),
+	`zon_install_labor_price` decimal(10,2),
+	
+	`zon_module_cost` decimal(10,2),
+	`zon_module_price` decimal(10,2),
+	
+	`zon_racking_cost` decimal(10,2),
+	`zon_racking_price` decimal(10,2),
+	
+	`zon_num_connections` int(6) NOT NULL default '0',
+	`zon_connection_cost` decimal(10,2),
+	`zon_connection_price` decimal(10,2),
+	
+	`zon_layout` int(6) NOT NULL default '0',
+	
+	`zon_officeID` int(6),
+	`zon_repID` int(6),
+	`zon_customerID` int(6),
+	`zon_jobID` int(6),
 	
 	PRIMARY KEY (ID)
 );
