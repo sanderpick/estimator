@@ -215,7 +215,6 @@ var Login = Module.extend({
 								<div class='clear'></div> \
 							</div>");
 		// add pv components?
-		console.log($("#data").data("role"));
 		if($("#data").data("role")==2 || $("#data").data("role")==3 || $("#data").data("role")==4) {
 			// add another wrapper
 			$("#main").append("<div class='dashboard-wrap'> \
@@ -327,10 +326,6 @@ var Login = Module.extend({
 						this.docCompWrapper = "<div class='dashboard-left'></div><div class='dashboard-right'></div>";
 						this.docNavLeft = "<ul><li><a id='view-pv-bids' class='extra-nav-hover' href='javascript:void(0);' title='View PV Bidding'>PV Bidding</a></li><li><a id='view-pv-comps' href='javascript:void(0);' title='View PV Components'>PV Components</a></li></ul>";
 						this.docNavRight = "";
-						// define viewable comp modules
-						this.pv_comps = this.isSuper;
-						// remove offices module
-						this.pv_comps.shift();
 						break;
 					case "3" : 
 						this.next = this.isRep; 
@@ -340,10 +335,6 @@ var Login = Module.extend({
 						this.docCompWrapper = "<div class='dashboard-left'></div><div class='dashboard-right'></div>";
 						this.docNavLeft = "<ul><li><a id='view-pv-bids' class='extra-nav-hover' href='javascript:void(0);' title='View PV Bidding'>PV Bidding</a></li><li><a id='view-pv-comps' href='javascript:void(0);' title='View PV Components'>PV Components</a></li></ul>";
 						this.docNavRight = "";
-						// define viewable comp modules
-						this.pv_comps = this.isSuper;
-						// remove offices module
-						this.pv_comps.shift();
 						break;
 					case "4" : 
 						this.next = this.isSupport;
@@ -371,10 +362,6 @@ var Login = Module.extend({
 							$("#data").data("rep").rep_officeID = this.id.substring(3);
 							for(var m in t.next) t.next[m].begin(true);
 						});
-						// define viewable comp modules
-						this.pv_comps = this.isSuper;
-						// remove offices module
-						this.pv_comps.shift();
 						break;
 				}
 				// add logout link
@@ -716,11 +703,11 @@ var Modules = Module.extend({
 			t.io.request(t,"id="+t.currentRowID+"&table="+t.dbTable+"&es_do=deleteItem");
 		});
 	},
-  	show:function(holder) { this._super(holder,null,false,true); },
+  	show:function(holder) { this._super(holder,null,false,this.hidden); },
 	hide:function() { this._super(); },
-	begin:function(readonly) {
+	begin:function(hidden) {
 		this._super();
-		this.readonly = readonly;
+		this.hidden = hidden ? true : false;
 		this.show(".dashboard-left");
 		// get all the modules
 		this.io.request(this,"table="+this.dbTable+"&order="+this.dbOrder+"&es_do=browseAll");
@@ -985,11 +972,11 @@ var Inverters = Module.extend({
 			t.io.request(t,"id="+t.currentRowID+"&table="+t.dbTable+"&es_do=deleteItem");
 		});
 	},
-  	show:function(holder) { this._super(holder,null,false,true); },
+  	show:function(holder) { this._super(holder,null,false,this.hidden); },
 	hide:function() { this._super(); },
-	begin:function(readonly) {
+	begin:function(hidden) {
 		this._super();
-		this.readonly = readonly;
+		this.hidden = hidden ? true : false;
 		this.show(".dashboard-right"); 
 		// get all the modules
 		this.io.request(this,"table="+this.dbTable+"&order="+this.dbOrder+"&es_do=browseAll");
@@ -1237,11 +1224,11 @@ var Racking = Module.extend({
 			t.io.request(t,"id="+t.currentRowID+"&table="+t.dbTable+"&es_do=deleteItem");
 		});
 	},
-  	show:function(holder) { this._super(holder,null,false,true); },
+  	show:function(holder) { this._super(holder,null,false,this.hidden); },
 	hide:function() { this._super(); },
-	begin:function(readonly) {
+	begin:function(hidden) {
 		this._super();
-		this.readonly = readonly;
+		this.hidden = hidden ? true : false;
 		this.show(".dashboard-left"); 
 		// get all the modules
 		this.io.request(this,"table="+this.dbTable+"&order="+this.dbOrder+"&es_do=browseAll");
@@ -1462,11 +1449,11 @@ var Connects = Module.extend({
 			t.io.request(t,"id="+t.currentRowID+"&table="+t.dbTable+"&es_do=deleteItem");
 		});
 	},
-  	show:function(holder) { this._super(holder,null,false,true); },
+  	show:function(holder) { this._super(holder,null,false,this.hidden); },
 	hide:function() { this._super(); },
-	begin:function(readonly) { 
+	begin:function(hidden) { 
 		this._super();
-		this.readonly = readonly;
+		this.hidden = hidden ? true : false;
 		this.show(".dashboard-left"); 
 		// get all the modules
 		this.io.request(this,"table="+this.dbTable+"&order="+this.dbOrder+"&es_do=browseAll");
@@ -1693,11 +1680,11 @@ var Inters = Module.extend({
 			t.io.request(t,"id="+t.currentRowID+"&table="+t.dbTable+"&es_do=deleteItem");
 		});
 	},
-  	show:function(holder) { this._super(holder,null,false,true); },
+  	show:function(holder) { this._super(holder,null,false,this.hidden); },
 	hide:function() { this._super(); },
-	begin:function(readonly) { 
+	begin:function(hidden) { 
 		this._super();
-		this.readonly = readonly;
+		this.hidden = hidden ? true : false;
 		this.show(".dashboard-left"); 
 		// get all the modules
 		this.io.request(this,"table="+this.dbTable+"&order="+this.dbOrder+"&es_do=browseAll");
@@ -1924,11 +1911,11 @@ var Types = Module.extend({
 			t.io.request(t,"id="+t.currentRowID+"&table="+t.dbTable+"&es_do=deleteItem");
 		});
 	},
-  	show:function(holder) { this._super(holder,null,false,true); },
+  	show:function(holder) { this._super(holder,null,false,this.hidden); },
 	hide:function() { this._super(); },
-	begin:function(readonly) { 
+	begin:function(hidden) { 
 		this._super();
-		this.readonly = readonly;
+		this.hidden = hidden ? true : false;
 		this.show(".dashboard-left"); 
 		// get all the modules
 		this.io.request(this,"table="+this.dbTable+"&order="+this.dbOrder+"&es_do=browseAll");
@@ -2119,11 +2106,11 @@ var Angles = Module.extend({
 			t.io.request(t,"id="+t.currentRowID+"&table="+t.dbTable+"&es_do=deleteItem");
 		});
 	},
-  	show:function(holder) { this._super(holder,null,false,true); },
+  	show:function(holder) { this._super(holder,null,false,this.hidden); },
 	hide:function() { this._super(); },
-	begin:function(readonly) {
+	begin:function(hidden) {
 		this._super();
-		this.readonly = readonly;
+		this.hidden = hidden ? true : false;
 		this.show(".dashboard-right"); 
 		// get all the modules
 		this.io.request(this,"table="+this.dbTable+"&order="+this.dbOrder+"&es_do=browseAll");
@@ -2321,11 +2308,11 @@ var MountingMethods = Module.extend({
 			t.io.request(t,"id="+t.currentRowID+"&table="+t.dbTable+"&es_do=deleteItem");
 		});
 	},
-  	show:function(holder) { this._super(holder,null,false,true); },
+  	show:function(holder) { this._super(holder,null,false,this.hidden); },
 	hide:function() { this._super(); },
-	begin:function(readonly) { 
+	begin:function(hidden) { 
 		this._super();
-		this.readonly = readonly;
+		this.hidden = hidden ? true : false;
 		this.show(".dashboard-left"); 
 		// get all the modules
 		this.io.request(this,"table="+this.dbTable+"&order="+this.dbOrder+"&es_do=browseAll");
@@ -2548,11 +2535,11 @@ var MountingMediums = Module.extend({
 			t.io.request(t,"id="+t.currentRowID+"&table="+t.dbTable+"&es_do=deleteItem");
 		});
 	},
-  	show:function(holder) { this._super(holder,null,false,true); },
+  	show:function(holder) { this._super(holder,null,false,this.hidden); },
 	hide:function() { this._super(); },
-	begin:function(readonly) {
+	begin:function(hidden) {
 		this._super();
-		this.readonly = readonly;
+		this.hidden = hidden ? true : false;
 		this.show(".dashboard-left"); 
 		// get all the modules
 		this.io.request(this,"table="+this.dbTable+"&order="+this.dbOrder+"&es_do=browseAll");
@@ -2749,11 +2736,11 @@ var DataMonitoring = Module.extend({
 			t.io.request(t,"id="+t.currentRowID+"&table="+t.dbTable+"&es_do=deleteItem");
 		});
 	},
-  	show:function(holder) { this._super(holder,null,false,true); },
+  	show:function(holder) { this._super(holder,null,false,this.hidden); },
 	hide:function() { this._super(); },
-	begin:function(readonly) {
+	begin:function(hidden) {
 		this._super();
-		this.readonly = readonly;
+		this.hidden = hidden ? true : false;
 		this.show(".dashboard-right"); 
 		// get all the modules
 		this.io.request(this,"table="+this.dbTable+"&order="+this.dbOrder+"&es_do=browseAll");
@@ -6898,6 +6885,7 @@ $(function() {
 	login.isAdmin = [customers, jobs, drafts, submitted, published, approved];
 	login.isRep = [customers, jobs, drafts, submitted, published, approved];
 	login.isSupport = [customers, jobs, drafts, submitted, published, approved];
+	login.pv_comps = [modules, inverters, racking, connects, inters, types, angles, mounting_met, mounting_med, data_monitoring];
 	// try to resume session
 	login.begin();
 });

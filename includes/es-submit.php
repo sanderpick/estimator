@@ -743,7 +743,7 @@ function updateProposal() {
 		} else if($sources[$i]=="es_jobs") {  }
 		else if($m->getAll($sources[$i],$columns[$i],"ID","active='1'")) {
 			$r['data2'][$menus[$i]] = $m->lastData();
-		} else $r['did'] = "failed ".$table." options";
+		} //else $r['did'] = "failed ".$table." options";
 	}
 }
 
@@ -822,7 +822,7 @@ function cloneProposal() {
 		} else if($sources[$i]=="es_jobs") {  }
 		else if($m->getAll($sources[$i],$columns[$i],"ID","active='1'")) {
 			$r['data2'][$menus[$i]] = $m->lastData();
-		} else $r['did'] = "failed ".$table." options";
+		} //else $r['did'] = "failed ".$table." options";
 	}
 }
 
