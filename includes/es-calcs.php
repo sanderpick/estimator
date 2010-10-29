@@ -161,8 +161,8 @@ function estimate($pro,$publish=FALSE) {
 		$equip_cost = $pro->pro_equip_rental;
 		$equip_price = $equip_cost*(1 + $off->off_equip_up*0.01);
 		// tax
-		$tax_cost = ceil($pro->pro_taxrate*($inventory_cost+$non_inventory_cost+$misc_materials_cost))/100;
-		$tax_price = ceil($pro->pro_taxrate*($inventory_price+$non_inventory_price+$misc_materials_price))/100;
+		$tax_cost = ceil($pro->pro_taxrate*($inventory_cost+$non_inventory_cost))/100;
+		$tax_price = ceil($pro->pro_taxrate*($inventory_price+$non_inventory_price))/100;
 		// total -- does not include permit or tax
 		$cost = $install_labor_total_cost+$inventory_cost+$non_inventory_cost+$sub_cost+$equip_cost;
 		$price = $install_labor_total_price+$inventory_price+$non_inventory_price+$sub_price+$equip_price+$pro->pro_inspection-$pro->pro_discount;
