@@ -554,6 +554,27 @@ CREATE TABLE `es_racking` (
 	PRIMARY KEY (ID)
 );
 
+############################### *** HAS FORM ***
+#### es_mounting_materials ####
+###############################
+
+CREATE TABLE `es_mounting_materials` (
+	`ID` int(6) NOT NULL AUTO_INCREMENT,
+
+	`mat_model_num` varchar(100) NOT NULL default '',
+	`mat_desc` varchar(100) NOT NULL default '',
+	`mat_unit` varchar(10) NOT NULL default '',
+	`mat_cost` decimal(10,2),
+	`mat_price` decimal(10,2),
+	`mat_labor` decimal(10,2),
+	
+	`active` int(1) NOT NULL default '1',
+	
+	`officeID` int(6) NOT NULL default '0',
+	
+	PRIMARY KEY (ID)
+);
+
 ####################### *** HAS FORM ***
 #### es_conn_comps ####
 #######################
@@ -569,6 +590,28 @@ CREATE TABLE `es_conn_comps` (
 	`con_labor` decimal(10,2),
 	
 	`active` int(1) NOT NULL default '1',
+	
+	`officeID` int(6) NOT NULL default '0',
+	
+	PRIMARY KEY (ID)
+);
+
+#################################### *** HAS FORM ***
+#### es_miscellaneous_materials ####
+####################################
+
+CREATE TABLE `es_miscellaneous_materials` (
+	`ID` int(6) NOT NULL AUTO_INCREMENT,
+
+	`mis_model_num` varchar(100) NOT NULL default '',
+	`mis_desc` varchar(100) NOT NULL default '',
+	`mis_cost` decimal(10,2),
+	`mis_price` decimal(10,2),
+	`mis_labor` decimal(10,2),
+	
+	`active` int(1) NOT NULL default '1',
+	
+	`officeID` int(6) NOT NULL default '0',
 	
 	PRIMARY KEY (ID)
 );
@@ -734,6 +777,26 @@ CREATE TABLE `es_data_monitoring` (
 	`dat_cost` decimal(10,2),
 	`dat_price` decimal(10,2),
 	`dat_labor` decimal(10,2),
+	
+	`active` int(1) NOT NULL default '1',
+	
+	`officeID` int(6) NOT NULL default '0',
+	
+	PRIMARY KEY (ID)
+);
+
+######################## *** HAS FORM ***
+#### es_admin_rules ####
+########################
+
+CREATE TABLE `es_admin_rules` (
+	`ID` int(6) NOT NULL AUTO_INCREMENT,
+
+	`rul_name` varchar(100) NOT NULL default '',
+	`rul_lt_num_mods` decimal(10,2),
+	`rul_lt_hrs_delta` decimal(10,2),
+	`rul_gt_num_mods` decimal(10,2),
+	`rul_gt_hrs_delta` decimal(10,2),
 	
 	`active` int(1) NOT NULL default '1',
 	

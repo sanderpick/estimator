@@ -306,7 +306,7 @@ var Login = Module.extend({
 						this.next = this.isSuper; 
 						this.dashboardText = "Systemwide Dashboard"; 
 						this.docTitle = "Administer / Einstein Estimator - Lighthouse Solar / "+this.officeLocation;
-						this.docWrapper = "<div class='dashboard-left'></div><div class='dashboard-right'></div>";
+						this.docWrapper = "<div class='dashboard-wide'></div>";
 						this.docNavLeft = "";
 						this.docNavRight = "";
 						break;
@@ -314,7 +314,7 @@ var Login = Module.extend({
 						this.next = this.isOffice; 
 						this.dashboardText = "Office Dashboard"; 
 						this.docTitle = "Office / Einstein Estimator - Lighthouse Solar / "+this.officeLocation;
-						this.docWrapper = "<div class='dashboard-left'></div><div class='dashboard-right'></div>";
+						this.docWrapper = "<div class='dashboard-left'></div><div class='dashboard-right'></div><div class='clear'></div><div class='dashboard-wide'></div>";
 						this.docNavLeft = "";
 						this.docNavRight = "";
 						break;
@@ -323,7 +323,7 @@ var Login = Module.extend({
 						this.dashboardText = "Admin Dashboard"; 
 						this.docTitle = "Welcome / Einstein Estimator - Lighthouse Solar / "+this.officeLocation;
 						this.docWrapper = "<div class='dashboard-bar-left'></div><div class='dashboard-main'></div>";
-						this.docCompWrapper = "<div class='dashboard-left'></div><div class='dashboard-right'></div>";
+						this.docCompWrapper = "<div class='dashboard-wide'></div>";
 						this.docNavLeft = "<ul><li><a id='view-pv-bids' class='extra-nav-hover' href='javascript:void(0);' title='View PV Bidding'>PV Bidding</a></li><li><a id='view-pv-comps' href='javascript:void(0);' title='View PV Components'>PV Components</a></li></ul>";
 						this.docNavRight = "";
 						break;
@@ -332,7 +332,7 @@ var Login = Module.extend({
 						this.dashboardText = "Rep Dashboard"; 
 						this.docTitle = "Welcome / Einstein Estimator - Lighthouse Solar / "+this.officeLocation;
 						this.docWrapper = "<div class='dashboard-bar-left'></div><div class='dashboard-main'></div>";
-						this.docCompWrapper = "<div class='dashboard-left'></div><div class='dashboard-right'></div>";
+						this.docCompWrapper = "<div class='dashboard-wide'></div>";
 						this.docNavLeft = "<ul><li><a id='view-pv-bids' class='extra-nav-hover' href='javascript:void(0);' title='View PV Bidding'>PV Bidding</a></li><li><a id='view-pv-comps' href='javascript:void(0);' title='View PV Components'>PV Components</a></li></ul>";
 						this.docNavRight = "";
 						break;
@@ -341,7 +341,7 @@ var Login = Module.extend({
 						this.dashboardText = "Support Dashboard: <span style='font-variant:small-caps; font-size:16px; color:#808080;'>"+json.data3[0].off_city+", "+json.data3[0].off_state+"</span>"; 
 						this.docTitle = "Support / Einstein Estimator - Lighthouse Solar / "+this.officeLocation;
 						this.docWrapper = "<div class='dashboard-bar-left'></div><div class='dashboard-main'></div>";
-						this.docCompWrapper = "<div class='dashboard-left'></div><div class='dashboard-right'></div>";
+						this.docCompWrapper = "<div class='dashboard-wide'></div>";
 						this.docNavLeft = "<ul><li><a id='view-pv-bids' class='extra-nav-hover' href='javascript:void(0);' title='View PV Bidding'>PV Bidding</a></li><li><a id='view-pv-comps' href='javascript:void(0);' title='View PV Components'>PV Components</a></li></ul>";
 						this.docNavRight = "<ul>";
 						for(var n in json.data3) {
@@ -466,7 +466,7 @@ var Offices = Module.extend({
 	hide:function() { this._super(); },
 	begin:function() {
 		this._super(); 
-		this.show(".dashboard-left"); 
+		this.show(".dashboard-wide"); 
 		// get all the modules
 		this.io.request(this,"table="+this.dbTable+"&order="+this.dbOrder+"&es_do=browseAll");
 	},
@@ -552,7 +552,7 @@ var Offices = Module.extend({
 			case "found "+this.dbTable :
 				var html = "<table cellpadding='0' cellspacing='0'>";
 				// build the titles
-				html += "<thead>";
+				html += "<thead class='module-thead'>";
 				html += "<tr>";
 				html += "<th colspan='1'>City</th>";
 				html += "<th colspan='1'>State</th>";
@@ -708,7 +708,7 @@ var Modules = Module.extend({
 	begin:function(hidden) {
 		this._super();
 		this.hidden = hidden ? true : false;
-		this.show(".dashboard-left");
+		this.show(".dashboard-wide");
 		// get all the modules
 		this.io.request(this,"table="+this.dbTable+"&order="+this.dbOrder+"&es_do=browseAll");
 	},
@@ -802,16 +802,19 @@ var Modules = Module.extend({
 			case "found "+this.dbTable :
 				var html = "<table cellpadding='0' cellspacing='0'>";
 				// build the titles
-				html += "<thead>";
+				html += "<thead class='module-thead'>";
 				html += "<tr>";
 				html += "<th colspan='1'>Model #</th>";
+				html += "<th colspan='1'>Description</th>";
 				html += "<th colspan='1' align='right'>Width (in)</th>";
 				html += "<th colspan='1' align='right'>Length (in)</th>";
 				html += "<th colspan='1' align='right'>STC Rating (W)</th>";
 				html += "<th colspan='1' align='right'>PTC Rating (W)</th>";
 				html += "<th colspan='1' align='right'>Labor (hr)</th>";
-				html += "<th colspan='1' align='right'>Cost ($)</th>";
-				html += "<th colspan='1' align='right'>Price ($)</th>";
+				html += "<th colspan='1' align='right'>Cost ($/W)</th>";
+				html += "<th colspan='1' align='right'>Price ($/W)</th>";
+				html += "<th colspan='1' align='right'>Category A</th>";
+				html += "<th colspan='1' align='right'>Category B</th>";
 				html += "<th colspan='1' align='right'>Active</th>";
 				html += "</tr>";
 				html += "</thead>";
@@ -853,6 +856,7 @@ var Modules = Module.extend({
 		row += "<a href='javascript:void(0);' class='trash-link' title='Trash'>Trash</a>";
 		row += "</span>";
 		row += "</td>";
+		row += "<td colspan='1'>"+data.mod_desc+"</td>";
 		row += "<td colspan='1' align='right'>"+data.mod_width+"</td>";
 		row += "<td colspan='1' align='right'>"+data.mod_length+"</td>";
 		row += "<td colspan='1' align='right'>"+data.mod_stc+"</td>";
@@ -860,7 +864,9 @@ var Modules = Module.extend({
 		row += "<td colspan='1' align='right'>"+data.mod_labor+"</td>";
 		row += "<td colspan='1' align='right'>"+data.mod_cost+"</td>";
 		row += "<td colspan='1' align='right'>"+data.mod_price+"</td>";
-		row += "<td colspan='1' align='right'>"+data.active+"</td>";
+		row += "<td colspan='1' align='right'>1</td>";
+		row += "<td colspan='1' align='right'>5</td>";
+		row += "<td colspan='1' align='right'>"+data.active+"</td>";		
 		return row;
 	},
 	editRowContent:function(data) {
@@ -868,7 +874,7 @@ var Modules = Module.extend({
 		// create the edit row
 		var sel_yes = (data.active=="yes") ? "selected='selected'" : "";
 		var sel_no = (data.active=="no") ? "selected='selected'" : "";
-		var edit = "<td colspan='10'>";
+		var edit = "<td colspan='12'>";
 		edit += "<form class='updateform' action='javascript:void(0);'> \
 					<h1 class='addform-header'>Quick Edit</h1> \
 					<br /> \
@@ -977,7 +983,7 @@ var Inverters = Module.extend({
 	begin:function(hidden) {
 		this._super();
 		this.hidden = hidden ? true : false;
-		this.show(".dashboard-right"); 
+		this.show(".dashboard-wide"); 
 		// get all the modules
 		this.io.request(this,"table="+this.dbTable+"&order="+this.dbOrder+"&es_do=browseAll");
 	},
@@ -1065,13 +1071,15 @@ var Inverters = Module.extend({
 			case "found "+this.dbTable :
 				var html = "<table cellpadding='0' cellspacing='0'>";
 				// build the titles
-				html += "<thead>";
+				html += "<thead class='module-thead'>";
 				html += "<tr>";
 				html += "<th colspan='1'>Model #</th>";
 				html += "<th colspan='1'>Description</th>";
 				html += "<th colspan='1' align='right'>Type</th>";
 				html += "<th colspan='1' align='right'>Cost ($)</th>";
 				html += "<th colspan='1' align='right'>Price ($)</th>";
+				html += "<th colspan='1' align='right'>Category A</th>";
+				html += "<th colspan='1' align='right'>Category B</th>";
 				html += "<th colspan='1' align='right'>Active</th>";
 				html += "</tr>";
 				html += "</thead>";
@@ -1117,6 +1125,8 @@ var Inverters = Module.extend({
 		row += "<td colspan='1' align='right'>"+data.inv_type+"</td>";
 		row += "<td colspan='1' align='right'>"+data.inv_cost+"</td>";
 		row += "<td colspan='1' align='right'>"+data.inv_price+"</td>";
+		row += "<td colspan='1' align='right'>2</td>";
+		row += "<td colspan='1' align='right'>0</td>";
 		row += "<td colspan='1' align='right'>"+data.active+"</td>";
 		return row;
 	},
@@ -1127,7 +1137,7 @@ var Inverters = Module.extend({
 		var sel_central = (data.inv_type=="central") ? "selected='selected'" : "";
 		var sel_yes = (data.active=="yes") ? "selected='selected'" : "";
 		var sel_no = (data.active=="no") ? "selected='selected'" : "";
-		var edit = "<td colspan='6'>";
+		var edit = "<td colspan='8'>";
 		edit += "<form class='updateform' action='javascript:void(0);'> \
 					<h1 class='addform-header'>Quick Edit</h1> \
 					<br /> \
@@ -1229,7 +1239,7 @@ var Racking = Module.extend({
 	begin:function(hidden) {
 		this._super();
 		this.hidden = hidden ? true : false;
-		this.show(".dashboard-left"); 
+		this.show(".dashboard-wide"); 
 		// get all the modules
 		this.io.request(this,"table="+this.dbTable+"&order="+this.dbOrder+"&es_do=browseAll");
 	},
@@ -1241,7 +1251,7 @@ var Racking = Module.extend({
 		return "<div class='dashboard-item'> \
 					<div class='dashboard-item-header'> \
 						"+al+" \
-						<h1 class='dashboard-header'>Racking</h1> \
+						<h1 class='dashboard-header'>Racking Kits</h1> \
 					</div> \
 					<div class='dashboard-item-content'><p style='padding:10px; color:#808080;'>Loading...</p></div> \
 				</div>";
@@ -1305,12 +1315,14 @@ var Racking = Module.extend({
 			case "found "+this.dbTable :
 				var html = "<table cellpadding='0' cellspacing='0'>";
 				// build the titles
-				html += "<thead>";
+				html += "<thead class='module-thead'>";
 				html += "<tr>";
 				html += "<th colspan='1'>Model #</th>";
 				html += "<th colspan='1'>Description</th>";
-				html += "<th colspan='1' align='right' style='white-space:nowrap;'>Cost ($)</th>";
-				html += "<th colspan='1' align='right' style='white-space:nowrap;'>Price ($)</th>";
+				html += "<th colspan='1' align='right'>Cost/ft ($)</th>";
+				html += "<th colspan='1' align='right'>Price/ft ($)</th>";
+				html += "<th colspan='1' align='right'>Category A</th>";
+				html += "<th colspan='1' align='right'>Category B</th>";
 				html += "<th colspan='1' align='right'>Active</th>";
 				html += "</tr>";
 				html += "</thead>";
@@ -1334,7 +1346,7 @@ var Racking = Module.extend({
 				break;
 			case "no "+this.dbTable :
 				// clear the list
-				$(".dashboard-item-content",$(this.el)).html("<p style='padding:10px; color:#808080;'>There is no Racking in your system at the moment.</p>");
+				$(".dashboard-item-content",$(this.el)).html("<p style='padding:10px; color:#808080;'>There is no Racking Kits in your system at the moment.</p>");
 				break;
 			//-----------------------------------//
 			default :
@@ -1355,6 +1367,8 @@ var Racking = Module.extend({
 		row += "<td colspan='1'>"+data.rac_desc+"</td>";
 		row += "<td colspan='1' align='right'>"+data.rac_cost+"</td>";
 		row += "<td colspan='1' align='right'>"+data.rac_price+"</td>";
+		row += "<td colspan='1' align='right'>3</td>";
+		row += "<td colspan='1' align='right'>0</td>";
 		row += "<td colspan='1' align='right'>"+data.active+"</td>";
 		return row;
 	},
@@ -1363,7 +1377,7 @@ var Racking = Module.extend({
 		// create the edit row
 		var sel_yes = (data.active=="yes") ? "selected='selected'" : "";
 		var sel_no = (data.active=="no") ? "selected='selected'" : "";
-		var edit = "<td colspan='5'>";
+		var edit = "<td colspan='7'>";
 		edit += "<form class='updateform' action='javascript:void(0);'> \
 					<h1 class='addform-header'>Quick Edit</h1> \
 					<br /> \
@@ -1397,8 +1411,8 @@ var Racking = Module.extend({
 		return edit;
 	}
 });
-///////////////////////////////////////////////////////////////// connection components : super
-var Connects = Module.extend({
+//////////////////////////////////////////////////////////////////// mounting materials : super
+var MountingMaterials = Module.extend({
   	init:function(el,io) {
 		this._super(el,io);
 		var t = this;
@@ -1408,17 +1422,18 @@ var Connects = Module.extend({
 		});
 		// cancel add
 		$("input[title='Cancel']",$(t.el)).live("click",function() {
-			t.io.request(t,"table="+t.dbTable+"&order="+t.dbOrder+"&es_do=browseAll");
+			t.io.request(t,"table="+t.dbTable+"&order="+t.dbOrder+t.filter+"&es_do=browseAllSortOffice");
 		});
 		// add new
 		$("input[title='Add']",$(t.el)).live("click",function() {
 			var ds = $(this).closest("form").postify();
 			if(ds=="") return false;
+			if($("#data").data("role")==1) ds += "officeID="+$('#data').data('rep').rep_officeID+"&";
 			t.io.request(t,ds+"table="+t.dbTable+"&es_do=addItem");
 		});
 		// hover over rows
 		$("tr",$(t.el)).live("mouseenter",function() {
-			if($("#data").data("role")==0 || $("#data").data("role")==4) {
+			if($("#data").data("role")!=2 && $("#data").data("role")!=3) {
 				$(".edit-panel",this).css("visibility","visible");
 			}
 		});
@@ -1440,7 +1455,7 @@ var Connects = Module.extend({
 			t.currentRowID = this.parentNode.parentNode.parentNode.id.substring(8);
 			var ds = $(this).closest("form").postify();
 			if(ds=="") return false;
-			t.io.request(t,ds+"id="+t.currentRowID+"&table="+t.dbTable+"&es_do=updateItem");
+			t.io.request(t,ds+"id="+t.currentRowID+"&table="+t.dbTable+"&es_do=updateItemSortOffice");
 		});
 		// trash link
 		$("a[title='Trash']",$(t.el)).live("click",function() {
@@ -1451,22 +1466,298 @@ var Connects = Module.extend({
 	},
   	show:function(holder) { this._super(holder,null,false,this.hidden); },
 	hide:function() { this._super(); },
-	begin:function(hidden) { 
+	begin:function(hidden) {
 		this._super();
 		this.hidden = hidden ? true : false;
-		this.show(".dashboard-left"); 
-		// get all the modules
-		this.io.request(this,"table="+this.dbTable+"&order="+this.dbOrder+"&es_do=browseAll");
+		this.show(".dashboard-wide");
+		// determine content
+		if($("#data").data("role")==1 || $("#data").data("role")==0) {
+			// office view - show only office specific content OR super view - show only general content
+			this.filter = "&wc=officeID='"+$('#data').data('rep').rep_officeID+"'";
+		} else if($("#data").data("role")==4) {
+			// support view - show everything
+			this.filter = "";
+		} else {
+			// rep or admin view - show general and office specific content
+			this.filter = "&wc=officeID='"+$('#data').data('rep').rep_officeID+"'::officeID='0'";
+		}
+		this.io.request(this,"table="+this.dbTable+"&order="+this.dbOrder+this.filter+"&es_do=browseAllSortOffice");
 	},
 	clear:function() { this._super(); },
 	iHTML:function() {
 		this._super();
 		// returns the initial html for this module
-		var al = $("#data").data("role")==0 || $("#data").data("role")==4 ? "<a href='javascript:void(0);' class='dashboard-link' title='New'>+</a>" : "";
+		var al = $("#data").data("role")!=2 && $("#data").data("role")!=3 ? "<a href='javascript:void(0);' class='dashboard-link' title='New'>+</a>" : "";
+		var office = $("#data").data("role")==1 ? $("#data").data("city")+"'s " : "";
 		return "<div class='dashboard-item'> \
 					<div class='dashboard-item-header'> \
 						"+al+" \
-						<h1 class='dashboard-header'>Connection Components</h1> \
+						<h1 class='dashboard-header'>"+office+"Additional Mounting Materials</h1> \
+					</div> \
+					<div class='dashboard-item-content'><p style='padding:10px; color:#808080;'>Loading...</p></div> \
+				</div>";
+	},
+	dbTable:"es_mounting_materials",
+	dbOrder:"ID",
+	itemForm:function() {
+		this._super();
+		// returns the form
+		return "<form class='addform' action='javascript:void(0);'> \
+					<h1 class='addform-header'>New Material Info:</h1> \
+					<br /> \
+					<div class='form-column'> \
+						<label for='mat_model_num'>Model #</label> \
+						<input class='required' type='text' id='mat_model_num' value='' /> \
+					</div> \
+					<div class='form-column'> \
+						<label for='mat_desc'>Description</label> \
+						<input class='required' type='text' id='mat_desc' value='' /> \
+					</div> \
+					<div class='form-column'> \
+						<label for='mat_unit'>Price Unit</label> \
+						<input class='required' type='text' id='mat_unit' value='' /> \
+					</div> \
+					<div class='form-column'> \
+						<label for='mat_cost'>Cost ($)</label> \
+						<input class='required' type='text' id='mat_cost' value='' /> \
+					</div> \
+					<div class='form-column'> \
+						<label for='mat_price'>Price ($)</label> \
+						<input class='required' type='text' id='mat_price' value='' /> \
+					</div> \
+					<div class='form-column'> \
+						<label for='mat_labor'>Labor (hrs)</label> \
+						<input class='required' type='text' id='mat_labor' value='' /> \
+					</div> \
+					<div class='form-column-right'> \
+						<label for='active'>Active</label> \
+						<select class='required' id='active'> \
+							<option value='' selected='selected'>--select--</option> \
+							<option value='1'>yes</option> \
+							<option value='0'>no</option> \
+						</select> \
+					</div> \
+					<div class='clear'></div> \
+					<br /> \
+					<input type='submit' title='Add' value='Add New' /> \
+					<input type='submit' title='Cancel' value='Cancel' /> \
+				</form>";
+	},
+	receive:function(json) {
+		this._super();
+		// build vars
+		var html = "";
+		switch(json.did) {
+			case this.dbTable+" added" :
+				// show the list again
+				$(".dashboard-item-content",$(this.el)).html("");
+				this.io.request(this,"table="+this.dbTable+"&order="+this.dbOrder+this.filter+"&es_do=browseAllSortOffice");
+				break;
+			case this.dbTable+" updated" :
+				// set active
+				json.data.active = (json.data.active==1) ? "yes" : "no";
+				$("#mat"+this.currentRowID).html(this.rowContent(json.data,json.data2.office)).show();
+				$("#edit-mat"+this.currentRowID).html(this.editRowContent(json.data)).hide();
+				break;
+			case this.dbTable+" deleted" :
+				$("#mat"+this.currentRowID).remove();
+				$("#edit-mat"+this.currentRowID).remove();
+				break;
+			case "found "+this.dbTable :
+				var html = "<table cellpadding='0' cellspacing='0'>";
+				// build the titles
+				html += "<thead class='module-thead'>";
+				html += "<tr>";
+				html += "<th colspan='1'>Model #</th>";
+				html += "<th colspan='1'>Description</th>";
+				html += "<th colspan='1' align='right'>Cost ($)</th>";
+				html += "<th colspan='1' align='right'>Price ($)</th>";
+				html += "<th colspan='1' align='right'>Labor (hrs)</th>";
+				html += "<th colspan='1' align='right'>Category A</th>";
+				html += "<th colspan='1' align='right'>Category B</th>";
+				html += "<th colspan='1' align='right'>Active</th>";
+				html += $("#data").data("role")==4 ? "<th colspan='1' align='right'>Office</th>" : "";
+				html += "</tr>";
+				html += "</thead>";
+				html += "<tbody>";
+				// loop over each result
+				var color = ["light","dark"];
+				for(var i=0;i<json.data.length;i++) {
+					// set active
+					json.data[i].active = (json.data[i].active==1) ? "yes" : "no";
+					html += "<tr id='mat"+json.data[i].ID+"' class='"+color[(i+1)%2]+"'>";
+					html += this.rowContent(json.data[i],json.data2.office[i]);
+					html += "</tr>";
+					html += "<tr id='edit-mat"+json.data[i].ID+"' style='display:none;' class='quick-edit "+color[(i+1)%2]+"'>";
+					html += this.editRowContent(json.data[i]);
+					html += "</tr>";
+				}
+				html += "</tbody>";
+				html += "</table>";
+				// add to page
+				$(".dashboard-item-content", $(this.el)).html(html);
+				break;
+			case "no "+this.dbTable :
+				// clear the list
+				$(".dashboard-item-content",$(this.el)).html("<p style='padding:10px; color:#808080;'>There are no Additional Mounting Materials in your system at the moment.</p>");
+				break;
+			//-----------------------------------//
+			default :
+				console.log(json.did+" from "+this.dbTable);
+				break;
+		}
+	},
+	rowContent:function(data,office) {
+		this._super();
+		// create the row
+		var row = "<td colspan='1'>";
+		row += "<span style='font-weight:bold;'>"+data.mat_model_num+"</span><br />";
+		row += "<span class='edit-panel'>";
+		row += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a> | ";
+		row += "<a href='javascript:void(0);' class='trash-link' title='Trash'>Trash</a>";
+		row += "</span>";
+		row += "</td>";
+		row += "<td colspan='1'>"+data.mat_desc+"</td>";
+		row += "<td colspan='1' align='right'>"+data.mat_cost+"</td>";
+		row += "<td colspan='1' align='right'>"+data.mat_price+"</td>";
+		row += "<td colspan='1' align='right'>"+data.mat_labor+"</td>";
+		row += "<td colspan='1' align='right'>3</td>";
+		row += "<td colspan='1' align='right'>5</td>";
+		row += "<td colspan='1' align='right'>"+data.active+"</td>";
+		row += $("#data").data("role")==4 ? "<td colspan='1' align='right'>"+office+"</td>" : "";
+		return row;
+	},
+	editRowContent:function(data) {
+		this._super();
+		// create the edit row
+		var sel_yes = (data.active=="yes") ? "selected='selected'" : "";
+		var sel_no = (data.active=="no") ? "selected='selected'" : "";
+		var edit = "<td colspan='9'>";
+		edit += "<form class='updateform' action='javascript:void(0);'> \
+					<h1 class='addform-header'>Quick Edit</h1> \
+					<br /> \
+					<div class='form-column'> \
+						<label for='mat_model_num'>Model #</label> \
+						<input class='required' type='text' id='mat_model_num' value='"+data.mat_model_num+"' /> \
+					</div> \
+					<div class='form-column'> \
+						<label for='mat_desc'>Description</label> \
+						<input class='required' type='text' id='mat_desc' value='"+data.mat_desc+"' /> \
+					</div> \
+					<div class='form-column'> \
+						<label for='mat_unit'>Price Unit</label> \
+						<input class='required' type='text' id='mat_unit' value='"+data.mat_unit+"' /> \
+					</div> \
+					<div class='form-column'> \
+						<label for='mat_cost'>Cost ($)</label> \
+						<input class='required' type='text' id='mat_cost' value='"+data.mat_cost+"' /> \
+					</div> \
+					<div class='form-column'> \
+						<label for='mat_price'>Price ($)</label> \
+						<input class='required' type='text' id='mat_price' value='"+data.mat_price+"' /> \
+					</div> \
+					<div class='form-column'> \
+						<label for='mat_labor'>Labor (hrs)</label> \
+						<input class='required' type='text' id='mat_labor' value='"+data.mat_labor+"' /> \
+					</div> \
+					<div class='form-column-right'> \
+						<label for='active'>Active</label> \
+						<select class='required' id='active'> \
+							<option value='1' "+sel_yes+">yes</option> \
+							<option value='0' "+sel_no+">no</option> \
+						</select> \
+					</div> \
+					<div class='clear'></div> \
+					<br /> \
+					<input type='submit' title='Update' value='Update' /> \
+					<input type='submit' title='CancelQ' value='Cancel' /> \
+				</form>";
+		edit += "</td>";
+		return edit;
+	}
+});
+///////////////////////////////////////////////////////////////// connection components : super
+var Connects = Module.extend({
+  	init:function(el,io) {
+		this._super(el,io);
+		var t = this;
+		// new item
+		$("a[title='New']",$(t.el)).live("click",function() {
+			$(".dashboard-item-content",$(t.el)).html(t.itemForm());
+		});
+		// cancel add
+		$("input[title='Cancel']",$(t.el)).live("click",function() {
+			t.io.request(t,"table="+t.dbTable+"&order="+t.dbOrder+t.filter+"&es_do=browseAllSortOffice");
+		});
+		// add new
+		$("input[title='Add']",$(t.el)).live("click",function() {
+			var ds = $(this).closest("form").postify();
+			if(ds=="") return false;
+			if($("#data").data("role")==1) ds += "officeID="+$('#data').data('rep').rep_officeID+"&";
+			t.io.request(t,ds+"table="+t.dbTable+"&es_do=addItem");
+		});
+		// hover over rows
+		$("tr",$(t.el)).live("mouseenter",function() {
+			if($("#data").data("role")!=2 && $("#data").data("role")!=3) {
+				$(".edit-panel",this).css("visibility","visible");
+			}
+		});
+		$("tr",$(t.el)).live("mouseleave",function() {
+			$(".edit-panel",this).css("visibility","hidden");
+		});
+		// edit link
+		$("a[title='Edit']",$(t.el)).live("click",function() {
+			$("#"+this.parentNode.parentNode.parentNode.id).hide();
+			$("#edit-"+this.parentNode.parentNode.parentNode.id).show();
+		});
+		// cancel update
+		$("input[title='CancelQ']",$(t.el)).live("click",function() {
+			$("#"+this.parentNode.parentNode.parentNode.id).hide();
+			$("#"+this.parentNode.parentNode.parentNode.id.substring(5)).show();
+		});
+		// update
+		$("input[title='Update']",$(t.el)).live("click",function() {
+			t.currentRowID = this.parentNode.parentNode.parentNode.id.substring(8);
+			var ds = $(this).closest("form").postify();
+			if(ds=="") return false;
+			t.io.request(t,ds+"id="+t.currentRowID+"&table="+t.dbTable+"&es_do=updateItemSortOffice");
+		});
+		// trash link
+		$("a[title='Trash']",$(t.el)).live("click",function() {
+			t.currentRowID = this.parentNode.parentNode.parentNode.id.substring(3);
+			if(!confirm("Are you sure you want to delete this item? This cannot be undone.")) return false;
+			t.io.request(t,"id="+t.currentRowID+"&table="+t.dbTable+"&es_do=deleteItem");
+		});
+	},
+  	show:function(holder) { this._super(holder,null,false,this.hidden); },
+	hide:function() { this._super(); },
+	begin:function(hidden) {
+		this._super();
+		this.hidden = hidden ? true : false;
+		this.show(".dashboard-wide"); 
+		// determine content
+		if($("#data").data("role")==1 || $("#data").data("role")==0) {
+			// office view - show only office specific content OR super view - show only general content
+			this.filter = "&wc=officeID='"+$('#data').data('rep').rep_officeID+"'";
+		} else if($("#data").data("role")==4) {
+			// support view - show everything
+			this.filter = "";
+		} else {
+			// rep or admin view - show general and office specific content
+			this.filter = "&wc=officeID='"+$('#data').data('rep').rep_officeID+"'::officeID='0'";
+		}
+		this.io.request(this,"table="+this.dbTable+"&order="+this.dbOrder+this.filter+"&es_do=browseAllSortOffice");
+	},
+	clear:function() { this._super(); },
+	iHTML:function() {
+		this._super();
+		// returns the initial html for this module
+		var al = $("#data").data("role")!=2 && $("#data").data("role")!=3 ? "<a href='javascript:void(0);' class='dashboard-link' title='New'>+</a>" : "";
+		var office = $("#data").data("role")==1 ? $("#data").data("city")+"'s " : "";
+		return "<div class='dashboard-item'> \
+					<div class='dashboard-item-header'> \
+						"+al+" \
+						<h1 class='dashboard-header'>"+office+"Conduit &amp; Wire Runs</h1> \
 					</div> \
 					<div class='dashboard-item-content'><p style='padding:10px; color:#808080;'>Loading...</p></div> \
 				</div>";
@@ -1517,12 +1808,12 @@ var Connects = Module.extend({
 			case this.dbTable+" added" :
 				// show the list again
 				$(".dashboard-item-content",$(this.el)).html("");
-				this.io.request(this,"table="+this.dbTable+"&order="+this.dbOrder+"&es_do=browseAll");
+				this.io.request(this,"table="+this.dbTable+"&order="+this.dbOrder+this.filter+"&es_do=browseAllSortOffice");
 				break;
 			case this.dbTable+" updated" :
 				// set active
 				json.data.active = (json.data.active==1) ? "yes" : "no";
-				$("#con"+this.currentRowID).html(this.rowContent(json.data)).show();
+				$("#con"+this.currentRowID).html(this.rowContent(json.data,json.data2.office)).show();
 				$("#edit-con"+this.currentRowID).html(this.editRowContent(json.data)).hide();
 				break;
 			case this.dbTable+" deleted" :
@@ -1532,14 +1823,17 @@ var Connects = Module.extend({
 			case "found "+this.dbTable :
 				var html = "<table cellpadding='0' cellspacing='0'>";
 				// build the titles
-				html += "<thead>";
+				html += "<thead class='module-thead'>";
 				html += "<tr>";
 				html += "<th colspan='1'>Model #</th>";
 				html += "<th colspan='1'>Description</th>";
 				html += "<th colspan='1' align='right'>Cost ($)</th>";
 				html += "<th colspan='1' align='right'>Price ($)</th>";
 				html += "<th colspan='1' align='right'>Labor (hrs/20')</th>";
+				html += "<th colspan='1' align='right'>Category A</th>";
+				html += "<th colspan='1' align='right'>Category B</th>";
 				html += "<th colspan='1' align='right'>Active</th>";
+				html += $("#data").data("role")==4 ? "<th colspan='1' align='right'>Office</th>" : "";
 				html += "</tr>";
 				html += "</thead>";
 				html += "<tbody>";
@@ -1549,7 +1843,7 @@ var Connects = Module.extend({
 					// set active
 					json.data[i].active = (json.data[i].active==1) ? "yes" : "no";
 					html += "<tr id='con"+json.data[i].ID+"' class='"+color[(i+1)%2]+"'>";
-					html += this.rowContent(json.data[i]);
+					html += this.rowContent(json.data[i],json.data2.office[i]);
 					html += "</tr>";
 					html += "<tr id='edit-con"+json.data[i].ID+"' style='display:none;' class='quick-edit "+color[(i+1)%2]+"'>";
 					html += this.editRowContent(json.data[i]);
@@ -1562,7 +1856,7 @@ var Connects = Module.extend({
 				break;
 			case "no "+this.dbTable :
 				// clear the list
-				$(".dashboard-item-content",$(this.el)).html("<p style='padding:10px; color:#808080;'>There are no Connection Components in your system at the moment.</p>");
+				$(".dashboard-item-content",$(this.el)).html("<p style='padding:10px; color:#808080;'>There are no Conduit or Wire Runs in your system at the moment.</p>");
 				break;
 			//-----------------------------------//
 			default :
@@ -1570,7 +1864,7 @@ var Connects = Module.extend({
 				break;
 		}
 	},
-	rowContent:function(data) {
+	rowContent:function(data,office) {
 		this._super();
 		// create the row
 		var row = "<td colspan='1'>";
@@ -1584,7 +1878,10 @@ var Connects = Module.extend({
 		row += "<td colspan='1' align='right'>"+data.con_cost+"</td>";
 		row += "<td colspan='1' align='right'>"+data.con_price+"</td>";
 		row += "<td colspan='1' align='right'>"+data.con_labor+"</td>";
+		row += "<td colspan='1' align='right'>4</td>";
+		row += "<td colspan='1' align='right'>5</td>";
 		row += "<td colspan='1' align='right'>"+data.active+"</td>";
+		row += $("#data").data("role")==4 ? "<td colspan='1' align='right'>"+office+"</td>" : "";
 		return row;
 	},
 	editRowContent:function(data) {
@@ -1592,7 +1889,7 @@ var Connects = Module.extend({
 		// create the edit row
 		var sel_yes = (data.active=="yes") ? "selected='selected'" : "";
 		var sel_no = (data.active=="no") ? "selected='selected'" : "";
-		var edit = "<td colspan='6'>";
+		var edit = "<td colspan='9'>";
 		edit += "<form class='updateform' action='javascript:void(0);'> \
 					<h1 class='addform-header'>Quick Edit</h1> \
 					<br /> \
@@ -1613,6 +1910,263 @@ var Connects = Module.extend({
 					<div class='form-column-right'> \
 						<label for='con_labor'>Labor (hrs/20')</label> \
 						<input class='required' type='text' id='con_labor' value='"+data.con_labor+"' /> \
+						<label for='active'>Active</label> \
+						<select class='required' id='active'> \
+							<option value='1' "+sel_yes+">yes</option> \
+							<option value='0' "+sel_no+">no</option> \
+						</select> \
+					</div> \
+					<div class='clear'></div> \
+					<br /> \
+					<input type='submit' title='Update' value='Update' /> \
+					<input type='submit' title='CancelQ' value='Cancel' /> \
+				</form>";
+		edit += "</td>";
+		return edit;
+	}
+});
+/////////////////////////////////////////////////////////////// miscellaneous materials : super
+var MiscellaneousMaterials = Module.extend({
+  	init:function(el,io) {
+		this._super(el,io);
+		var t = this;
+		// new item
+		$("a[title='New']",$(t.el)).live("click",function() {
+			$(".dashboard-item-content",$(t.el)).html(t.itemForm());
+		});
+		// cancel add
+		$("input[title='Cancel']",$(t.el)).live("click",function() {
+			t.io.request(t,"table="+t.dbTable+"&order="+t.dbOrder+t.filter+"&es_do=browseAllSortOffice");
+		});
+		// add new
+		$("input[title='Add']",$(t.el)).live("click",function() {
+			var ds = $(this).closest("form").postify();
+			if(ds=="") return false;
+			if($("#data").data("role")==1) ds += "officeID="+$('#data').data('rep').rep_officeID+"&";
+			t.io.request(t,ds+"table="+t.dbTable+"&es_do=addItem");
+		});
+		// hover over rows
+		$("tr",$(t.el)).live("mouseenter",function() {
+			if($("#data").data("role")!=2 && $("#data").data("role")!=3) {
+				$(".edit-panel",this).css("visibility","visible");
+			}
+		});
+		$("tr",$(t.el)).live("mouseleave",function() {
+			$(".edit-panel",this).css("visibility","hidden");
+		});
+		// edit link
+		$("a[title='Edit']",$(t.el)).live("click",function() {
+			$("#"+this.parentNode.parentNode.parentNode.id).hide();
+			$("#edit-"+this.parentNode.parentNode.parentNode.id).show();
+		});
+		// cancel update
+		$("input[title='CancelQ']",$(t.el)).live("click",function() {
+			$("#"+this.parentNode.parentNode.parentNode.id).hide();
+			$("#"+this.parentNode.parentNode.parentNode.id.substring(5)).show();
+		});
+		// update
+		$("input[title='Update']",$(t.el)).live("click",function() {
+			t.currentRowID = this.parentNode.parentNode.parentNode.id.substring(8);
+			var ds = $(this).closest("form").postify();
+			if(ds=="") return false;
+			t.io.request(t,ds+"id="+t.currentRowID+"&table="+t.dbTable+"&es_do=updateItemSortOffice");
+		});
+		// trash link
+		$("a[title='Trash']",$(t.el)).live("click",function() {
+			t.currentRowID = this.parentNode.parentNode.parentNode.id.substring(3);
+			if(!confirm("Are you sure you want to delete this item? This cannot be undone.")) return false;
+			t.io.request(t,"id="+t.currentRowID+"&table="+t.dbTable+"&es_do=deleteItem");
+		});
+	},
+  	show:function(holder) { this._super(holder,null,false,this.hidden); },
+	hide:function() { this._super(); },
+	begin:function(hidden) {
+		this._super();
+		this.hidden = hidden ? true : false;
+		this.show(".dashboard-wide"); 
+		// determine content
+		if($("#data").data("role")==1 || $("#data").data("role")==0) {
+			// office view - show only office specific content OR super view - show only general content
+			this.filter = "&wc=officeID='"+$('#data').data('rep').rep_officeID+"'";
+		} else if($("#data").data("role")==4) {
+			// support view - show everything
+			this.filter = "";
+		} else {
+			// rep or admin view - show general and office specific content
+			this.filter = "&wc=officeID='"+$('#data').data('rep').rep_officeID+"'::officeID='0'";
+		}
+		this.io.request(this,"table="+this.dbTable+"&order="+this.dbOrder+this.filter+"&es_do=browseAllSortOffice");
+	},
+	clear:function() { this._super(); },
+	iHTML:function() {
+		this._super();
+		// returns the initial html for this module
+		var al = $("#data").data("role")!=2 && $("#data").data("role")!=3 ? "<a href='javascript:void(0);' class='dashboard-link' title='New'>+</a>" : "";
+		var office = $("#data").data("role")==1 ? $("#data").data("city")+"'s " : "";
+		return "<div class='dashboard-item'> \
+					<div class='dashboard-item-header'> \
+						"+al+" \
+						<h1 class='dashboard-header'>"+office+"Miscellaneous Material Kits</h1> \
+					</div> \
+					<div class='dashboard-item-content'><p style='padding:10px; color:#808080;'>Loading...</p></div> \
+				</div>";
+	},
+	dbTable:"es_miscellaneous_materials",
+	dbOrder:"ID",
+	itemForm:function() {
+		this._super();
+		// returns the form
+		return "<form class='addform' action='javascript:void(0);'> \
+					<h1 class='addform-header'>New Material Info:</h1> \
+					<br /> \
+					<div class='form-column'> \
+						<label for='mis_model_num'>Model #</label> \
+						<input class='required' type='text' id='mis_model_num' value='' /> \
+					</div> \
+					<div class='form-column'> \
+						<label for='mis_desc'>Description</label> \
+						<input class='required' type='text' id='mis_desc' value='' /> \
+					</div> \
+					<div class='form-column'> \
+						<label for='mis_cost'>Cost ($)</label> \
+						<input class='required' type='text' id='mis_cost' value='' /> \
+					</div> \
+					<div class='form-column'> \
+						<label for='mis_price'>Price ($)</label> \
+						<input class='required' type='text' id='mis_price' value='' /> \
+					</div> \
+					<div class='form-column'> \
+						<label for='mis_labor'>Labor (hrs)</label> \
+						<input class='required' type='text' id='mis_labor' value='' /> \
+					</div> \
+					<div class='form-column-right'> \
+						<label for='active'>Active</label> \
+						<select class='required' id='active'> \
+							<option value='' selected='selected'>--select--</option> \
+							<option value='1'>yes</option> \
+							<option value='0'>no</option> \
+						</select> \
+					</div> \
+					<div class='clear'></div> \
+					<br /> \
+					<input type='submit' title='Add' value='Add New' /> \
+					<input type='submit' title='Cancel' value='Cancel' /> \
+				</form>";
+	},
+	receive:function(json) {
+		this._super();
+		// build vars
+		var html = "";
+		switch(json.did) {
+			case this.dbTable+" added" :
+				// show the list again
+				$(".dashboard-item-content",$(this.el)).html("");
+				this.io.request(this,"table="+this.dbTable+"&order="+this.dbOrder+this.filter+"&es_do=browseAllSortOffice");
+				break;
+			case this.dbTable+" updated" :
+				// set active
+				json.data.active = (json.data.active==1) ? "yes" : "no";
+				$("#mis"+this.currentRowID).html(this.rowContent(json.data,json.data2.office)).show();
+				$("#edit-mis"+this.currentRowID).html(this.editRowContent(json.data)).hide();
+				break;
+			case this.dbTable+" deleted" :
+				$("#mis"+this.currentRowID).remove();
+				$("#edit-mis"+this.currentRowID).remove();
+				break;
+			case "found "+this.dbTable :
+				var html = "<table cellpadding='0' cellspacing='0'>";
+				// build the titles
+				html += "<thead class='module-thead'>";
+				html += "<tr>";
+				html += "<th colspan='1'>Model #</th>";
+				html += "<th colspan='1'>Description</th>";
+				html += "<th colspan='1' align='right'>Cost ($)</th>";
+				html += "<th colspan='1' align='right'>Price ($)</th>";
+				html += "<th colspan='1' align='right'>Labor (hrs)</th>";
+				html += "<th colspan='1' align='right'>Category A</th>";
+				html += "<th colspan='1' align='right'>Category B</th>";
+				html += "<th colspan='1' align='right'>Active</th>";
+				html += $("#data").data("role")==4 ? "<th colspan='1' align='right'>Office</th>" : "";
+				html += "</tr>";
+				html += "</thead>";
+				html += "<tbody>";
+				// loop over each result
+				var color = ["light","dark"];
+				for(var i=0;i<json.data.length;i++) {
+					// set active
+					json.data[i].active = (json.data[i].active==1) ? "yes" : "no";
+					html += "<tr id='mis"+json.data[i].ID+"' class='"+color[(i+1)%2]+"'>";
+					html += this.rowContent(json.data[i],json.data2.office[i]);
+					html += "</tr>";
+					html += "<tr id='edit-mis"+json.data[i].ID+"' style='display:none;' class='quick-edit "+color[(i+1)%2]+"'>";
+					html += this.editRowContent(json.data[i]);
+					html += "</tr>";
+				}
+				html += "</tbody>";
+				html += "</table>";
+				// add to page
+				$(".dashboard-item-content", $(this.el)).html(html);
+				break;
+			case "no "+this.dbTable :
+				// clear the list
+				$(".dashboard-item-content",$(this.el)).html("<p style='padding:10px; color:#808080;'>There are no Miscellaneous Material Kits in your system at the moment.</p>");
+				break;
+			//-----------------------------------//
+			default :
+				console.log(json.did+" from "+this.dbTable);
+				break;
+		}
+	},
+	rowContent:function(data,office) {
+		this._super();
+		// create the row
+		var row = "<td colspan='1'>";
+		row += "<span style='font-weight:bold;'>"+data.mis_model_num+"</span><br />";
+		row += "<span class='edit-panel'>";
+		row += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a> | ";
+		row += "<a href='javascript:void(0);' class='trash-link' title='Trash'>Trash</a>";
+		row += "</span>";
+		row += "</td>";
+		row += "<td colspan='1'>"+data.mis_desc+"</td>";
+		row += "<td colspan='1' align='right'>"+data.mis_cost+"</td>";
+		row += "<td colspan='1' align='right'>"+data.mis_price+"</td>";
+		row += "<td colspan='1' align='right'>"+data.mis_labor+"</td>";
+		row += "<td colspan='1' align='right'>4</td>";
+		row += "<td colspan='1' align='right'>5</td>";
+		row += "<td colspan='1' align='right'>"+data.active+"</td>";
+		row += $("#data").data("role")==4 ? "<td colspan='1' align='right'>"+office+"</td>" : "";
+		return row;
+	},
+	editRowContent:function(data) {
+		this._super();
+		// create the edit row
+		var sel_yes = (data.active=="yes") ? "selected='selected'" : "";
+		var sel_no = (data.active=="no") ? "selected='selected'" : "";
+		var edit = "<td colspan='9'>";
+		edit += "<form class='updateform' action='javascript:void(0);'> \
+					<h1 class='addform-header'>Quick Edit</h1> \
+					<br /> \
+					<div class='form-column'> \
+						<label for='mis_model_num'>Model #</label> \
+						<input class='required' type='text' id='mis_model_num' value='"+data.mis_model_num+"' /> \
+					</div> \
+					<div class='form-column'> \
+						<label for='mis_desc'>Description</label> \
+						<input class='required' type='text' id='mis_desc' value='"+data.mis_desc+"' /> \
+					</div> \
+					<div class='form-column'> \
+						<label for='mis_cost'>Cost ($)</label> \
+						<input class='required' type='text' id='mis_cost' value='"+data.mis_cost+"' /> \
+					</div> \
+					<div class='form-column'> \
+						<label for='mis_price'>Price ($)</label> \
+						<input class='required' type='text' id='mis_price' value='"+data.mis_price+"' /> \
+					</div> \
+					<div class='form-column'> \
+						<label for='mis_labor'>Labor (hrs)</label> \
+						<input class='required' type='text' id='mis_labor' value='"+data.mis_labor+"' /> \
+					</div> \
+					<div class='form-column-right'> \
 						<label for='active'>Active</label> \
 						<select class='required' id='active'> \
 							<option value='1' "+sel_yes+">yes</option> \
@@ -1685,7 +2239,7 @@ var Inters = Module.extend({
 	begin:function(hidden) { 
 		this._super();
 		this.hidden = hidden ? true : false;
-		this.show(".dashboard-left"); 
+		this.show(".dashboard-wide"); 
 		// get all the modules
 		this.io.request(this,"table="+this.dbTable+"&order="+this.dbOrder+"&es_do=browseAll");
 	},
@@ -1697,7 +2251,7 @@ var Inters = Module.extend({
 		return "<div class='dashboard-item'> \
 					<div class='dashboard-item-header'> \
 						"+al+" \
-						<h1 class='dashboard-header'>Interconnection Components</h1> \
+						<h1 class='dashboard-header'>Interconnection Material & Labor Kits</h1> \
 					</div> \
 					<div class='dashboard-item-content'><p style='padding:10px; color:#808080;'>Loading...</p></div> \
 				</div>";
@@ -1763,13 +2317,15 @@ var Inters = Module.extend({
 			case "found "+this.dbTable :
 				var html = "<table cellpadding='0' cellspacing='0'>";
 				// build the titles
-				html += "<thead>";
+				html += "<thead class='module-thead'>";
 				html += "<tr>";
 				html += "<th colspan='1'>Model #</th>";
 				html += "<th colspan='1'>Description</th>";
 				html += "<th colspan='1' align='right'>Cost ($)</th>";
 				html += "<th colspan='1' align='right'>Price ($)</th>";
-				html += "<th colspan='1' align='right'>Labor (hrs/module)</th>";
+				html += "<th colspan='1' align='right'>Labor (hrs)</th>";
+				html += "<th colspan='1' align='right'>Category A</th>";
+				html += "<th colspan='1' align='right'>Category B</th>";
 				html += "<th colspan='1' align='right'>Active</th>";
 				html += "</tr>";
 				html += "</thead>";
@@ -1793,7 +2349,7 @@ var Inters = Module.extend({
 				break;
 			case "no "+this.dbTable :
 				// clear the list
-				$(".dashboard-item-content",$(this.el)).html("<p style='padding:10px; color:#808080;'>There are no Interconnection Components in your system at the moment.</p>");
+				$(".dashboard-item-content",$(this.el)).html("<p style='padding:10px; color:#808080;'>There are no Interconnection Material or Labor Kits in your system at the moment.</p>");
 				break;
 			//-----------------------------------//
 			default :
@@ -1815,6 +2371,8 @@ var Inters = Module.extend({
 		row += "<td colspan='1' align='right'>"+data.int_cost+"</td>";
 		row += "<td colspan='1' align='right'>"+data.int_price+"</td>";
 		row += "<td colspan='1' align='right'>"+data.int_labor+"</td>";
+		row += "<td colspan='1' align='right'>4</td>";
+		row += "<td colspan='1' align='right'>5</td>";
 		row += "<td colspan='1' align='right'>"+data.active+"</td>";
 		return row;
 	},
@@ -1823,7 +2381,7 @@ var Inters = Module.extend({
 		// create the edit row
 		var sel_yes = (data.active=="yes") ? "selected='selected'" : "";
 		var sel_no = (data.active=="no") ? "selected='selected'" : "";
-		var edit = "<td colspan='6'>";
+		var edit = "<td colspan='8'>";
 		edit += "<form class='updateform' action='javascript:void(0);'> \
 					<h1 class='addform-header'>Quick Edit</h1> \
 					<br /> \
@@ -1916,7 +2474,7 @@ var Types = Module.extend({
 	begin:function(hidden) { 
 		this._super();
 		this.hidden = hidden ? true : false;
-		this.show(".dashboard-left"); 
+		this.show(".dashboard-wide"); 
 		// get all the modules
 		this.io.request(this,"table="+this.dbTable+"&order="+this.dbOrder+"&es_do=browseAll");
 	},
@@ -1980,9 +2538,11 @@ var Types = Module.extend({
 			case "found "+this.dbTable :
 				var html = "<table cellpadding='0' cellspacing='0'>";
 				// build the titles
-				html += "<thead>";
+				html += "<thead class='module-thead'>";
 				html += "<tr>";
 				html += "<th colspan='1'>Type</th>";
+				html += "<th colspan='1' align='right'>Category A</th>";
+				html += "<th colspan='1' align='right'>Category B</th>";
 				html += "<th colspan='1' align='right'>Active</th>";
 				html += "</tr>";
 				html += "</thead>";
@@ -2024,6 +2584,8 @@ var Types = Module.extend({
 		row += "<a href='javascript:void(0);' class='trash-link' title='Trash'>Trash</a>";
 		row += "</span>";
 		row += "</td>";
+		row += "<td colspan='1' align='right'>0</td>";
+		row += "<td colspan='1' align='right'>0</td>";
 		row += "<td colspan='1' align='right'>"+data.active+"</td>";
 		return row;
 	},
@@ -2032,7 +2594,7 @@ var Types = Module.extend({
 		// create the edit row
 		var sel_yes = (data.active=="yes") ? "selected='selected'" : "";
 		var sel_no = (data.active=="no") ? "selected='selected'" : "";
-		var edit = "<td colspan='2'>";
+		var edit = "<td colspan='4'>";
 		edit += "<form class='updateform' action='javascript:void(0);'> \
 					<h1 class='addform-header'>Quick Edit</h1> \
 					<br /> \
@@ -2111,7 +2673,7 @@ var Angles = Module.extend({
 	begin:function(hidden) {
 		this._super();
 		this.hidden = hidden ? true : false;
-		this.show(".dashboard-right"); 
+		this.show(".dashboard-wide"); 
 		// get all the modules
 		this.io.request(this,"table="+this.dbTable+"&order="+this.dbOrder+"&es_do=browseAll");
 	},
@@ -2177,10 +2739,12 @@ var Angles = Module.extend({
 			case "found "+this.dbTable :
 				var html = "<table cellpadding='0' cellspacing='0'>";
 				// build the titles
-				html += "<thead>";
+				html += "<thead class='module-thead'>";
 				html += "<tr>";
 				html += "<th colspan='1'>Value</th>";
 				html += "<th colspan='1' align='right'>Labor (hrs/module)</th>";
+				html += "<th colspan='1' align='right'>Category A</th>";
+				html += "<th colspan='1' align='right'>Category B</th>";
 				html += "<th colspan='1' align='right'>Active</th>";
 				html += "</tr>";
 				html += "</thead>";
@@ -2224,6 +2788,8 @@ var Angles = Module.extend({
 		row += "</span>";
 		row += "</td>";
 		row += "<td colspan='1' align='right'>"+data.ang_labor+"</td>";
+		row += "<td colspan='1' align='right'>0</td>";
+		row += "<td colspan='1' align='right'>5</td>";
 		row += "<td colspan='1' align='right'>"+data.active+"</td>";
 		return row;
 	},
@@ -2232,7 +2798,7 @@ var Angles = Module.extend({
 		// create the edit row
 		var sel_yes = (data.active=="yes") ? "selected='selected'" : "";
 		var sel_no = (data.active=="no") ? "selected='selected'" : "";
-		var edit = "<td colspan='3'>";
+		var edit = "<td colspan='5'>";
 		edit += "<form class='updateform' action='javascript:void(0);'> \
 					<h1 class='addform-header'>Quick Edit</h1> \
 					<br /> \
@@ -2310,10 +2876,10 @@ var MountingMethods = Module.extend({
 	},
   	show:function(holder) { this._super(holder,null,false,this.hidden); },
 	hide:function() { this._super(); },
-	begin:function(hidden) { 
+	begin:function(hidden) {
 		this._super();
 		this.hidden = hidden ? true : false;
-		this.show(".dashboard-left"); 
+		this.show(".dashboard-wide"); 
 		// get all the modules
 		this.io.request(this,"table="+this.dbTable+"&order="+this.dbOrder+"&es_do=browseAll");
 	},
@@ -2325,7 +2891,7 @@ var MountingMethods = Module.extend({
 		return "<div class='dashboard-item'> \
 					<div class='dashboard-item-header'> \
 						"+al+" \
-						<h1 class='dashboard-header'>Mounting Method</h1> \
+						<h1 class='dashboard-header'>Mounting Method Kits</h1> \
 					</div> \
 					<div class='dashboard-item-content'><p style='padding:10px; color:#808080;'>Loading...</p></div> \
 				</div>";
@@ -2389,13 +2955,15 @@ var MountingMethods = Module.extend({
 			case "found "+this.dbTable :
 				var html = "<table cellpadding='0' cellspacing='0'>";
 				// build the titles
-				html += "<thead>";
+				html += "<thead class='module-thead'>";
 				html += "<tr>";
 				html += "<th colspan='1'>Method</th>";
 				html += "<th colspan='1'>Description</th>";
-				html += "<th colspan='1' align='right' style='white-space:nowrap;'>Cost ($)</th>";
-				html += "<th colspan='1' align='right' style='white-space:nowrap;'>Price ($)</th>";
-				html += "<th colspan='1' align='right' style='white-space:nowrap;'>Labor (hrs/connection)</th>";
+				html += "<th colspan='1' align='right'>Cost ($)</th>";
+				html += "<th colspan='1' align='right'>Price ($)</th>";
+				html += "<th colspan='1' align='right'>Labor (hrs/connection)</th>";
+				html += "<th colspan='1' align='right'>Category A</th>";
+				html += "<th colspan='1' align='right'>Category B</th>";
 				html += "<th colspan='1' align='right'>Active</th>";
 				html += "</tr>";
 				html += "</thead>";
@@ -2419,7 +2987,7 @@ var MountingMethods = Module.extend({
 				break;
 			case "no "+this.dbTable :
 				// clear the list
-				$(".dashboard-item-content",$(this.el)).html("<p style='padding:10px; color:#808080;'>There are no Mounting Methods in your system at the moment.</p>");
+				$(".dashboard-item-content",$(this.el)).html("<p style='padding:10px; color:#808080;'>There are no Mounting Method Kits in your system at the moment.</p>");
 				break;
 			//-----------------------------------//
 			default :
@@ -2441,6 +3009,8 @@ var MountingMethods = Module.extend({
 		row += "<td colspan='1' align='right'>"+data.met_cost+"</td>";
 		row += "<td colspan='1' align='right'>"+data.met_price+"</td>";
 		row += "<td colspan='1' align='right'>"+data.met_labor+"</td>";
+		row += "<td colspan='1' align='right'>3</td>";
+		row += "<td colspan='1' align='right'>5</td>";
 		row += "<td colspan='1' align='right'>"+data.active+"</td>";
 		return row;
 	},
@@ -2449,7 +3019,7 @@ var MountingMethods = Module.extend({
 		// create the edit row
 		var sel_yes = (data.active=="yes") ? "selected='selected'" : "";
 		var sel_no = (data.active=="no") ? "selected='selected'" : "";
-		var edit = "<td colspan='6'>";
+		var edit = "<td colspan='8'>";
 		edit += "<form class='updateform' action='javascript:void(0);'> \
 					<h1 class='addform-header'>Quick Edit</h1> \
 					<br /> \
@@ -2540,7 +3110,7 @@ var MountingMediums = Module.extend({
 	begin:function(hidden) {
 		this._super();
 		this.hidden = hidden ? true : false;
-		this.show(".dashboard-left"); 
+		this.show(".dashboard-wide"); 
 		// get all the modules
 		this.io.request(this,"table="+this.dbTable+"&order="+this.dbOrder+"&es_do=browseAll");
 	},
@@ -2606,10 +3176,12 @@ var MountingMediums = Module.extend({
 			case "found "+this.dbTable :
 				var html = "<table cellpadding='0' cellspacing='0'>";
 				// build the titles
-				html += "<thead>";
+				html += "<thead class='module-thead'>";
 				html += "<tr>";
 				html += "<th colspan='1'>Medium</th>";
 				html += "<th colspan='1' align='right'>Labor (hrs/module)</th>";
+				html += "<th colspan='1' align='right'>Category A</th>";
+				html += "<th colspan='1' align='right'>Category B</th>";
 				html += "<th colspan='1' align='right'>Active</th>";
 				html += "</tr>";
 				html += "</thead>";
@@ -2652,6 +3224,8 @@ var MountingMediums = Module.extend({
 		row += "</span>";
 		row += "</td>";
 		row += "<td colspan='1' align='right'>"+data.med_labor+"</td>";
+		row += "<td colspan='1' align='right'>0</td>";
+		row += "<td colspan='1' align='right'>5</td>";
 		row += "<td colspan='1' align='right'>"+data.active+"</td>";
 		return row;
 	},
@@ -2660,7 +3234,7 @@ var MountingMediums = Module.extend({
 		// create the edit row
 		var sel_yes = (data.active=="yes") ? "selected='selected'" : "";
 		var sel_no = (data.active=="no") ? "selected='selected'" : "";
-		var edit = "<td colspan='3'>";
+		var edit = "<td colspan='5'>";
 		edit += "<form class='updateform' action='javascript:void(0);'> \
 					<h1 class='addform-header'>Quick Edit</h1> \
 					<br /> \
@@ -2686,6 +3260,262 @@ var MountingMediums = Module.extend({
 });
 /////////////////////////////////////////////////////////////////////// data monitoring : super
 var DataMonitoring = Module.extend({
+  	init:function(el,io) {
+		this._super(el,io);
+		var t = this;
+		// new item
+		$("a[title='New']",$(t.el)).live("click",function() {
+			$(".dashboard-item-content",$(t.el)).html(t.itemForm());
+		});
+		// cancel add
+		$("input[title='Cancel']",$(t.el)).live("click",function() {
+			t.io.request(t,"table="+t.dbTable+"&order="+t.dbOrder+t.filter+"&es_do=browseAllSortOffice");
+		});
+		// add new
+		$("input[title='Add']",$(t.el)).live("click",function() {
+			var ds = $(this).closest("form").postify();
+			if(ds=="") return false;
+			if($("#data").data("role")==1) ds += "officeID="+$('#data').data('rep').rep_officeID+"&";
+			t.io.request(t,ds+"table="+t.dbTable+"&es_do=addItem");
+		});
+		// hover over rows
+		$("tr",$(t.el)).live("mouseenter",function() {
+			if($("#data").data("role")!=2 && $("#data").data("role")!=3) {
+				$(".edit-panel",this).css("visibility","visible");
+			}
+		});
+		$("tr",$(t.el)).live("mouseleave",function() {
+			$(".edit-panel",this).css("visibility","hidden");
+		});
+		// edit link
+		$("a[title='Edit']",$(t.el)).live("click",function() {
+			$("#"+this.parentNode.parentNode.parentNode.id).hide();
+			$("#edit-"+this.parentNode.parentNode.parentNode.id).show();
+		});
+		// cancel update
+		$("input[title='CancelQ']",$(t.el)).live("click",function() {
+			$("#"+this.parentNode.parentNode.parentNode.id).hide();
+			$("#"+this.parentNode.parentNode.parentNode.id.substring(5)).show();
+		});
+		// update
+		$("input[title='Update']",$(t.el)).live("click",function() {
+			t.currentRowID = this.parentNode.parentNode.parentNode.id.substring(8);
+			var ds = $(this).closest("form").postify();
+			if(ds=="") return false;
+			t.io.request(t,ds+"id="+t.currentRowID+"&table="+t.dbTable+"&es_do=updateItemSortOffice");
+		});
+		// trash link
+		$("a[title='Trash']",$(t.el)).live("click",function() {
+			t.currentRowID = this.parentNode.parentNode.parentNode.id.substring(3);
+			if(!confirm("Are you sure you want to delete this item? This cannot be undone.")) return false;
+			t.io.request(t,"id="+t.currentRowID+"&table="+t.dbTable+"&es_do=deleteItem");
+		});
+	},
+  	show:function(holder) { this._super(holder,null,false,this.hidden); },
+	hide:function() { this._super(); },
+	begin:function(hidden) {
+		this._super();
+		this.hidden = hidden ? true : false;
+		this.show(".dashboard-wide"); 
+		// determine content
+		if($("#data").data("role")==1 || $("#data").data("role")==0) {
+			// office view - show only office specific content OR super view - show only general content
+			this.filter = "&wc=officeID='"+$('#data').data('rep').rep_officeID+"'";
+		} else if($("#data").data("role")==4) {
+			// support view - show everything
+			this.filter = "";
+		} else {
+			// rep or admin view - show general and office specific content
+			this.filter = "&wc=officeID='"+$('#data').data('rep').rep_officeID+"'::officeID='0'";
+		}
+		this.io.request(this,"table="+this.dbTable+"&order="+this.dbOrder+this.filter+"&es_do=browseAllSortOffice");
+	},
+	clear:function() { this._super(); },
+	iHTML:function() {
+		this._super();
+		// returns the initial html for this module
+		var al = $("#data").data("role")!=2 && $("#data").data("role")!=3 ? "<a href='javascript:void(0);' class='dashboard-link' title='New'>+</a>" : "";
+		var office = $("#data").data("role")==1 ? $("#data").data("city")+"'s " : "";
+		return "<div class='dashboard-item'> \
+					<div class='dashboard-item-header'> \
+						"+al+" \
+						<h1 class='dashboard-header'>"+office+"Data Monitoring</h1> \
+					</div> \
+					<div class='dashboard-item-content'><p style='padding:10px; color:#808080;'>Loading...</p></div> \
+				</div>";
+	},
+	dbTable:"es_data_monitoring",
+	dbOrder:"dat_model_num",
+	itemForm:function() {
+		this._super();
+		// returns the form
+		return "<form class='addform' action='javascript:void(0);'> \
+					<h1 class='addform-header'>Data Monitoring Info:</h1> \
+					<br /> \
+					<div class='form-column'> \
+						<label for='dat_model_num'>Model #</label> \
+						<input class='required' type='text' id='dat_model_num' value='' /> \
+						<label for='dat_desc'>Description</label> \
+						<input class='required' type='text' id='dat_desc' value='' /> \
+					</div> \
+					<div class='form-column'> \
+						<label for='dat_unit'>Price Unit</label> \
+						<input class='required' type='text' id='dat_unit' value='' /> \
+						<label for='dat_cost'>Cost ($)</label> \
+						<input class='required' type='text' id='dat_cost' value='' /> \
+					</div> \
+					<div class='form-column'> \
+						<label for='dat_price'>Price ($)</label> \
+						<input class='required' type='text' id='dat_price' value='' /> \
+						<label for='dat_labor'>Labor (hrs)</label> \
+						<input class='required' type='text' id='dat_labor' value='' /> \
+					</div> \
+					<div class='form-column-right'> \
+						<label for='active'>Active</label> \
+						<select class='required' id='active'> \
+							<option value='' selected='selected'>--select--</option> \
+							<option value='1'>yes</option> \
+							<option value='0'>no</option> \
+						</select> \
+					</div> \
+					<div class='clear'></div> \
+					<br /> \
+					<input type='submit' title='Add' value='Add New' /> \
+					<input type='submit' title='Cancel' value='Cancel' /> \
+				</form>";
+	},
+	receive:function(json) {
+		this._super();
+		// build vars
+		var html = "";
+		switch(json.did) {
+			case this.dbTable+" added" :
+				// show the list again
+				$(".dashboard-item-content",$(this.el)).html("");
+				this.io.request(this,"table="+this.dbTable+"&order="+this.dbOrder+this.filter+"&es_do=browseAllSortOffice");
+				break;
+			case this.dbTable+" updated" :
+				// set active
+				json.data.active = json.data.active==1 ? "yes" : "no";
+				// make rows
+				$("#dat"+this.currentRowID).html(this.rowContent(json.data,json.data2.office)).show();
+				$("#edit-dat"+this.currentRowID).html(this.editRowContent(json.data)).hide();
+				break;
+			case this.dbTable+" deleted" :
+				$("#dat"+this.currentRowID).remove();
+				$("#edit-dat"+this.currentRowID).remove();
+				break;
+			case "found "+this.dbTable :
+				var html = "<table cellpadding='0' cellspacing='0'>";
+				// build the titles
+				html += "<thead class='module-thead'>";
+				html += "<tr>";
+				html += "<th colspan='1'>Model #</th>";
+				html += "<th colspan='1'>Description</th>";
+				html += "<th colspan='1' align='right'>Cost ($)</th>";
+				html += "<th colspan='1' align='right'>Price ($)</th>";
+				html += "<th colspan='1' align='right'>Labor (hrs)</th>";
+				html += "<th colspan='1' align='right'>Category A</th>";
+				html += "<th colspan='1' align='right'>Category B</th>";
+				html += "<th colspan='1' align='right'>Active</th>";
+				html += $("#data").data("role")==4 ? "<th colspan='1' align='right'>Office</th>" : "";
+				html += "</tr>";
+				html += "</thead>";
+				html += "<tbody>";
+				// loop over each result
+				var color = ["light","dark"];
+				for(var i=0;i<json.data.length;i++) {
+					// set active
+					json.data[i].active = (json.data[i].active==1) ? "yes" : "no";
+					// make rows
+					html += "<tr id='dat"+json.data[i].ID+"' class='"+color[(i+1)%2]+"'>";
+					html += this.rowContent(json.data[i],json.data2.office[i]);
+					html += "</tr>";
+					html += "<tr id='edit-dat"+json.data[i].ID+"' style='display:none;' class='quick-edit "+color[(i+1)%2]+"'>";
+					html += this.editRowContent(json.data[i]);
+					html += "</tr>";
+				}
+				html += "</tbody>";
+				html += "</table>";
+				// add to page
+				$(".dashboard-item-content", $(this.el)).html(html);
+				break;
+			case "no "+this.dbTable :
+				// clear the list
+				$(".dashboard-item-content",$(this.el)).html("<p style='padding:10px; color:#808080;'>There is no Data Monitoring in your system at the moment.</p>");
+				break;
+			//-----------------------------------//
+			default :
+				console.log(json.did+" from "+this.dbTable);
+				break;
+		}
+	},
+	rowContent:function(data,office) {
+		this._super();
+		// create the row
+		var row = "<td colspan='1'>";
+		row += "<span style='font-weight:bold;'>"+data.dat_model_num+"</span><br />";
+		row += "<span class='edit-panel'>";
+		row += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a> | ";
+		row += "<a href='javascript:void(0);' class='trash-link' title='Trash'>Trash</a>";
+		row += "</span>";
+		row += "</td>";
+		row += "<td colspan='1'>"+data.dat_desc+"</td>";
+		row += "<td colspan='1' align='right'>"+data.dat_cost+"</td>";
+		row += "<td colspan='1' align='right'>"+data.dat_price+"</td>";
+		row += "<td colspan='1' align='right'>"+data.dat_labor+"</td>";
+		row += "<td colspan='1' align='right'>4</td>";
+		row += "<td colspan='1' align='right'>5</td>";
+		row += "<td colspan='1' align='right'>"+data.active+"</td>";
+		row += $("#data").data("role")==4 ? "<td colspan='1' align='right'>"+office+"</td>" : "";
+		return row;
+	},
+	editRowContent:function(data) {
+		this._super();
+		// active selects
+		var active_sel_yes = (data.active=="yes") ? "selected='selected'" : "";
+		var active_sel_no = (data.active=="no") ? "selected='selected'" : "";
+		// create the edit row
+		var edit = "<td colspan='9'>";
+		edit += "<form class='updateform' action='javascript:void(0);'> \
+					<h1 class='addform-header'>Quick Edit</h1> \
+					<br /> \
+					<div class='form-column'> \
+						<label for='dat_model_num'>Model #</label> \
+						<input class='required' type='text' id='dat_model_num' value='"+data.dat_model_num+"' /> \
+						<label for='dat_desc'>Description</label> \
+						<input class='required' type='text' id='dat_desc' value='"+data.dat_desc+"' /> \
+					</div> \
+					<div class='form-column'> \
+						<label for='dat_unit'>Price Unit</label> \
+						<input class='required' type='text' id='dat_unit' value='"+data.dat_unit+"' /> \
+						<label for='dat_cost'>Cost ($)</label> \
+						<input class='required' type='text' id='dat_cost' value='"+data.dat_cost+"' /> \
+					</div> \
+					<div class='form-column'> \
+						<label for='dat_price'>Price ($)</label> \
+						<input class='required' type='text' id='dat_price' value='"+data.dat_price+"' /> \
+						<label for='dat_labor'>Labor (hrs)</label> \
+						<input class='required' type='text' id='dat_labor' value='"+data.dat_labor+"' /> \
+					</div> \
+					<div class='form-column-right'> \
+						<label for='active'>Active</label> \
+						<select class='required' id='active'> \
+							<option value='1' "+active_sel_yes+">yes</option> \
+							<option value='0' "+active_sel_no+">no</option> \
+						</select> \
+					</div> \
+					<div class='clear'></div> \
+					<br /> \
+					<input type='submit' title='Update' value='Update' /> \
+					<input type='submit' title='CancelQ' value='Cancel' /> \
+				</form>";
+		edit += "</td>";
+		return edit;
+	}
+});
+////////////////////////////////////////////////////////////////////////// admin rules : super
+var AdminRules = Module.extend({
   	init:function(el,io) {
 		this._super(el,io);
 		var t = this;
@@ -2741,7 +3571,7 @@ var DataMonitoring = Module.extend({
 	begin:function(hidden) {
 		this._super();
 		this.hidden = hidden ? true : false;
-		this.show(".dashboard-right"); 
+		this.show(".dashboard-wide"); 
 		// get all the modules
 		this.io.request(this,"table="+this.dbTable+"&order="+this.dbOrder+"&es_do=browseAll");
 	},
@@ -2753,36 +3583,38 @@ var DataMonitoring = Module.extend({
 		return "<div class='dashboard-item'> \
 					<div class='dashboard-item-header'> \
 						"+al+" \
-						<h1 class='dashboard-header'>Data Monitoring</h1> \
+						<h1 class='dashboard-header'>Admin Rules</h1> \
 					</div> \
 					<div class='dashboard-item-content'><p style='padding:10px; color:#808080;'>Loading...</p></div> \
 				</div>";
 	},
-	dbTable:"es_data_monitoring",
-	dbOrder:"dat_model_num",
+	dbTable:"es_admin_rules",
+	dbOrder:"ID",
 	itemForm:function() {
 		this._super();
 		// returns the form
 		return "<form class='addform' action='javascript:void(0);'> \
-					<h1 class='addform-header'>Data Monitoring Info:</h1> \
+					<h1 class='addform-header'>New Rule Info:</h1> \
 					<br /> \
 					<div class='form-column'> \
-						<label for='dat_model_num'>Model #</label> \
-						<input class='required' type='text' id='dat_model_num' value='' /> \
-						<label for='dat_desc'>Description</label> \
-						<input class='required' type='text' id='dat_desc' value='' /> \
+						<label for='rul_name'>Rule Name</label> \
+						<input class='required' type='text' id='rul_name' value='' /> \
 					</div> \
 					<div class='form-column'> \
-						<label for='dat_unit'>Price Unit</label> \
-						<input class='required' type='text' id='dat_unit' value='' /> \
-						<label for='dat_cost'>Cost ($)</label> \
-						<input class='required' type='text' id='dat_cost' value='' /> \
+						<label for='rul_lt_num_mods'><= # of modules</label> \
+						<input class='required' type='text' id='rul_lt_num_mods' value='' /> \
 					</div> \
 					<div class='form-column'> \
-						<label for='dat_price'>Price ($)</label> \
-						<input class='required' type='text' id='dat_price' value='' /> \
-						<label for='dat_labor'>Labor (hrs)</label> \
-						<input class='required' type='text' id='dat_labor' value='' /> \
+						<label for='rul_lt_hrs_delta'><= hrs / module delta</label> \
+						<input class='required' type='text' id='rul_lt_hrs_delta' value='' /> \
+					</div> \
+					<div class='form-column'> \
+						<label for='rul_gt_num_mods'>>= # of modules</label> \
+						<input class='required' type='text' id='rul_gt_num_mods' value='' /> \
+					</div> \
+					<div class='form-column'> \
+						<label for='rul_gt_hrs_delta'>>= hrs / module delta</label> \
+						<input class='required' type='text' id='rul_gt_hrs_delta' value='' /> \
 					</div> \
 					<div class='form-column-right'> \
 						<label for='active'>Active</label> \
@@ -2810,25 +3642,26 @@ var DataMonitoring = Module.extend({
 				break;
 			case this.dbTable+" updated" :
 				// set active
-				json.data.active = json.data.active==1 ? "yes" : "no";
-				// make rows
-				$("#dat"+this.currentRowID).html(this.rowContent(json.data)).show();
-				$("#edit-dat"+this.currentRowID).html(this.editRowContent(json.data)).hide();
+				json.data.active = (json.data.active==1) ? "yes" : "no";
+				$("#rul"+this.currentRowID).html(this.rowContent(json.data)).show();
+				$("#edit-rul"+this.currentRowID).html(this.editRowContent(json.data)).hide();
 				break;
 			case this.dbTable+" deleted" :
-				$("#dat"+this.currentRowID).remove();
-				$("#edit-dat"+this.currentRowID).remove();
+				$("#rul"+this.currentRowID).remove();
+				$("#edit-rul"+this.currentRowID).remove();
 				break;
 			case "found "+this.dbTable :
 				var html = "<table cellpadding='0' cellspacing='0'>";
 				// build the titles
-				html += "<thead>";
+				html += "<thead class='module-thead'>";
 				html += "<tr>";
-				html += "<th colspan='1'>Model #</th>";
-				html += "<th colspan='1'>Description</th>";
-				html += "<th colspan='1' align='right'>Cost ($)</th>";
-				html += "<th colspan='1' align='right'>Price ($)</th>";
-				html += "<th colspan='1' align='right'>Labor (hrs)</th>";
+				html += "<th colspan='1'>Rule Name</th>";
+				html += "<th colspan='1' align='right'><= # of modules</th>";
+				html += "<th colspan='1' align='right'><= hrs / module delta</th>";
+				html += "<th colspan='1' align='right'>>= # of modules</th>";
+				html += "<th colspan='1' align='right'>>= hrs / module delta</th>";
+				html += "<th colspan='1' align='right'>Category A</th>";
+				html += "<th colspan='1' align='right'>Category B</th>";
 				html += "<th colspan='1' align='right'>Active</th>";
 				html += "</tr>";
 				html += "</thead>";
@@ -2838,11 +3671,10 @@ var DataMonitoring = Module.extend({
 				for(var i=0;i<json.data.length;i++) {
 					// set active
 					json.data[i].active = (json.data[i].active==1) ? "yes" : "no";
-					// make rows
-					html += "<tr id='dat"+json.data[i].ID+"' class='"+color[(i+1)%2]+"'>";
+					html += "<tr id='rul"+json.data[i].ID+"' class='"+color[(i+1)%2]+"'>";
 					html += this.rowContent(json.data[i]);
 					html += "</tr>";
-					html += "<tr id='edit-dat"+json.data[i].ID+"' style='display:none;' class='quick-edit "+color[(i+1)%2]+"'>";
+					html += "<tr id='edit-rul"+json.data[i].ID+"' style='display:none;' class='quick-edit "+color[(i+1)%2]+"'>";
 					html += this.editRowContent(json.data[i]);
 					html += "</tr>";
 				}
@@ -2853,7 +3685,7 @@ var DataMonitoring = Module.extend({
 				break;
 			case "no "+this.dbTable :
 				// clear the list
-				$(".dashboard-item-content",$(this.el)).html("<p style='padding:10px; color:#808080;'>There is no Data Monitoring in your system at the moment.</p>");
+				$(".dashboard-item-content",$(this.el)).html("<p style='padding:10px; color:#808080;'>There are no Admin Rules in your system at the moment.</p>");
 				break;
 			//-----------------------------------//
 			default :
@@ -2865,52 +3697,55 @@ var DataMonitoring = Module.extend({
 		this._super();
 		// create the row
 		var row = "<td colspan='1'>";
-		row += "<span style='font-weight:bold;'>"+data.dat_model_num+"</span><br />";
+		row += "<span style='font-weight:bold;'>"+data.rul_name+"</span><br />";
 		row += "<span class='edit-panel'>";
 		row += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a> | ";
 		row += "<a href='javascript:void(0);' class='trash-link' title='Trash'>Trash</a>";
 		row += "</span>";
 		row += "</td>";
-		row += "<td colspan='1'>"+data.dat_desc+"</td>";
-		row += "<td colspan='1' align='right'>"+data.dat_cost+"</td>";
-		row += "<td colspan='1' align='right'>"+data.dat_price+"</td>";
-		row += "<td colspan='1' align='right'>"+data.dat_labor+"</td>";
+		row += "<td colspan='1' align='right'>"+data.rul_lt_num_mods+"</td>";
+		row += "<td colspan='1' align='right'>"+data.rul_lt_hrs_delta+"</td>";
+		row += "<td colspan='1' align='right'>"+data.rul_gt_num_mods+"</td>";
+		row += "<td colspan='1' align='right'>"+data.rul_gt_hrs_delta+"</td>";
+		row += "<td colspan='1' align='right'>0</td>";
+		row += "<td colspan='1' align='right'>5</td>";
 		row += "<td colspan='1' align='right'>"+data.active+"</td>";
 		return row;
 	},
 	editRowContent:function(data) {
 		this._super();
-		// active selects
-		var active_sel_yes = (data.active=="yes") ? "selected='selected'" : "";
-		var active_sel_no = (data.active=="no") ? "selected='selected'" : "";
 		// create the edit row
-		var edit = "<td colspan='6'>";
+		var sel_yes = (data.active=="yes") ? "selected='selected'" : "";
+		var sel_no = (data.active=="no") ? "selected='selected'" : "";
+		var edit = "<td colspan='8'>";
 		edit += "<form class='updateform' action='javascript:void(0);'> \
 					<h1 class='addform-header'>Quick Edit</h1> \
 					<br /> \
 					<div class='form-column'> \
-						<label for='dat_model_num'>Model #</label> \
-						<input class='required' type='text' id='dat_model_num' value='"+data.dat_model_num+"' /> \
-						<label for='dat_desc'>Description</label> \
-						<input class='required' type='text' id='dat_desc' value='"+data.dat_desc+"' /> \
+						<label for='rul_name'>Rule Name</label> \
+						<input class='required' type='text' id='rul_name' value='"+data.rul_name+"' /> \
 					</div> \
 					<div class='form-column'> \
-						<label for='dat_unit'>Price Unit</label> \
-						<input class='required' type='text' id='dat_unit' value='"+data.dat_unit+"' /> \
-						<label for='dat_cost'>Cost ($)</label> \
-						<input class='required' type='text' id='dat_cost' value='"+data.dat_cost+"' /> \
+						<label for='rul_lt_num_mods'><= # of modules</label> \
+						<input class='required' type='text' id='rul_lt_num_mods' value='"+data.rul_lt_num_mods+"' /> \
 					</div> \
 					<div class='form-column'> \
-						<label for='dat_price'>Price ($)</label> \
-						<input class='required' type='text' id='dat_price' value='"+data.dat_price+"' /> \
-						<label for='dat_labor'>Labor (hrs)</label> \
-						<input class='required' type='text' id='dat_labor' value='"+data.dat_labor+"' /> \
+						<label for='rul_lt_hrs_delta'><= hrs / module delta</label> \
+						<input class='required' type='text' id='rul_lt_hrs_delta' value='"+data.rul_lt_hrs_delta+"' /> \
+					</div> \
+					<div class='form-column'> \
+						<label for='rul_gt_num_mods'>>= # of modules</label> \
+						<input class='required' type='text' id='rul_gt_num_mods' value='"+data.rul_gt_num_mods+"' /> \
+					</div> \
+					<div class='form-column'> \
+						<label for='rul_gt_hrs_delta'>>= hrs / module delta</label> \
+						<input class='required' type='text' id='rul_gt_hrs_delta' value='"+data.rul_gt_hrs_delta+"' /> \
 					</div> \
 					<div class='form-column-right'> \
 						<label for='active'>Active</label> \
 						<select class='required' id='active'> \
-							<option value='1' "+active_sel_yes+">yes</option> \
-							<option value='0' "+active_sel_no+">no</option> \
+							<option value='1' "+sel_yes+">yes</option> \
+							<option value='0' "+sel_no+">no</option> \
 						</select> \
 					</div> \
 					<div class='clear'></div> \
@@ -3049,6 +3884,27 @@ var Settings = Module.extend({
 							edit +=	"</form>";
 							edit += "</td>";
 							break;
+						case "off_cover_letter" :
+							row += "<td colspan='1'>";
+							row += "<span style='font-weight:bold;'>Default Cover Letter</span><br /><span style='font-size:10px; color:#808080;'>(This is the generic text seen when creating proposals.)</span><br />";
+							row += "<span class='edit-panel'>";
+							row += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
+							row += "</span>";
+							row += "</td>";
+							row += "<td colspan='1' align='right'>&ldquo;"+json.data.off_cover_letter.substring(0,25)+"...&rdquo;</td>";
+							edit += "<td colspan='2'>";
+							edit += "<form class='updateform' action='javascript:void(0);'>";
+							edit +=	"<h1 class='addform-header'>Quick Edit</h1>";
+							edit +=	"<br />";
+							edit +=	"<label for='off_cover_letter'>Default Cover Letter</label>";
+							edit +=	"<textarea class='required' type='text' id='off_cover_letter' style='width:100%; height:200px;'>"+json.data.off_cover_letter+"</textarea>";
+							edit +=	"<div class='clear'></div>";
+							edit +=	"<br />";
+							edit +=	"<input type='submit' title='Update' value='Update' />";
+							edit +=	"<input type='submit' title='CancelQ' value='Cancel' style='margin-left:3px;' />";
+							edit +=	"</form>";
+							edit += "</td>";
+							break;
 						case "off_labor_cost" :
 							row += "<td colspan='1'>";
 							row += "<span style='font-weight:bold;'>Labor Cost ($/hr)</span><br /><span style='font-size:10px; color:#808080;'>(Use this as an average.)</span><br />";
@@ -3095,9 +3951,55 @@ var Settings = Module.extend({
 							edit +=	"</form>";
 							edit += "</td>";
 							break;
+						case "off_winter_up" :
+							row += "<td colspan='1'>";
+							row += "<span style='font-weight:bold;'>Off-Season Labor Up-Charge (%)</span><br /><span style='font-size:10px; color:#808080;'>(This effects total labor charge.)</span><br />";
+							row += "<span class='edit-panel'>";
+							row += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
+							row += "</span>";
+							row += "</td>";
+							row += "<td colspan='1' align='right'>"+json.data.off_winter_up+"</td>";
+							edit += "<td colspan='2'>";
+							edit += "<form class='updateform' action='javascript:void(0);'>";
+							edit +=	"<h1 class='addform-header'>Quick Edit</h1>";
+							edit +=	"<br />";
+							edit +=	"<div class='form-column'>";
+							edit +=	"<label for='off_winter_up'>Off-Season Labor Up-Charge (%)</label>";
+							edit +=	"<input class='required' type='text' id='off_winter_up' value='"+json.data.off_winter_up+"' />";
+							edit +=	"</div>";
+							edit +=	"<div class='clear'></div>";
+							edit +=	"<br />";
+							edit +=	"<input type='submit' title='Update' value='Update' />";
+							edit +=	"<input type='submit' title='CancelQ' value='Cancel' style='margin-left:3px;' />";
+							edit +=	"</form>";
+							edit += "</td>";
+							break;
+						case "off_others_up" :
+							row += "<td colspan='1'>";
+							row += "<span style='font-weight:bold;'>Contractor Coordination Labor Up-Charge (%)</span><br /><span style='font-size:10px; color:#808080;'>(This effects total labor charge.)</span><br />";
+							row += "<span class='edit-panel'>";
+							row += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
+							row += "</span>";
+							row += "</td>";
+							row += "<td colspan='1' align='right'>"+json.data.off_others_up+"</td>";
+							edit += "<td colspan='2'>";
+							edit += "<form class='updateform' action='javascript:void(0);'>";
+							edit +=	"<h1 class='addform-header'>Quick Edit</h1>";
+							edit +=	"<br />";
+							edit +=	"<div class='form-column'>";
+							edit +=	"<label for='off_others_up'>Contractor Coordination Labor Up-Charge (%)</label>";
+							edit +=	"<input class='required' type='text' id='off_others_up' value='"+json.data.off_others_up+"' />";
+							edit +=	"</div>";
+							edit +=	"<div class='clear'></div>";
+							edit +=	"<br />";
+							edit +=	"<input type='submit' title='Update' value='Update' />";
+							edit +=	"<input type='submit' title='CancelQ' value='Cancel' style='margin-left:3px;' />";
+							edit +=	"</form>";
+							edit += "</td>";
+							break;
 						case "off_inventory_up" :
 							row += "<td colspan='1'>";
-							row += "<span style='font-weight:bold;'>Inventory Up-Charge (%)</span><br /><span style='font-size:10px; color:#808080;'>(This does NOT effect margins.)</span><br />";
+							row += "<span style='font-weight:bold;'>Material Cost Up-Charge (%)</span><br /><span style='font-size:10px; color:#808080;'>(This does NOT effect margins.)</span><br />";
 							row += "<span class='edit-panel'>";
 							row += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
 							row += "</span>";
@@ -3108,7 +4010,7 @@ var Settings = Module.extend({
 							edit +=	"<h1 class='addform-header'>Quick Edit</h1>";
 							edit +=	"<br />";
 							edit +=	"<div class='form-column'>";
-							edit +=	"<label for='off_inventory_up'>Inventory Up-Charge (%)</label>";
+							edit +=	"<label for='off_inventory_up'>Material Cost Up-Charge (%)</label>";
 							edit +=	"<input class='required' type='text' id='off_inventory_up' value='"+json.data.off_inventory_up+"' />";
 							edit +=	"</div>";
 							edit +=	"<div class='clear'></div>";
@@ -3118,32 +4020,32 @@ var Settings = Module.extend({
 							edit +=	"</form>";
 							edit += "</td>";
 							break;
-						case "off_non_inventory_up" :
-							row += "<td colspan='1'>";
-							row += "<span style='font-weight:bold;'>Non-Inventory Up-Charge (%)</span><br /><span style='font-size:10px; color:#808080;'>(This does NOT effect margins.)</span><br />";
-							row += "<span class='edit-panel'>";
-							row += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
-							row += "</span>";
-							row += "</td>";
-							row += "<td colspan='1' align='right'>"+json.data.off_non_inventory_up+"</td>";
-							edit += "<td colspan='2'>";
-							edit += "<form class='updateform' action='javascript:void(0);'>";
-							edit +=	"<h1 class='addform-header'>Quick Edit</h1>";
-							edit +=	"<br />";
-							edit +=	"<div class='form-column'>";
-							edit +=	"<label for='off_non_inventory_up'>Non-Inventory Up-Charge (%)</label>";
-							edit +=	"<input class='required' type='text' id='off_non_inventory_up' value='"+json.data.off_non_inventory_up+"' />";
-							edit +=	"</div>";
-							edit +=	"<div class='clear'></div>";
-							edit +=	"<br />";
-							edit +=	"<input type='submit' title='Update' value='Update' />";
-							edit +=	"<input type='submit' title='CancelQ' value='Cancel' style='margin-left:3px;' />";
-							edit +=	"</form>";
-							edit += "</td>";
-							break;
+						// case "off_non_inventory_up" :
+						// 	row += "<td colspan='1'>";
+						// 	row += "<span style='font-weight:bold;'>Non-Inventory Up-Charge (%)</span><br /><span style='font-size:10px; color:#808080;'>(This does NOT effect margins.)</span><br />";
+						// 	row += "<span class='edit-panel'>";
+						// 	row += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
+						// 	row += "</span>";
+						// 	row += "</td>";
+						// 	row += "<td colspan='1' align='right'>"+json.data.off_non_inventory_up+"</td>";
+						// 	edit += "<td colspan='2'>";
+						// 	edit += "<form class='updateform' action='javascript:void(0);'>";
+						// 	edit +=	"<h1 class='addform-header'>Quick Edit</h1>";
+						// 	edit +=	"<br />";
+						// 	edit +=	"<div class='form-column'>";
+						// 	edit +=	"<label for='off_non_inventory_up'>Non-Inventory Up-Charge (%)</label>";
+						// 	edit +=	"<input class='required' type='text' id='off_non_inventory_up' value='"+json.data.off_non_inventory_up+"' />";
+						// 	edit +=	"</div>";
+						// 	edit +=	"<div class='clear'></div>";
+						// 	edit +=	"<br />";
+						// 	edit +=	"<input type='submit' title='Update' value='Update' />";
+						// 	edit +=	"<input type='submit' title='CancelQ' value='Cancel' style='margin-left:3px;' />";
+						// 	edit +=	"</form>";
+						// 	edit += "</td>";
+						// 	break;
 						case "off_inventory_margin" :
 							row += "<td colspan='1'>";
-							row += "<span style='font-weight:bold;'>Inventory Margin (%)</span><br /><span style='font-size:10px; color:#808080;'>(In addition to item margins.)</span><br />";
+							row += "<span style='font-weight:bold;'>Material Margin Percentage Adder (%)</span><br /><span style='font-size:10px; color:#808080;'>(In addition to item margins.)</span><br />";
 							row += "<span class='edit-panel'>";
 							row += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
 							row += "</span>";
@@ -3154,7 +4056,7 @@ var Settings = Module.extend({
 							edit +=	"<h1 class='addform-header'>Quick Edit</h1>";
 							edit +=	"<br />";
 							edit +=	"<div class='form-column'>";
-							edit +=	"<label for='off_inventory_margin'>Inventory Margin (%)</label>";
+							edit +=	"<label for='off_inventory_margin'>Material Margin Percentage Adder (%)</label>";
 							edit +=	"<input class='required' type='text' id='off_inventory_margin' value='"+json.data.off_inventory_margin+"' />";
 							edit +=	"</div>";
 							edit +=	"<div class='clear'></div>";
@@ -3164,29 +4066,29 @@ var Settings = Module.extend({
 							edit +=	"</form>";
 							edit += "</td>";
 							break;
-						case "off_non_inventory_margin" :
-							row += "<td colspan='1'>";
-							row += "<span style='font-weight:bold;'>Non-Inventory Margin (%)</span><br /><span style='font-size:10px; color:#808080;'>(In addition to item margins.)</span><br />";
-							row += "<span class='edit-panel'>";
-							row += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
-							row += "</span>";
-							row += "</td>";
-							row += "<td colspan='1' align='right'>"+json.data.off_non_inventory_margin+"</td>";
-							edit += "<td colspan='2'>";
-							edit += "<form class='updateform' action='javascript:void(0);'>";
-							edit +=	"<h1 class='addform-header'>Quick Edit</h1>";
-							edit +=	"<br />";
-							edit +=	"<div class='form-column'>";
-							edit +=	"<label for='off_non_inventory_margin'>Non-Inventory Margin (%)</label>";
-							edit +=	"<input class='required' type='text' id='off_non_inventory_margin' value='"+json.data.off_non_inventory_margin+"' />";
-							edit +=	"</div>";
-							edit +=	"<div class='clear'></div>";
-							edit +=	"<br />";
-							edit +=	"<input type='submit' title='Update' value='Update' />";
-							edit +=	"<input type='submit' title='CancelQ' value='Cancel' style='margin-left:3px;' />";
-							edit +=	"</form>";
-							edit += "</td>";
-							break;	
+						// case "off_non_inventory_margin" :
+						// 	row += "<td colspan='1'>";
+						// 	row += "<span style='font-weight:bold;'>Non-Inventory Margin (%)</span><br /><span style='font-size:10px; color:#808080;'>(In addition to item margins.)</span><br />";
+						// 	row += "<span class='edit-panel'>";
+						// 	row += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
+						// 	row += "</span>";
+						// 	row += "</td>";
+						// 	row += "<td colspan='1' align='right'>"+json.data.off_non_inventory_margin+"</td>";
+						// 	edit += "<td colspan='2'>";
+						// 	edit += "<form class='updateform' action='javascript:void(0);'>";
+						// 	edit +=	"<h1 class='addform-header'>Quick Edit</h1>";
+						// 	edit +=	"<br />";
+						// 	edit +=	"<div class='form-column'>";
+						// 	edit +=	"<label for='off_non_inventory_margin'>Non-Inventory Margin (%)</label>";
+						// 	edit +=	"<input class='required' type='text' id='off_non_inventory_margin' value='"+json.data.off_non_inventory_margin+"' />";
+						// 	edit +=	"</div>";
+						// 	edit +=	"<div class='clear'></div>";
+						// 	edit +=	"<br />";
+						// 	edit +=	"<input type='submit' title='Update' value='Update' />";
+						// 	edit +=	"<input type='submit' title='CancelQ' value='Cancel' style='margin-left:3px;' />";
+						// 	edit +=	"</form>";
+						// 	edit += "</td>";
+						// 	break;	
 						case "off_permit_up" :
 							row += "<td colspan='1'>";
 							row += "<span style='font-weight:bold;'>Permit Margin (%)</span><br /><span style='font-size:10px; color:#808080;'>(Determines the fixed margin.)</span><br />";
@@ -3212,7 +4114,7 @@ var Settings = Module.extend({
 							break;
 						case "off_sub_up" :
 							row += "<td colspan='1'>";
-							row += "<span style='font-weight:bold;'>SubContractor Margin (%)</span><br /><span style='font-size:10px; color:#808080;'>(Determines the fixed margin.)</span><br />";
+							row += "<span style='font-weight:bold;'>Engineering Margin (%)</span><br /><span style='font-size:10px; color:#808080;'>(Determines the fixed margin.)</span><br />";
 							row += "<span class='edit-panel'>";
 							row += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
 							row += "</span>";
@@ -3256,73 +4158,6 @@ var Settings = Module.extend({
 							edit +=	"</form>";
 							edit += "</td>";
 							break;	
-						case "off_winter_up" :
-							row += "<td colspan='1'>";
-							row += "<span style='font-weight:bold;'>Off-Season Up-Charge (%)</span><br /><span style='font-size:10px; color:#808080;'>(This effects total labor charge.)</span><br />";
-							row += "<span class='edit-panel'>";
-							row += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
-							row += "</span>";
-							row += "</td>";
-							row += "<td colspan='1' align='right'>"+json.data.off_winter_up+"</td>";
-							edit += "<td colspan='2'>";
-							edit += "<form class='updateform' action='javascript:void(0);'>";
-							edit +=	"<h1 class='addform-header'>Quick Edit</h1>";
-							edit +=	"<br />";
-							edit +=	"<div class='form-column'>";
-							edit +=	"<label for='off_winter_up'>Off-Season Up-Charge (%)</label>";
-							edit +=	"<input class='required' type='text' id='off_winter_up' value='"+json.data.off_winter_up+"' />";
-							edit +=	"</div>";
-							edit +=	"<div class='clear'></div>";
-							edit +=	"<br />";
-							edit +=	"<input type='submit' title='Update' value='Update' />";
-							edit +=	"<input type='submit' title='CancelQ' value='Cancel' style='margin-left:3px;' />";
-							edit +=	"</form>";
-							edit += "</td>";
-							break;
-						case "off_others_up" :
-							row += "<td colspan='1'>";
-							row += "<span style='font-weight:bold;'>Others-Involved Up-Charge (%)</span><br /><span style='font-size:10px; color:#808080;'>(This effects total labor charge.)</span><br />";
-							row += "<span class='edit-panel'>";
-							row += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
-							row += "</span>";
-							row += "</td>";
-							row += "<td colspan='1' align='right'>"+json.data.off_others_up+"</td>";
-							edit += "<td colspan='2'>";
-							edit += "<form class='updateform' action='javascript:void(0);'>";
-							edit +=	"<h1 class='addform-header'>Quick Edit</h1>";
-							edit +=	"<br />";
-							edit +=	"<div class='form-column'>";
-							edit +=	"<label for='off_others_up'>Others-Involved Up-Charge (%)</label>";
-							edit +=	"<input class='required' type='text' id='off_others_up' value='"+json.data.off_others_up+"' />";
-							edit +=	"</div>";
-							edit +=	"<div class='clear'></div>";
-							edit +=	"<br />";
-							edit +=	"<input type='submit' title='Update' value='Update' />";
-							edit +=	"<input type='submit' title='CancelQ' value='Cancel' style='margin-left:3px;' />";
-							edit +=	"</form>";
-							edit += "</td>";
-							break;
-						case "off_cover_letter" :
-							row += "<td colspan='1'>";
-							row += "<span style='font-weight:bold;'>Default Cover Letter</span><br /><span style='font-size:10px; color:#808080;'>(This is the generic text seen when creating proposals.)</span><br />";
-							row += "<span class='edit-panel'>";
-							row += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
-							row += "</span>";
-							row += "</td>";
-							row += "<td colspan='1' align='right'>&ldquo;"+json.data.off_cover_letter.substring(0,25)+"...&rdquo;</td>";
-							edit += "<td colspan='2'>";
-							edit += "<form class='updateform' action='javascript:void(0);'>";
-							edit +=	"<h1 class='addform-header'>Quick Edit</h1>";
-							edit +=	"<br />";
-							edit +=	"<label for='off_cover_letter'>Default Cover Letter</label>";
-							edit +=	"<textarea class='required' type='text' id='off_cover_letter' style='width:100%; height:200px;'>"+json.data.off_cover_letter+"</textarea>";
-							edit +=	"<div class='clear'></div>";
-							edit +=	"<br />";
-							edit +=	"<input type='submit' title='Update' value='Update' />";
-							edit +=	"<input type='submit' title='CancelQ' value='Cancel' style='margin-left:3px;' />";
-							edit +=	"</form>";
-							edit += "</td>";
-							break;	
 					}
 					$("#show-"+setting).html($(row)).show();
 					$("#edit-"+setting).html($(edit)).hide();
@@ -3331,7 +4166,7 @@ var Settings = Module.extend({
 			case "got "+this.dbTable :
 				var html = "<table cellpadding='0' cellspacing='0'>";
 				// build the titles
-				html += "<thead>";
+				html += "<thead class='module-thead'>";
 				html += "<tr>";
 				html += "<th colspan='1'>Name / Description</th>";
 				html += "<th colspan='1' align='right'>Value</th>";
@@ -3425,6 +4260,32 @@ var Settings = Module.extend({
 				html += "</td>";
 				html += "</tr>";
 				///////////////////////////////////////////
+				// cover letter
+				html += "<tr id='show-off_cover_letter' class='"+color[0]+"'>";
+				html += "<td colspan='1'>";
+				html += "<span style='font-weight:bold;'>Default Cover Letter</span><br /><span style='font-size:10px; color:#808080;'>(This is the generic text seen when creating proposals.)</span><br />";
+				html += "<span class='edit-panel'>";
+				html += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
+				html += "</span>";
+				html += "</td>";
+				html += "<td colspan='1' align='right'>&ldquo;"+json.data.off_cover_letter.substring(0,25)+"...&rdquo;</td>";
+				html += "</tr>";
+				// edit cover letter
+				html += "<tr id='edit-off_cover_letter' style='display:none;' class='quick-edit "+color[0]+"'>";
+				html += "<td colspan='2'>";
+				html += "<form class='updateform' action='javascript:void(0);'>";
+				html +=	"<h1 class='addform-header'>Quick Edit</h1>";
+				html +=	"<br />";
+				html +=	"<label for='off_cover_letter'>Default Cover Letter</label>";
+				html +=	"<textarea class='required' type='text' id='off_cover_letter' style='width:100%; height:200px;'>"+json.data.off_cover_letter+"</textarea>";
+				html +=	"<div class='clear'></div>";
+				html +=	"<br />";
+				html +=	"<input type='submit' title='Update' value='Update' />";
+				html +=	"<input type='submit' title='CancelQ' value='Cancel' style='margin-left:3px;' />";
+				html +=	"</form>";
+				html += "</td>";
+				html += "</tr>";
+				///////////////////////////////////////////
 				// labor cost
 				html += "<tr id='show-off_labor_cost' class='"+color[0]+"'>";
 				html += "<td colspan='1'>";
@@ -3481,10 +4342,66 @@ var Settings = Module.extend({
 				html += "</td>";
 				html += "</tr>";
 				///////////////////////////////////////////
+				// off-season
+				html += "<tr id='show-off_winter_up' class='"+color[0]+"'>";
+				html += "<td colspan='1'>";
+				html += "<span style='font-weight:bold;'>Off-Season Labor Up-Charge (%)</span><br /><span style='font-size:10px; color:#808080;'>(This effects total labor charge.)</span><br />";
+				html += "<span class='edit-panel'>";
+				html += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
+				html += "</span>";
+				html += "</td>";
+				html += "<td colspan='1' align='right'>"+json.data.off_winter_up+"</td>";
+				html += "</tr>";
+				// edit off-season
+				html += "<tr id='edit-off_winter_up' style='display:none;' class='quick-edit "+color[0]+"'>";
+				html += "<td colspan='2'>";
+				html += "<form class='updateform' action='javascript:void(0);'>";
+				html +=	"<h1 class='addform-header'>Quick Edit</h1>";
+				html +=	"<br />";
+				html +=	"<div class='form-column'>";
+				html +=	"<label for='off_winter_up'>Off-Season Labor Up-Charge (%)</label>";
+				html +=	"<input class='required' type='text' id='off_winter_up' value='"+json.data.off_winter_up+"' />";
+				html +=	"</div>";
+				html +=	"<div class='clear'></div>";
+				html +=	"<br />";
+				html +=	"<input type='submit' title='Update' value='Update' />";
+				html +=	"<input type='submit' title='CancelQ' value='Cancel' style='margin-left:3px;' />";
+				html +=	"</form>";
+				html += "</td>";
+				html += "</tr>";
+				///////////////////////////////////////////
+				// others involved
+				html += "<tr id='show-off_others_up' class='"+color[0]+"'>";
+				html += "<td colspan='1'>";
+				html += "<span style='font-weight:bold;'>Contractor Coordination Labor Up-Charge (%)</span><br /><span style='font-size:10px; color:#808080;'>(This effects total labor charge.)</span><br />";
+				html += "<span class='edit-panel'>";
+				html += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
+				html += "</span>";
+				html += "</td>";
+				html += "<td colspan='1' align='right'>"+json.data.off_others_up+"</td>";
+				html += "</tr>";
+				// edit others involved
+				html += "<tr id='edit-off_others_up' style='display:none;' class='quick-edit "+color[0]+"'>";
+				html += "<td colspan='2'>";
+				html += "<form class='updateform' action='javascript:void(0);'>";
+				html +=	"<h1 class='addform-header'>Quick Edit</h1>";
+				html +=	"<br />";
+				html +=	"<div class='form-column'>";
+				html +=	"<label for='off_others_up'>Contractor Coordination Labor Up-Charge (%)</label>";
+				html +=	"<input class='required' type='text' id='off_others_up' value='"+json.data.off_others_up+"' />";
+				html +=	"</div>";
+				html +=	"<div class='clear'></div>";
+				html +=	"<br />";
+				html +=	"<input type='submit' title='Update' value='Update' />";
+				html +=	"<input type='submit' title='CancelQ' value='Cancel' style='margin-left:3px;' />";
+				html +=	"</form>";
+				html += "</td>";
+				html += "</tr>";
+				///////////////////////////////////////////
 				// inventory up-charge
 				html += "<tr id='show-off_inventory_up' class='"+color[0]+"'>";
 				html += "<td colspan='1'>";
-				html += "<span style='font-weight:bold;'>Inventory Up-Charge (%)</span><br /><span style='font-size:10px; color:#808080;'>(This does NOT effect margins.)</span><br />";
+				html += "<span style='font-weight:bold;'>Material Cost Up-Charge (%)</span><br /><span style='font-size:10px; color:#808080;'>(This does NOT effect margins.)</span><br />";
 				html += "<span class='edit-panel'>";
 				html += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
 				html += "</span>";
@@ -3498,7 +4415,7 @@ var Settings = Module.extend({
 				html +=	"<h1 class='addform-header'>Quick Edit</h1>";
 				html +=	"<br />";
 				html +=	"<div class='form-column'>";
-				html +=	"<label for='off_inventory_up'>Inventory Up-Charge (%)</label>";
+				html +=	"<label for='off_inventory_up'>Material Cost Up-Charge (%)</label>";
 				html +=	"<input class='required' type='text' id='off_inventory_up' value='"+json.data.off_inventory_up+"' />";
 				html +=	"</div>";
 				html +=	"<div class='clear'></div>";
@@ -3510,37 +4427,37 @@ var Settings = Module.extend({
 				html += "</tr>";
 				///////////////////////////////////////////
 				// non inventory up-charge
-				html += "<tr id='show-off_non_inventory_up' class='"+color[0]+"'>";
-				html += "<td colspan='1'>";
-				html += "<span style='font-weight:bold;'>Non-Inventory Up-Charge (%)</span><br /><span style='font-size:10px; color:#808080;'>(This does NOT effect margins.)</span><br />";
-				html += "<span class='edit-panel'>";
-				html += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
-				html += "</span>";
-				html += "</td>";
-				html += "<td colspan='1' align='right'>"+json.data.off_non_inventory_up+"</td>";
-				html += "</tr>";
-				// edit non inventory up-charge
-				html += "<tr id='edit-off_non_inventory_up' style='display:none;' class='quick-edit "+color[0]+"'>";
-				html += "<td colspan='2'>";
-				html += "<form class='updateform' action='javascript:void(0);'>";
-				html +=	"<h1 class='addform-header'>Quick Edit</h1>";
-				html +=	"<br />";
-				html +=	"<div class='form-column'>";
-				html +=	"<label for='off_non_inventory_up'>Non-Inventory Up-Charge (%)</label>";
-				html +=	"<input class='required' type='text' id='off_non_inventory_up' value='"+json.data.off_non_inventory_up+"' />";
-				html +=	"</div>";
-				html +=	"<div class='clear'></div>";
-				html +=	"<br />";
-				html +=	"<input type='submit' title='Update' value='Update' />";
-				html +=	"<input type='submit' title='CancelQ' value='Cancel' style='margin-left:3px;' />";
-				html +=	"</form>";
-				html += "</td>";
-				html += "</tr>";
+				// html += "<tr id='show-off_non_inventory_up' class='"+color[0]+"'>";
+				// html += "<td colspan='1'>";
+				// html += "<span style='font-weight:bold;'>Non-Inventory Up-Charge (%)</span><br /><span style='font-size:10px; color:#808080;'>(This does NOT effect margins.)</span><br />";
+				// html += "<span class='edit-panel'>";
+				// html += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
+				// html += "</span>";
+				// html += "</td>";
+				// html += "<td colspan='1' align='right'>"+json.data.off_non_inventory_up+"</td>";
+				// html += "</tr>";
+				// // edit non inventory up-charge
+				// html += "<tr id='edit-off_non_inventory_up' style='display:none;' class='quick-edit "+color[0]+"'>";
+				// html += "<td colspan='2'>";
+				// html += "<form class='updateform' action='javascript:void(0);'>";
+				// html +=	"<h1 class='addform-header'>Quick Edit</h1>";
+				// html +=	"<br />";
+				// html +=	"<div class='form-column'>";
+				// html +=	"<label for='off_non_inventory_up'>Non-Inventory Up-Charge (%)</label>";
+				// html +=	"<input class='required' type='text' id='off_non_inventory_up' value='"+json.data.off_non_inventory_up+"' />";
+				// html +=	"</div>";
+				// html +=	"<div class='clear'></div>";
+				// html +=	"<br />";
+				// html +=	"<input type='submit' title='Update' value='Update' />";
+				// html +=	"<input type='submit' title='CancelQ' value='Cancel' style='margin-left:3px;' />";
+				// html +=	"</form>";
+				// html += "</td>";
+				// html += "</tr>";
 				///////////////////////////////////////////
 				// inventory margin
 				html += "<tr id='show-off_inventory_margin' class='"+color[0]+"'>";
 				html += "<td colspan='1'>";
-				html += "<span style='font-weight:bold;'>Inventory Margin (%)</span><br /><span style='font-size:10px; color:#808080;'>(In addition to item margins.)</span><br />";
+				html += "<span style='font-weight:bold;'>Material Margin Percentage Adder (%)</span><br /><span style='font-size:10px; color:#808080;'>(In addition to item margins.)</span><br />";
 				html += "<span class='edit-panel'>";
 				html += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
 				html += "</span>";
@@ -3554,7 +4471,7 @@ var Settings = Module.extend({
 				html +=	"<h1 class='addform-header'>Quick Edit</h1>";
 				html +=	"<br />";
 				html +=	"<div class='form-column'>";
-				html +=	"<label for='off_inventory_margin'>Inventory Margin (%)</label>";
+				html +=	"<label for='off_inventory_margin'>Material Margin Percentage Adder (%)</label>";
 				html +=	"<input class='required' type='text' id='off_inventory_margin' value='"+json.data.off_inventory_margin+"' />";
 				html +=	"</div>";
 				html +=	"<div class='clear'></div>";
@@ -3565,33 +4482,33 @@ var Settings = Module.extend({
 				html += "</td>";
 				html += "</tr>";
 				///////////////////////////////////////////
-				// non inventory margin
-				html += "<tr id='show-off_non_inventory_margin' class='"+color[0]+"'>";
-				html += "<td colspan='1'>";
-				html += "<span style='font-weight:bold;'>Non-Inventory Margin (%)</span><br /><span style='font-size:10px; color:#808080;'>(In addition to item margins.)</span><br />";
-				html += "<span class='edit-panel'>";
-				html += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
-				html += "</span>";
-				html += "</td>";
-				html += "<td colspan='1' align='right'>"+json.data.off_non_inventory_margin+"</td>";
-				html += "</tr>";
-				// edit non inventory margin
-				html += "<tr id='edit-off_non_inventory_margin' style='display:none;' class='quick-edit "+color[0]+"'>";
-				html += "<td colspan='2'>";
-				html += "<form class='updateform' action='javascript:void(0);'>";
-				html +=	"<h1 class='addform-header'>Quick Edit</h1>";
-				html +=	"<br />";
-				html +=	"<div class='form-column'>";
-				html +=	"<label for='off_non_inventory_margin'>Non-Inventory Margin (%)</label>";
-				html +=	"<input class='required' type='text' id='off_non_inventory_margin' value='"+json.data.off_non_inventory_margin+"' />";
-				html +=	"</div>";
-				html +=	"<div class='clear'></div>";
-				html +=	"<br />";
-				html +=	"<input type='submit' title='Update' value='Update' />";
-				html +=	"<input type='submit' title='CancelQ' value='Cancel' style='margin-left:3px;' />";
-				html +=	"</form>";
-				html += "</td>";
-				html += "</tr>";
+				// // non inventory margin
+				// html += "<tr id='show-off_non_inventory_margin' class='"+color[0]+"'>";
+				// html += "<td colspan='1'>";
+				// html += "<span style='font-weight:bold;'>Non-Inventory Margin (%)</span><br /><span style='font-size:10px; color:#808080;'>(In addition to item margins.)</span><br />";
+				// html += "<span class='edit-panel'>";
+				// html += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
+				// html += "</span>";
+				// html += "</td>";
+				// html += "<td colspan='1' align='right'>"+json.data.off_non_inventory_margin+"</td>";
+				// html += "</tr>";
+				// // edit non inventory margin
+				// html += "<tr id='edit-off_non_inventory_margin' style='display:none;' class='quick-edit "+color[0]+"'>";
+				// html += "<td colspan='2'>";
+				// html += "<form class='updateform' action='javascript:void(0);'>";
+				// html +=	"<h1 class='addform-header'>Quick Edit</h1>";
+				// html +=	"<br />";
+				// html +=	"<div class='form-column'>";
+				// html +=	"<label for='off_non_inventory_margin'>Non-Inventory Margin (%)</label>";
+				// html +=	"<input class='required' type='text' id='off_non_inventory_margin' value='"+json.data.off_non_inventory_margin+"' />";
+				// html +=	"</div>";
+				// html +=	"<div class='clear'></div>";
+				// html +=	"<br />";
+				// html +=	"<input type='submit' title='Update' value='Update' />";
+				// html +=	"<input type='submit' title='CancelQ' value='Cancel' style='margin-left:3px;' />";
+				// html +=	"</form>";
+				// html += "</td>";
+				// html += "</tr>";
 				///////////////////////////////////////////
 				// permit
 				html += "<tr id='show-off_permit_up' class='"+color[0]+"'>";
@@ -3624,7 +4541,7 @@ var Settings = Module.extend({
 				// subcontractor
 				html += "<tr id='show-off_sub_up' class='"+color[0]+"'>";
 				html += "<td colspan='1'>";
-				html += "<span style='font-weight:bold;'>Subcontractor Margin (%)</span><br /><span style='font-size:10px; color:#808080;'>(Determines the fixed margin.)</span><br />";
+				html += "<span style='font-weight:bold;'>Engineering Margin (%)</span><br /><span style='font-size:10px; color:#808080;'>(Determines the fixed margin.)</span><br />";
 				html += "<span class='edit-panel'>";
 				html += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
 				html += "</span>";
@@ -3638,7 +4555,7 @@ var Settings = Module.extend({
 				html +=	"<h1 class='addform-header'>Quick Edit</h1>";
 				html +=	"<br />";
 				html +=	"<div class='form-column'>";
-				html +=	"<label for='off_sub_up'>Subcontractor Margin (%)</label>";
+				html +=	"<label for='off_sub_up'>Engineering Margin (%)</label>";
 				html +=	"<input class='required' type='text' id='off_sub_up' value='"+json.data.off_sub_up+"' />";
 				html +=	"</div>";
 				html +=	"<div class='clear'></div>";
@@ -3669,88 +4586,6 @@ var Settings = Module.extend({
 				html +=	"<label for='off_equip_up'>Equipment Rental Margin (%)</label>";
 				html +=	"<input class='required' type='text' id='off_equip_up' value='"+json.data.off_equip_up+"' />";
 				html +=	"</div>";
-				html +=	"<div class='clear'></div>";
-				html +=	"<br />";
-				html +=	"<input type='submit' title='Update' value='Update' />";
-				html +=	"<input type='submit' title='CancelQ' value='Cancel' style='margin-left:3px;' />";
-				html +=	"</form>";
-				html += "</td>";
-				html += "</tr>";
-				///////////////////////////////////////////
-				// off-season
-				html += "<tr id='show-off_winter_up' class='"+color[0]+"'>";
-				html += "<td colspan='1'>";
-				html += "<span style='font-weight:bold;'>Off-Season Up-Charge (%)</span><br /><span style='font-size:10px; color:#808080;'>(This effects total labor charge.)</span><br />";
-				html += "<span class='edit-panel'>";
-				html += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
-				html += "</span>";
-				html += "</td>";
-				html += "<td colspan='1' align='right'>"+json.data.off_winter_up+"</td>";
-				html += "</tr>";
-				// edit off-season
-				html += "<tr id='edit-off_winter_up' style='display:none;' class='quick-edit "+color[0]+"'>";
-				html += "<td colspan='2'>";
-				html += "<form class='updateform' action='javascript:void(0);'>";
-				html +=	"<h1 class='addform-header'>Quick Edit</h1>";
-				html +=	"<br />";
-				html +=	"<div class='form-column'>";
-				html +=	"<label for='off_winter_up'>Off-Season Up-Charge (%)</label>";
-				html +=	"<input class='required' type='text' id='off_winter_up' value='"+json.data.off_winter_up+"' />";
-				html +=	"</div>";
-				html +=	"<div class='clear'></div>";
-				html +=	"<br />";
-				html +=	"<input type='submit' title='Update' value='Update' />";
-				html +=	"<input type='submit' title='CancelQ' value='Cancel' style='margin-left:3px;' />";
-				html +=	"</form>";
-				html += "</td>";
-				html += "</tr>";
-				///////////////////////////////////////////
-				// others involved
-				html += "<tr id='show-off_others_up' class='"+color[0]+"'>";
-				html += "<td colspan='1'>";
-				html += "<span style='font-weight:bold;'>Others-Involved Up-Charge (%)</span><br /><span style='font-size:10px; color:#808080;'>(This effects total labor charge.)</span><br />";
-				html += "<span class='edit-panel'>";
-				html += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
-				html += "</span>";
-				html += "</td>";
-				html += "<td colspan='1' align='right'>"+json.data.off_others_up+"</td>";
-				html += "</tr>";
-				// edit others involved
-				html += "<tr id='edit-off_others_up' style='display:none;' class='quick-edit "+color[0]+"'>";
-				html += "<td colspan='2'>";
-				html += "<form class='updateform' action='javascript:void(0);'>";
-				html +=	"<h1 class='addform-header'>Quick Edit</h1>";
-				html +=	"<br />";
-				html +=	"<div class='form-column'>";
-				html +=	"<label for='off_others_up'>Others-Involved Up-Charge (%)</label>";
-				html +=	"<input class='required' type='text' id='off_others_up' value='"+json.data.off_others_up+"' />";
-				html +=	"</div>";
-				html +=	"<div class='clear'></div>";
-				html +=	"<br />";
-				html +=	"<input type='submit' title='Update' value='Update' />";
-				html +=	"<input type='submit' title='CancelQ' value='Cancel' style='margin-left:3px;' />";
-				html +=	"</form>";
-				html += "</td>";
-				html += "</tr>";
-				///////////////////////////////////////////
-				// cover letter
-				html += "<tr id='show-off_cover_letter' class='"+color[0]+"'>";
-				html += "<td colspan='1'>";
-				html += "<span style='font-weight:bold;'>Default Cover Letter</span><br /><span style='font-size:10px; color:#808080;'>(This is the generic text seen when creating proposals.)</span><br />";
-				html += "<span class='edit-panel'>";
-				html += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
-				html += "</span>";
-				html += "</td>";
-				html += "<td colspan='1' align='right'>&ldquo;"+json.data.off_cover_letter.substring(0,25)+"...&rdquo;</td>";
-				html += "</tr>";
-				// edit cover letter
-				html += "<tr id='edit-off_cover_letter' style='display:none;' class='quick-edit "+color[0]+"'>";
-				html += "<td colspan='2'>";
-				html += "<form class='updateform' action='javascript:void(0);'>";
-				html +=	"<h1 class='addform-header'>Quick Edit</h1>";
-				html +=	"<br />";
-				html +=	"<label for='off_cover_letter'>Default Cover Letter</label>";
-				html +=	"<textarea class='required' type='text' id='off_cover_letter' style='width:100%; height:200px;'>"+json.data.off_cover_letter+"</textarea>";
 				html +=	"<div class='clear'></div>";
 				html +=	"<br />";
 				html +=	"<input type='submit' title='Update' value='Update' />";
@@ -3929,10 +4764,10 @@ var Reps = Module.extend({
 			case "found "+this.dbTable :
 				var html = "<table cellpadding='0' cellspacing='0'>";
 				// build the titles
-				html += "<thead>";
+				html += "<thead class='module-thead'>";
 				html += "<tr>";
 				html += "<th colspan='1'>Username</th>";
-				html += "<th colspan='1'>Email</th>";
+				html += "<th colspan='1' align='right'>Email</th>";
 				html += "</tr>";
 				html += "</thead>";
 				html += "<tbody>";
@@ -3973,7 +4808,7 @@ var Reps = Module.extend({
 		row += "<a href='javascript:void(0);' class='trash-link' title='Trash'>Trash</a>";
 		row += "</span>";
 		row += "</td>";
-		row += "<td colspan='1'>"+data.rep_email+"</td>";
+		row += "<td colspan='1' align='right'>"+data.rep_email+"</td>";
 		//row += "<td colspan='1' align='right'>"+data.rep_num_props+"</td>";
 		return row;
 	},
@@ -4088,7 +4923,7 @@ var Customers = Module.extend({
 	},
   	show:function(holder) { this._super(holder); },
 	hide:function() { this._super(); },
-	begin:function(refresh) { 
+	begin:function(refresh) {
 		if(!refresh) {
 			this._super(); 
 			this.show(".dashboard-bar-left");
@@ -4193,7 +5028,7 @@ var Customers = Module.extend({
 			case "found "+this.dbTable :
 				var html = "<table cellpadding='0' cellspacing='0'>";
 				// build the titles
-				html += "<thead>";
+				html += "<thead class='module-thead'>";
 				html += "<tr>";
 				html += "<th colspan='1'>Info</th>";
 				html += "<th colspan='1' align='right'>&nbsp;</th>";
@@ -4645,7 +5480,7 @@ var Jobs = Module.extend({
 				var color = ["light","dark"];
 				var html = "<table cellpadding='0' cellspacing='0'>";
 				// build the titles
-				html += "<thead>";
+				html += "<thead class='module-thead'>";
 				html += "<tr>";
 				html += "<th colspan='1'>Project Name</th>";
 				html += "<th colspan='1'>Sales Rep</th>";
@@ -5068,7 +5903,7 @@ var Zones = Module.extend({
 				$(this).css({position:"relative",top:"26px",left:"72px"}).attr("src","gfx/uploading.gif").attr("width","66").attr("height","66").show();
 			});
 			// create a dynamic iframe
-			var iframe = $("<iframe id='f-"+ref+"' name='f-"+ref+"' src='' style='display:none;' />");
+			var iframe = $("<iframe id='f-"+ref+"' name='f-"+ref+"' style='display:none;' />");
 			// add to doc
 		    iframe.appendTo("body");
 			// iframe event handling
@@ -5121,11 +5956,11 @@ var Zones = Module.extend({
 			// change form's target to the iframe (this is what simulates ajax)
 		    $("#uploader-"+ref).attr("target","f-"+ref);
 			// add the file input to the form
-			$("#"+ref).appendTo("#uploader-"+ref).attr("id",ref+"_temp");
+			$("#"+ref).appendTo("#uploader-"+ref);//.attr("id",ref+"_temp");
 			// submit form
 		    $("#uploader-"+ref).submit();
 			// re-attach input field
-			$("#"+ref+"_temp").appendTo("#"+ref+"-holder").attr("id",ref);
+			$("#"+ref).appendTo("#"+ref+"-holder");//.attr("id",ref);
 			// ensure single submit
 			return false;
 		});
@@ -5402,7 +6237,7 @@ var Zones = Module.extend({
 		row += butts;
 		row += "<div class='clear'></div>";
 		row += "<table cellpadding='0' cellspacing='0' style='width:100%; margin:0; padding:10px;'>";
-		row += "<thead>";
+		row += "<thead class='module-thead'>";
 		// Parameters and Layout
 		row += "<th colspan='3' style='padding:5px 0; border-bottom:1px solid grey; font-weight:bold;'>Parameters:</th>";
 		row += "<th colspan='1' style='padding:5px 0; border-bottom:1px solid grey; font-weight:bold;'>Layout:"+trash+"</th>";
@@ -6780,25 +7615,31 @@ $(function() {
 	var _modules_io = new IO();
 	var _inverters_io = new IO();
 	var _racking_io = new IO();
+	var _mounting_mat_io = new IO();
 	var _connects_io = new IO();
+	var _miscellaneous_mat_io = new IO();
 	var _inters_io = new IO();
 	var _types_io = new IO();
 	var _angles_io = new IO();
 	var _mounting_met_io = new IO();
 	var _mounting_med_io = new IO();
 	var _data_monitoring_io = new IO();
+	var _admin_rules_io = new IO();
 	// create super objects
 	var offices = new Offices("#m_offices",_offices_io);
 	var modules = new Modules("#m_modules",_modules_io);
 	var inverters = new Inverters("#m_inverters",_inverters_io);
 	var racking = new Racking("#m_racking",_racking_io);
+	var mounting_mat = new MountingMaterials("#m_mounting_mat",_mounting_mat_io);
 	var connects = new Connects("#m_connects",_connects_io);
+	var miscellaneous_mat = new MiscellaneousMaterials("#m_miscellaneous_mat",_miscellaneous_mat_io);
 	var inters = new Inters("#m_inters",_inters_io);
 	var types = new Types("#m_types",_types_io);
 	var angles = new Angles("#m_angles",_angles_io);
 	var mounting_met = new MountingMethods("#m_mounting_met",_mounting_met_io);
 	var mounting_med = new MountingMediums("#m_mounting_med",_mounting_med_io);
 	var data_monitoring = new DataMonitoring("#m_data_monitoring",_data_monitoring_io);
+	var admin_rules = new AdminRules("#m_admin_rules",_admin_rules_io);
 	// create office io
 	var _settings_io = new IO();
 	var _reps_io = new IO();
@@ -6880,12 +7721,12 @@ $(function() {
 	published.drafts = drafts;
 	approved.drafts = drafts;
 	// set login actions
-	login.isSuper = [offices, modules, inverters, racking, connects, inters, types, angles, mounting_met, mounting_med, data_monitoring];
-	login.isOffice = [settings, reps];
+	login.isSuper = [offices, modules, inverters, racking, mounting_mat, connects, miscellaneous_mat, inters, types, mounting_met, mounting_med, angles, data_monitoring, admin_rules];
+	login.isOffice = [settings, reps, mounting_mat, connects, miscellaneous_mat, data_monitoring];
 	login.isAdmin = [customers, jobs, drafts, submitted, published, approved];
 	login.isRep = [customers, jobs, drafts, submitted, published, approved];
 	login.isSupport = [customers, jobs, drafts, submitted, published, approved];
-	login.pv_comps = [modules, inverters, racking, connects, inters, types, angles, mounting_met, mounting_med, data_monitoring];
+	login.pv_comps = [modules, inverters, racking, mounting_mat, connects, miscellaneous_mat, inters, types, mounting_met, mounting_med, angles, data_monitoring, admin_rules];
 	// try to resume session
 	login.begin();
 });
