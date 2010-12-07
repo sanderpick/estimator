@@ -52,6 +52,7 @@ select { margin:0 0 5px 0; display:block; width:127px; }
 
 table { width:100%; margin:10px 0 0 0; }
 thead { text-align:left; font-size:10px; color:#808080; }
+thead.module-thead th { white-space:nowrap; }
 tbody { padding:0 10px; }
 tr {  }
 th { padding:5px 10px; vertical-align:top; font-weight:normal; }
@@ -194,6 +195,9 @@ a.dashboard-link:active {
 
 .dashboard-bar-left { float:left; width:26.5%; padding:0 0.5% 0 0; min-width:280px; }
 .dashboard-main { float:left; width:72.5%; padding:0 0 0 0.5%; min-width:500px; }
+
+.dashboard-wide { width:100%; padding:0; min-width:500px; }
+
 /*.dashboard-bar-right { float:left; width:18%;  min-width:100px; }*/
 
 .dashboard-item {

@@ -112,6 +112,29 @@ function browseAll() {
 	} else $r['did'] = "no ".$table;
 }
 
+// get an entire table and return the office name
+function browseAllSortOffice() {
+	global $m,$r;
+	$table = $_POST['table'];
+	$order = $_POST['order'];
+	if(isset($_POST['wc'])) {
+		$_POST['wc'] = stripslashes($_POST['wc']);
+		$wc = str_replace("!!"," AND ",$_POST['wc']);
+		$wc = str_replace("::"," OR ",$wc);
+	} else $wc = NULL;
+	if($m->getAll($table,"*",$order,$wc)) {
+		$r['did'] = "found ".$table;
+		$r['data'] = $m->lastData();
+		foreach($r['data'] as $row) {
+			if($row->officeID!="0") {
+				if($m->getRow("es_offices",$row->officeID)) {
+					$r['data2']['office'][] = $m->lastData()->off_city.", ".$m->lastData()->off_state;
+				} else $r['data2']['office'][] = "not found";
+			} else $r['data2']['office'][] = "All";
+		}
+	} else $r['did'] = "no ".$table;
+}
+
 // get an entire table
 function browseAllJobs() {
 	global $m,$r;
@@ -553,7 +576,7 @@ function updateCells() {
 	}
 }
 
-// update item - customer
+// update item
 function updateItem() {
 	global $m,$r;
 	$table = $_POST['table'];
@@ -563,6 +586,25 @@ function updateItem() {
 		if($m->getRow($table,$id)) {
 			$r['did'] = $table." updated";
 			$r['data'] = $m->lastData();
+		} else $r['did'] = "failed ".$table." update";
+	} else $r['did'] = "failed ".$table." update";
+}
+
+// update item and return office name
+function updateItemSortOffice() {
+	global $m,$r;
+	$table = $_POST['table'];
+	$id = $_POST['id'];
+	unset($_POST['es_do'],$_POST['table'],$_POST['id']);
+	if($m->updateRow($table,$id,$_POST)) {
+		if($m->getRow($table,$id)) {
+			$r['did'] = $table." updated";
+			$r['data'] = $m->lastData();
+			if($r['data']->officeID!="0") {
+				if($m->getRow("es_offices",$r['data']->officeID)) {
+					$r['data2']['office'] = $m->lastData()->off_city.", ".$m->lastData()->off_state;
+				} else $r['data2']['office'] = "not found";
+			} else $r['data2']['office'] = "All";
 		} else $r['did'] = "failed ".$table." update";
 	} else $r['did'] = "failed ".$table." update";
 }
