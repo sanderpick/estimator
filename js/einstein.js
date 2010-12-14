@@ -4851,6 +4851,212 @@ var Reps = Module.extend({
 		return edit;
 	}
 });
+//////////////////////////////////////////////////////////////////// reference sheets : office
+var ReferenceSheets = Module.extend({
+  	init:function(el,io) {
+		this._super(el,io);
+		var t = this;
+		// new item
+		$("a[title='New']",$(t.el)).live("click",function() {
+			$(".dashboard-item-content",$(t.el)).html(t.itemForm());
+		});
+		// cancel add
+		$("input[title='Cancel']",$(t.el)).live("click",function() {
+			t.io.request(t,"table="+t.dbTable+"&order="+t.dbOrder+"&wc=ref_officeID='"+$('#data').data('rep').rep_officeID+"'&es_do=browseAll");
+		});
+		// add new
+		$("input[title='Add']",$(t.el)).live("click",function() {
+			var ds = $(this).closest("form").postify();
+			if(ds=="") return false;
+			t.io.request(t,ds+"table="+t.dbTable+"&ref_officeID="+$('#data').data('rep').rep_officeID+"&es_do=addItem");
+		});
+		// hover over rows
+		$("tr",$(t.el)).live("mouseenter",function() {
+			$(".edit-panel",this).css("visibility","visible");
+		});
+		$("tr",$(t.el)).live("mouseleave",function() {
+			$(".edit-panel",this).css("visibility","hidden");
+		});
+		// edit link
+		$("a[title='Edit']",$(t.el)).live("click",function() {
+			$("#"+this.parentNode.parentNode.parentNode.id).hide();
+			$("#edit-"+this.parentNode.parentNode.parentNode.id).show();
+		});
+		// cancel update
+		$("input[title='CancelQ']",$(t.el)).live("click",function() {
+			$("#"+this.parentNode.parentNode.parentNode.id).hide();
+			$("#"+this.parentNode.parentNode.parentNode.id.substring(5)).show();
+		});
+		// update
+		$("input[title='Update']",$(t.el)).live("click",function() {
+			t.currentRowID = this.parentNode.parentNode.parentNode.id.substring(8);
+			var ds = $(this).closest("form").postify();
+			if(ds=="") return false;
+			t.io.request(t,ds+"id="+t.currentRowID+"&table="+t.dbTable+"&es_do=updateItem");
+		});
+		// trash link
+		$("a[title='Trash']",$(t.el)).live("click",function() {
+			t.currentRowID = this.parentNode.parentNode.parentNode.id.substring(3);
+			if(!confirm("Are you sure you want to delete this item? This cannot be undone.")) return false;
+			t.io.request(t,"id="+t.currentRowID+"&table="+t.dbTable+"&es_do=deleteItem");
+		});
+	},
+  	show:function(holder) { this._super(holder,null,false,this.hidden); },
+	hide:function() { this._super(); },
+	begin:function(hidden) { 
+		this._super();
+		this.hidden = hidden ? true : false;
+		this.show(".dashboard-wide"); 
+		// get all the modules
+		this.io.request(this,"table="+this.dbTable+"&order="+this.dbOrder+"&wc=ref_officeID='"+$('#data').data('rep').rep_officeID+"'&es_do=browseAll");
+	},
+	clear:function() { this._super(); },
+	iHTML:function() {
+		this._super();
+		// returns the initial html for this module
+		return "<div class='dashboard-item'> \
+					<div class='dashboard-item-header'> \
+						<a href='javascript:void(0);' class='dashboard-link' title='New'>+</a> \
+						<h1 class='dashboard-header'>"+$("#data").data("city")+" Reference Sheets</h1> \
+					</div> \
+					<div class='dashboard-item-content'><p style='padding:10px; color:#808080;'>Loading...</p></div> \
+				</div>";
+	},
+	dbTable:"es_reference_sheets",
+	dbOrder:"ID",
+	itemForm:function() {
+		this._super();
+		// returns the form
+		return "<form class='addform' action='javascript:void(0);'> \
+					<h1 class='addform-header'>New Sheet Info:</h1> \
+					<br /> \
+					<div class='form-column'> \
+						<label for='ref_name'>Sheet Name</label> \
+						<input class='required' type='text' id='ref_name' value='' /> \
+					</div> \
+					<div class='form-column'> \
+						<label for='ref_value'>.jpg or .png URI</label> \
+						<input class='required' type='text' id='ref_value' value='' /> \
+					</div> \
+					<div class='form-column'> \
+						<label for='active'>Active</label> \
+						<select class='required' id='active'> \
+							<option value='' selected='selected'>--select--</option> \
+							<option value='1'>yes</option> \
+							<option value='0'>no</option> \
+						</select> \
+					</div> \
+					<div class='clear'></div> \
+					<br /> \
+					<input type='submit' title='Add' value='Add New' /> \
+					<input type='submit' title='Cancel' value='Cancel' /> \
+				</form>";
+	},
+	receive:function(json) {
+		this._super();
+		// build vars
+		var html = "";
+		switch(json.did) {
+			case this.dbTable+" added" :
+				// show the list again
+				$(".dashboard-item-content",$(this.el)).html("");
+				this.io.request(this,"table="+this.dbTable+"&order="+this.dbOrder+"&wc=ref_officeID='"+$('#data').data('rep').rep_officeID+"'&es_do=browseAll");
+				break;
+			case this.dbTable+" updated" :
+				// set active
+				json.data.active = (json.data.active==1) ? "yes" : "no";
+				$("#ref"+this.currentRowID).html(this.rowContent(json.data)).show();
+				$("#edit-ref"+this.currentRowID).html(this.editRowContent(json.data)).hide();
+				break;
+			case this.dbTable+" deleted" :
+				$("#ref"+this.currentRowID).remove();
+				$("#edit-ref"+this.currentRowID).remove();
+				break;
+			case "found "+this.dbTable :
+				var html = "<table cellpadding='0' cellspacing='0'>";
+				// build the titles
+				html += "<thead class='module-thead'>";
+				html += "<tr>";
+				html += "<th colspan='1'>Name</th>";
+				html += "<th colspan='1'>Location (URI)</th>";
+				html += "<th colspan='1' align='right'>Active</th>";
+				html += "</tr>";
+				html += "</thead>";
+				html += "<tbody>";
+				// loop over each result
+				var color = ["light","dark"];
+				for(var i=0;i<json.data.length;i++) {
+					// set active
+					json.data[i].active = (json.data[i].active==1) ? "yes" : "no";
+					html += "<tr id='ref"+json.data[i].ID+"' class='"+color[(i+1)%2]+"'>";
+					html += this.rowContent(json.data[i]);
+					html += "</tr>";
+					html += "<tr id='edit-ref"+json.data[i].ID+"' style='display:none;' class='quick-edit "+color[(i+1)%2]+"'>";
+					html += this.editRowContent(json.data[i]);
+					html += "</tr>";
+				}
+				html += "</tbody>";
+				html += "</table>";
+				// add to page
+				$(".dashboard-item-content", $(this.el)).html(html);
+				break;
+			case "no "+this.dbTable :
+				// clear the list
+				$(".dashboard-item-content",$(this.el)).html("<p style='padding:10px; color:#808080;'>There are no Reference Sheets in your system at the moment.</p>");
+				break;
+			//-----------------------------------//
+			default :
+				console.log(json.did+" from "+this.dbTable);
+				break;
+		}
+	},
+	rowContent:function(data) {
+		this._super();
+		// create the row
+		var row = "<td colspan='1'>";
+		row += "<span style='font-weight:bold;'>"+data.ref_name+"</span><br />";
+		row += "<span class='edit-panel'>";
+		row += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a> | ";
+		row += "<a href='javascript:void(0);' class='trash-link' title='Trash'>Trash</a>";
+		row += "</span>";
+		row += "</td>";
+		row += "<td colspan='1'>"+data.ref_value+"</td>";
+		row += "<td colspan='1' align='right'>"+data.active+"</td>";
+		return row;
+	},
+	editRowContent:function(data) {
+		this._super();
+		// create the edit row
+		var sel_yes = (data.active=="yes") ? "selected='selected'" : "";
+		var sel_no = (data.active=="no") ? "selected='selected'" : "";
+		var edit = "<td colspan='3'>";
+		edit += "<form class='updateform' action='javascript:void(0);'> \
+					<h1 class='addform-header'>Quick Edit</h1> \
+					<br /> \
+					<div class='form-column'> \
+						<label for='ref_name'>Sheet Name</label> \
+						<input class='required' type='text' id='ref_name' value='"+data.ref_name+"' /> \
+					</div> \
+					<div class='form-column'> \
+						<label for='ref_value'>.jpg or .png URI</label> \
+						<input class='required' type='text' id='ref_value' value='"+data.ref_value+"' /> \
+					</div> \
+					<div class='form-column'> \
+						<label for='active'>Active</label> \
+						<select class='required' id='active'> \
+							<option value='1' "+sel_yes+">yes</option> \
+							<option value='0' "+sel_no+">no</option> \
+						</select> \
+					</div> \
+					<div class='clear'></div> \
+					<br /> \
+					<input type='submit' title='Update' value='Update' /> \
+					<input type='submit' title='CancelQ' value='Cancel' /> \
+				</form>";
+		edit += "</td>";
+		return edit;
+	}
+});
 ////////////////////////////////////////////////////////////////////////////// customers : reps
 var Customers = Module.extend({
 	init:function(el,io) {
@@ -6394,15 +6600,21 @@ var Proposals = Module.extend({
 		// add new
 		$("input[title='Add']",$(t.el)).live("click",function() {
 			var ds = $(this).closest("form").postify();
+			//
+			var crfID = "";
+			$(".choose-ref_sheets",$(t.el)).each(function(i) { if($(this).attr("checked")) crfID += $(this).attr("id").substring(16)+","; });
+			//
 			var czID = "";
 			$(".choose-zones",$(t.el)).each(function(i) { if($(this).attr("checked")) czID += $(this).attr("id").substring(11)+","; });
-			if(czID=="") $("#pro_zones").css("color","red");
+			if(czID=="") $("#pro_zones-label").css("color","red");
+			else $("#pro_zones-label").css("color","black");
 			if(ds=="" || czID=="") return false;
 			ds += "pro_officeID="+$($("#data").data("job")).data("officeID")+"&";
 			ds += "pro_repID="+$($("#data").data("job")).data("repID")+"&";
 			ds += "pro_customerID="+$($("#data").data("job")).data("customerID")+"&";
 			ds += "pro_jobID="+$($("#data").data("job")).data("ID")+"&";
 			ds += "pro_zones="+czID+"&";
+			ds += "pro_ref_sheets="+crfID+"&";
 			ds += $("#pro_credit").attr("checked") ? "pro_credit=1&" : "pro_credit=0&";
 			ds += $("#pro_incentive").attr("checked") ? "pro_incentive=1&" : "pro_incentive=0&";
 			t.io.request(t,ds+"table="+t.dbTable+"&es_do=addProposal");
@@ -6410,15 +6622,21 @@ var Proposals = Module.extend({
 		// preview
 		$("input[title='Preview']",$(t.el)).live("click",function() {
 			var ds = $(this).closest("form").postify();
+			//
+			var crfID = "";
+			$(".choose-ref_sheets",$(t.el)).each(function(i) { if($(this).attr("checked")) crfID += $(this).attr("id").substring(16)+","; });
+			//
 			var czID = "";
 			$(".choose-zones",$(t.el)).each(function(i) { if($(this).attr("checked")) czID += $(this).attr("id").substring(11)+","; });
-			if(czID=="") $("#pro_zones").css("color","red");
+			if(czID=="") $("#pro_zones-label").css("color","red");
+			else $("#pro_zones-label").css("color","black");
 			if(ds=="" || czID=="") return false;
 			ds += "pro_officeID="+$($("#data").data("job")).data("officeID")+"&";
 			ds += "pro_repID="+$($("#data").data("job")).data("repID")+"&";
 			ds += "pro_customerID="+$($("#data").data("job")).data("customerID")+"&";
 			ds += "pro_jobID="+$($("#data").data("job")).data("ID")+"&";
 			ds += "pro_zones="+czID+"&";
+			ds += "pro_ref_sheets="+crfID+"&";
 			ds += $("#pro_credit").attr("checked") ? "pro_credit=1&" : "pro_credit=0&";
 			ds += $("#pro_incentive").attr("checked") ? "pro_incentive=1&" : "pro_incentive=0&";
 			t.currentForm = $(this).closest("form");
@@ -6464,11 +6682,17 @@ var Proposals = Module.extend({
 		$("input[title='Update']",$(t.el)).live("click",function() {
 			t.currentRowID = this.parentNode.parentNode.parentNode.id.substring(8);
 			var ds = $(this).closest("form").postify();
+			//
+			var crfID = "";
+			$(".choose-ref_sheets",this.parentNode).each(function(i) { if($(this).attr("checked")) crfID += $(this).attr("id").substring(16)+","; });
+			//
 			var czID = "";
 			$(".choose-zones",this.parentNode).each(function(i) { if($(this).attr("checked")) czID += $(this).attr("id").substring(11)+","; });
-			if(czID=="") $("#pro_zones"+t.currentRowID).css("color","red");
+			if(czID=="") $("#pro_zones-label-"+t.currentRowID).css("color","red");
+			else $("#pro_zones-label-"+t.currentRowID).css("color","black");
 			if(ds=="" || czID=="") return false;
 			ds += "pro_zones="+czID+"&";
+			ds += "pro_ref_sheets="+crfID+"&";
 			ds += $("#pro_credit"+t.currentRowID).attr("checked") ? "pro_credit=1&" : "pro_credit=0&";
 			ds += $("#pro_incentive"+t.currentRowID).attr("checked") ? "pro_incentive=1&" : "pro_incentive=0&";
 			t.io.request(t,ds+"id="+t.currentRowID+"&table="+t.dbTable+"&"+t.itemFormOptions()+"&es_do=updateProposal");
@@ -6477,15 +6701,21 @@ var Proposals = Module.extend({
 		$("input[title='PreviewQ']",$(t.el)).live("click",function() {
 			t.currentRowID = this.parentNode.parentNode.parentNode.id.substring(8);
 			var ds = $(this).closest("form").postify();
+			//
+			var crfID = "";
+			$(".choose-ref_sheets",this.parentNode).each(function(i) { if($(this).attr("checked")) crfID += $(this).attr("id").substring(16)+","; });
+			//
 			var czID = "";
 			$(".choose-zones",this.parentNode).each(function(i) { if($(this).attr("checked")) czID += $(this).attr("id").substring(11)+","; });
-			if(czID=="") $("#pro_zones"+t.currentRowID).css("color","red");
+			if(czID=="") $("#pro_zones-label-"+t.currentRowID).css("color","red");
+			else $("#pro_zones-label-"+t.currentRowID).css("color","black");
 			if(ds=="" || czID=="") return false;
 			ds += "pro_officeID="+$("#pro"+t.currentRowID).data("officeID")+"&";
 			ds += "pro_repID="+$("#pro"+t.currentRowID).data("repID")+"&";
 			ds += "pro_customerID="+$("#pro"+t.currentRowID).data("customerID")+"&";
 			ds += "pro_jobID="+$("#pro"+t.currentRowID).data("jobID")+"&";
 			ds += "pro_zones="+czID+"&";
+			ds += "pro_ref_sheets="+crfID+"&";
 			ds += $("#pro_credit"+t.currentRowID).attr("checked") ? "pro_credit=1&" : "pro_credit=0&";
 			ds += $("#pro_incentive"+t.currentRowID).attr("checked") ? "pro_incentive=1&" : "pro_incentive=0&";
 			t.currentForm = $(this).closest("form");
@@ -6570,7 +6800,7 @@ var Proposals = Module.extend({
 				});
 				num++;
 			}
-			var dms = $('#data').data('data_monitors') ? $('#data').data('data_monitors') : "<option disabled='disabled'>none available</option>";
+			var dms = $('#data').data('data_monitors') ? $('#data').data('data_monitors') : "<option value='' selected='selected'>--select--</option>";
 			var am = "<div class='form-column' id='monitor_"+num+"'> \
 						<label style='padding-bottom:5px;' for='pro_data_monitors_"+num+"'>Monitor Model <a href='javascript:void(0);' title='Delete Data Monitor' class='lesser' style='vertical-align:bottom; padding:0 0 0 5px;'>&#10005;</a></label> \
 						<select class='required' id='pro_data_monitors_"+num+"'>"+dms+"</select> \
@@ -6580,6 +6810,75 @@ var Proposals = Module.extend({
 			$(this.parentNode.nextElementSibling).append($(am));
 		});
 		$("a[title='Delete Data Monitor']",$(t.el)).live("click",function() {
+			$(this.parentNode.parentNode).remove();
+		});
+		// additional mounting materials
+		$("a[title='Add Additional Mounting Material']",$(t.el)).live("click",function() {
+			var kids = $(this.parentNode.nextElementSibling).children();
+			var num = 1;
+			if(kids.length > 0) {
+				kids.each(function(i) {
+					var id = parseInt(this.id.substring(9));
+					if(id > num) num = id;
+				});
+				num++;
+			}
+			var dms = $('#data').data('add_mounting_mats') ? $('#data').data('add_mounting_mats') : "<option value='' selected='selected'>--select--</option>";
+			var am = "<div class='form-column' id='mounting_"+num+"'> \
+						<label style='padding-bottom:5px;' for='pro_add_mounting_mats_"+num+"'>Mounting Material <a href='javascript:void(0);' title='Delete Additional Mounting Material' class='lesser' style='vertical-align:bottom; padding:0 0 0 5px;'>&#10005;</a></label> \
+						<select class='required' id='pro_add_mounting_mats_"+num+"'>"+dms+"</select> \
+						<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_add_mounting_mat_types_"+num+"' value='1' checked='checked' /> Fee built-in<br /> \
+						<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_add_mounting_mat_types_"+num+"' value='0' /> Fee not built-in \
+					</div>";
+			$(this.parentNode.nextElementSibling).append($(am));
+		});
+		$("a[title='Delete Additional Mounting Material']",$(t.el)).live("click",function() {
+			$(this.parentNode.parentNode).remove();
+		});
+		// conduit and wire runs
+		$("a[title='Add Conduit or Wire Run']",$(t.el)).live("click",function() {
+			var kids = $(this.parentNode.nextElementSibling).children();
+			var num = 1;
+			if(kids.length > 0) {
+				kids.each(function(i) {
+					var id = parseInt(this.id.substring(11));
+					if(id > num) num = id;
+				});
+				num++;
+			}
+			var dms = $('#data').data('conn_comps') ? $('#data').data('conn_comps') : "<option value='' selected='selected'>--select--</option>";
+			var am = "<div class='form-column' id='connection_"+num+"'> \
+						<label style='padding-bottom:5px;' for='pro_conn_comps_"+num+"'>Conduit Run Kit <a href='javascript:void(0);' title='Delete Conduit or Wire Run' class='lesser' style='vertical-align:bottom; padding:0 0 0 5px;'>&#10005;</a></label> \
+						<select class='required' id='pro_conn_comps_"+num+"'>"+dms+"</select> \
+						<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_conn_comp_types_"+num+"' value='1' checked='checked' /> Fee built-in<br /> \
+						<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_conn_comp_types_"+num+"' value='0' /> Fee not built-in \
+					</div>";
+			$(this.parentNode.nextElementSibling).append($(am));
+		});
+		$("a[title='Delete Conduit or Wire Run']",$(t.el)).live("click",function() {
+			$(this.parentNode.parentNode).remove();
+		});
+		// miscellaneous materials
+		$("a[title='Add Miscellaneous Material']",$(t.el)).live("click",function() {
+			var kids = $(this.parentNode.nextElementSibling).children();
+			var num = 1;
+			if(kids.length > 0) {
+				kids.each(function(i) {
+					var id = parseInt(this.id.substring(14));
+					if(id > num) num = id;
+				});
+				num++;
+			}
+			var dms = $('#data').data('miscellaneous_materials') ? $('#data').data('miscellaneous_materials') : "<option value='' selected='selected'>--select--</option>";
+			var am = "<div class='form-column' id='miscellaneous_"+num+"'> \
+						<label style='padding-bottom:5px;' for='pro_miscellaneous_materials_"+num+"'>Misc. Material Kit <a href='javascript:void(0);' title='Delete Miscellaneous Material' class='lesser' style='vertical-align:bottom; padding:0 0 0 5px;'>&#10005;</a></label> \
+						<select class='required' id='pro_miscellaneous_materials_"+num+"'>"+dms+"</select> \
+						<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_miscellaneous_material_types_"+num+"' value='1' checked='checked' /> Fee built-in<br /> \
+						<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_miscellaneous_material_types_"+num+"' value='0' /> Fee not built-in \
+					</div>";
+			$(this.parentNode.nextElementSibling).append($(am));
+		});
+		$("a[title='Delete Miscellaneous Material']",$(t.el)).live("click",function() {
 			$(this.parentNode.parentNode).remove();
 		});
 		// incentive
@@ -6616,7 +6915,12 @@ var Proposals = Module.extend({
 		this.io.request(this,this.itemFormOptions()+"&table="+this.dbTable+"&jobID="+$($("#data").data("job")).data("ID")+"&offID="+$($("#data").data("job")).data("officeID")+"&es_do=getOptions");
 	},
 	itemFormOptions:function() {
-		return "menus=pro_name,pro_zones,pro_inter_method,pro_inverter,pro_data_monitors&sources=es_jobs,es_zones,es_inter_comps,es_inverters,es_data_monitoring&columns=job_name,ID,int_model_num,inv_model_num,dat_model_num";
+		var oID = $($('#data').data('job')).data('officeID') || $("#data").data("rep").rep_officeID;
+		var o = "menus=pro_name,pro_zones,pro_ref_sheets,pro_inter_method,pro_inverter,pro_data_monitors,pro_add_mounting_mats,pro_conn_comps,pro_miscellaneous_materials";
+		o += "&sources=es_jobs,es_zones,es_reference_sheets,es_inter_comps,es_inverters,es_data_monitoring,es_mounting_materials,es_conn_comps,es_miscellaneous_materials";
+		o += "&columns=job_name,ID,*,int_model_num,inv_model_num,dat_model_num,mat_model_num,con_model_num,mis_model_num";
+		o += "&wcs=,,ref_officeID='"+oID+"',,,officeID='"+oID+"',officeID='"+oID+"',officeID='"+oID+"',officeID='"+oID+"'";
+		return o;
 	},
 	receive:function(json) {
 		this._super();
@@ -6874,190 +7178,370 @@ var Proposals = Module.extend({
 				// loop over the results
 				var selects = {};
 				for(set in json.data) {
-					if(set!="pro_zones" && set!="pro_cover_letter" && set!="pro_name") {	
+					if(set=="pro_ref_sheets") {
+						var menu = "";
+						for(options in json.data[set]) {
+							menu += "<input style='display:inline;' type='checkbox' id='choose-ref_sheet"+json.data[set][options].ID+"' class='choose-ref_sheets' value='' /> <em>"+json.data[set][options].ref_name+"</em><br />";
+						}
+					} else if(set!="pro_zones" && set!="pro_cover_letter" && set!="pro_name") {	
 						var menu = "<option value='' selected='selected'>--select--</option>";
 						for(options in json.data[set]) {
 							for(values in json.data[set][options]) {
 								menu += "<option value='"+json.data[set][options][values]+"'>"+json.data[set][options][values]+"</option>";
 							}
 						}
-					} else if(set!="pro_cover_letter") {
+					} else if(set!="pro_cover_letter" && set!="pro_name") {
 						var menu = "";
 						for(options in json.data[set]) {
-							menu += "<input style='display:inline;' type='checkbox' id='choose-zone"+json.data[set][options].ID+"' class='choose-zones' value='' /> "+json.data[set][options].zon_name+" ("+json.data[set][options].zon_size+" kW)<br />";
+							menu += "<input style='display:inline;' type='checkbox' id='choose-zone"+json.data[set][options].ID+"' class='choose-zones' value='' /> <em>"+json.data[set][options].zon_name+" ("+json.data[set][options].zon_size+" kW)</em><br />";
 						}
 					}
 					selects[set] = menu;
 				}
+				// check undefined on ref sheets
+				if(!selects["pro_ref_sheets"]) selects["pro_ref_sheets"] = "<em>none available</em>";
+				// check undefined on data monitors and others like it
+				if(!selects["pro_add_mounting_mats"]) selects["pro_add_mounting_mats"] = "<option value='' selected='selected'>--select--</option>";
+				if(!selects["pro_conn_comps"]) selects["pro_conn_comps"] = "<option value='' selected='selected'>--select--</option>";
+				if(!selects["pro_miscellaneous_materials"]) selects["pro_miscellaneous_materials"] = "<option value='' selected='selected'>--select--</option>";
+				if(!selects["pro_data_monitors"]) selects["pro_data_monitors"] = "<option value='' selected='selected'>--select--</option>";
 				// cover letter
 				var default_cover_letter = json.data.pro_cover_letter;
 				// make the form
 				var form = "<form class='addproposalform' action='javascript:void(0);'> \
-							<div class='form-break'></div> \
-							<br /> \
-							<h1 class='add-proposal-section'>Zones</h1> \
-							<div class='form-column'> \
-								<label id='pro_zones'>Choose Project Zones:</label> \
-								"+selects.pro_zones+" \
-							</div> \
-							<div class='clear'></div> \
-							<br /> \
-							<div class='form-break'></div> \
-							<br /> \
-							\
-							<h1 class='add-proposal-section'>Inverters&nbsp;&nbsp;<a class='adder' title='Add Inverter(s)' href='javascript:void(0);'>+</a></h1> \
-							<div> \
-								<div class='form-column' id='inverter_1'> \
-									<label style='padding-bottom:5px;' for='pro_inter_method_1'>Interconnection Method <a href='javascript:void(0);' title='Delete Inverter(s)' class='lesser' style='vertical-align:bottom; padding:0 0 0 5px;'>&#10005;</a></label> \
-									<select class='required' id='pro_inter_method_1'>"+selects.pro_inter_method+"</select> \
-									<label style='padding-bottom:5px;' for='pro_inverter_1'>Inverter Type</label> \
-									<select class='required inverter-select' id='pro_inverter_1'>"+selects.pro_inverter+"</select> \
-								</div> \
-							</div> \
-							<div class='clear'></div> \
-							<br /> \
-							<div class='form-break'></div> \
-							<br /> \
-							\
-							<h1 class='add-proposal-section'>Miscellaneous</h1> \
-							<div class='form-column'> \
-								<label for='pro_conduit_out'>Overground Conduit (ft)</label> \
-								<input class='required' type='text' id='pro_conduit_out' value='0' /> \
-								<label for='pro_conduit_in'>Indoor Conduit (ft)</label> \
-								<input class='required' type='text' id='pro_conduit_in' value='0' /> \
-								<label for='pro_conduit_under'>Underground Conduit (ft)</label> \
-								<input class='required' type='text' id='pro_conduit_under' value='0' /> \
-							</div> \
-							<div class='form-column'> \
-								<label for='pro_num_trips'># Install Days</label> \
-								<input class='required' type='text' id='pro_num_trips' value='2' /> \
-								<label for='pro_num_installers'># Installers</label> \
-								<input class='required' type='text' id='pro_num_installers' value='3' /> \
-							</div> \
-							<div class='form-column'> \
-								<label for='pro_winter'>Off-season installation?</label> \
-								<select class='required' id='pro_winter'> \
-									<option value='1'>yes</option> \
-									<option value='0' selected='selected'>no</option> \
-								</select> \
-								<label for='pro_others_involved'>Other builders involved?</label> \
-								<select class='required' id='pro_others_involved'> \
-									<option value='1'>yes</option> \
-									<option value='0' selected='selected'>no</option> \
-								</select> \
-							</div> \
-							<div class='clear'></div> \
-							<br /> \
-							<div class='form-break'></div> \
-							<br /> \
-							\
-							<h1 class='add-proposal-section'>Other Costs & Fees</h1> \
-							<div class='form-column'> \
-								<label for='pro_taxrate'>Sales Tax Rate (%)</label> \
-								<input class='required' type='text' id='pro_taxrate' value='3.41' /> \
-								<label for='pro_engin_fee'>Engineering Fee ($)</label> \
-								<input class='required' type='text' id='pro_engin_fee' value='0' /> \
-								<label for='pro_permit_fee'>Permit Fee ($)</label> \
-								<input class='required' type='text' id='pro_permit_fee' value='0' /> \
-							</div> \
-							<div class='form-column'> \
-								<label for='pro_inspection'>Des. / Ins. / Comm. Fee ($)</label> \
-								<input class='required' type='text' id='pro_inspection' value='0' /> \
-								<label for='pro_equip_rental'>Equipment Rental Fee ($)</label> \
-								<input class='required' type='text' id='pro_equip_rental' value='0' /> \
-								<label for='pro_fluctuation'>Add / Subtract Labor ($)</label> \
-								<input class='required' type='text' id='pro_fluctuation' value='0' /> \
-							</div> \
-							<div class='form-column'> \
-								<label for='pro_misc_materials'>Misc. Materials ($)</label> \
-								<input type='text' id='pro_misc_materials' value='0' /> \
-								<label for='pro_misc_materials_up'>Misc. Mat. Extra Margin (%)</label> \
-								<input type='text' id='pro_misc_materials_up' value='0' /> \
-								<label for='pro_misc_materials_desc'>Misc. Materials Description</label> \
-								<input type='text' id='pro_misc_materials_desc' value='' /> \
-							</div> \
-							<div class='form-column'> \
-								<label for='pro_extra_fee'>Extra Fees ($)</label> \
-								<input type='text' id='pro_extra_fee' value='0' /> \
-								<label for='pro_extra_desc'>Extra Fees Description</label> \
-								<input type='text' id='pro_extra_desc' value='' /> \
-							</div> \
-							<div class='form-column-right'> \
-								<label for='pro_discount'>Discount ($)</label> \
-								<input class='required' type='text' id='pro_discount' value='0' /> \
-								<label for='pro_discount_desc'>Discount Description</label> \
-								<input type='text' id='pro_discount_desc' value='' /> \
-							</div> \
-							<div class='clear'></div> \
-							<br /> \
-							<div class='form-break'></div> \
-							<br /> \
-							\
-							<h1 class='add-proposal-section'>Additional Rebates&nbsp;&nbsp;<a class='adder' title='Add Rebate' href='javascript:void(0);'>+</a></h1> \
-							<div> \
-								<div class='form-column' id='rebate_1'> \
-									<label for='pro_rebate_type_1'>Rebate Type <a href='javascript:void(0);' title='Delete Rebate' class='lesser' style='vertical-align:bottom; padding:0 0 0 5px;'>&#10005;</a></label> \
-									<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_rebate_type_1' value='0' checked='checked' /> $/W \
-									<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_rebate_type_1' value='1' /> Percent \
-									<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_rebate_type_1' value='2' /> Fixed \
-									<label for='pro_rebate_amnt_1' style='padding:5px 0 2px;'>Rebate Amount</label> \
-									<input type='text' id='pro_rebate_amnt_1' value='' /> \
-									<label for='pro_rebate_desc_1'>Rebate Description</label> \
-									<input type='text' id='pro_rebate_desc_1' value='' /> \
-									<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_rebate_display_weight_1' value='0' checked='checked' /> Take before total<br /> \
-									<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_rebate_display_weight_1' value='1' /> Take after total \
-								</div> \
-							</div> \
-							<div class='clear'></div> \
-							<br /> \
-							<div class='form-break'></div> \
-							<br /> \
-							\
-							<h1 class='add-proposal-section'>Data Monitors&nbsp;&nbsp;<a class='adder' title='Add Data Monitor' href='javascript:void(0);'>+</a></h1> \
-							<div> \
-								<div class='form-column' id='monitor_1'> \
-									<label style='padding-bottom:5px;' for='pro_data_monitors_1'>Monitor Model <a href='javascript:void(0);' title='Delete Data Monitor' class='lesser' style='vertical-align:bottom; padding:0 0 0 5px;'>&#10005;</a></label> \
-									<select class='required' id='pro_data_monitors_1'>"+selects.pro_data_monitors+"</select> \
-									<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_data_monitor_types_1' value='1' checked='checked' /> Fee built-in<br /> \
-									<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_data_monitor_types_1' value='0' /> Fee not built-in \
-								</div> \
-							</div> \
-							<div class='clear'></div> \
-							<br /> \
-							<div class='form-break'></div> \
-							<br /> \
-							\
-							<h1 class='add-proposal-section'>Options</h1> \
-							<div class='form-column'> \
-								<input style='display:inline;' type='checkbox' class='no-postify' id='pro_credit' value='' checked='checked' /> Include 30% Tax Credit? \
+								<div class='form-break'></div> \
+								<br />";
+					form += 	"<h1 class='add-proposal-section' id='pro_name-label'>Your Proposal Name</h1> \
+								<input class='required input-long' type='text' id='pro_name' value='"+json.data.pro_name+"' /> \
 								<br /> \
-								<input style='display:inline; margin:5px 0 0;' type='checkbox' class='pro-incentive' id='pro_incentive' value='' /> Include Production Based Incentive?&nbsp;&nbsp; \
-								<span style='display:none;'> \
-									<input style='display:inline; width:30px; text-align:right;' type='text' id='pro_incentive_rate' value='0.11' />&nbsp;&nbsp;<span style='color:#808080;'>$/kWh for</span>&nbsp; \
-									<input style='display:inline; width:30px; text-align:right;' type='text' id='pro_incentive_yrs' value='20' />&nbsp;&nbsp;<span style='color:#808080;'>Years</span> \
-								</span> \
-							</div> \
-							<div class='clear'></div> \
-							<br /> \
-							<div class='form-break'></div> \
-							<br /> \
-							\
-							<h1 class='add-proposal-section'>Cover Letter</h1> \
-							<textarea id='pro_cover_letter' style='width:100%; height:200px;'>"+default_cover_letter+"</textarea> \
-							<div class='clear'></div> \
-							<br /> \
-							<div class='form-break'></div> \
-							<br /> \
-							<input type='submit' title='Preview' value='Preview' /> \
-							<input type='submit' title='Add' value='Add New' /> \
-							<input type='submit' title='Cancel' value='Cancel' /> \
-							<div class='preview-panel'></div> \
-						</form>";
+								<div class='form-break'></div> \
+								<br />";
+					form +=		"<h1 class='add-proposal-section'>Cover Letter</h1> \
+								<textarea id='pro_cover_letter' style='width:65%; height:200px;'>"+default_cover_letter+"</textarea> \
+								<div class='clear'></div> \
+								<br /> \
+								<div class='form-break'></div> \
+								<br />";
+					form +=		"<h1 class='add-proposal-section' id='pro_ref_sheets-label'>Include Reference Sheets</h1> \
+								<div class='form-column'> \
+									"+selects.pro_ref_sheets+" \
+								</div> \
+								<div class='clear'></div> \
+								<br /> \
+								<div class='form-break'></div> \
+								<br />";
+					form +=		"<h1 class='add-proposal-section' id='pro_zones-label'>Choose Project Zones</h1> \
+								<div class='form-column'> \
+									"+selects.pro_zones+" \
+								</div> \
+								<div class='clear'></div> \
+								<br /> \
+								<div class='form-break'></div> \
+								<br />";
+					form +=		"<h1 class='add-proposal-section'>Inverters&nbsp;&nbsp;<a class='adder' title='Add Inverter(s)' href='javascript:void(0);'>+</a></h1> \
+								<div> \
+									<div class='form-column' id='inverter_1'> \
+										<label style='padding-bottom:5px;' for='pro_inter_method_1'>Interconnection Method <a href='javascript:void(0);' title='Delete Inverter(s)' class='lesser' style='vertical-align:bottom; padding:0 0 0 5px;'>&#10005;</a></label> \
+										<select class='required' id='pro_inter_method_1'>"+selects.pro_inter_method+"</select> \
+										<label style='padding-bottom:5px;' for='pro_inverter_1'>Inverter Type</label> \
+										<select class='required inverter-select' id='pro_inverter_1'>"+selects.pro_inverter+"</select> \
+									</div> \
+								</div> \
+								<div class='clear'></div> \
+								<br /> \
+								<div class='form-break'></div> \
+								<br />";
+					form +=		"<h1 class='add-proposal-section'>Additional Mounting Materials&nbsp;&nbsp;<a class='adder' title='Add Additional Mounting Material' href='javascript:void(0);'>+</a></h1> \
+								<div> \
+									<div class='form-column' id='mounting_1'> \
+										<label style='padding-bottom:5px;' for='pro_add_mounting_mats_1'> \
+											Mounting Material <a href='javascript:void(0);' title='Delete Additional Mounting Material' class='lesser' style='vertical-align:bottom; padding:0 0 0 5px;'>&#10005;</a> \
+										</label> \
+										<select class='required' id='pro_add_mounting_mats_1'>"+selects.pro_add_mounting_mats+"</select> \
+										<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_add_mounting_mat_types_1' value='1' checked='checked' /> Fee built-in<br /> \
+										<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_add_mounting_mat_types_1' value='0' /> Fee not built-in \
+									</div> \
+								</div> \
+								<div class='clear'></div> \
+								<br /> \
+								<div class='form-break'></div> \
+								<br />";
+					form +=		"<h1 class='add-proposal-section'>Conduit and Wire Runs&nbsp;&nbsp;<a class='adder' title='Add Conduit or Wire Run' href='javascript:void(0);'>+</a></h1> \
+								<div> \
+									<div class='form-column' id='connection_1'> \
+										<label style='padding-bottom:5px;' for='pro_conn_comps_1'>Conduit Run Kit <a href='javascript:void(0);' title='Delete Conduit or Wire Run' class='lesser' style='vertical-align:bottom; padding:0 0 0 5px;'>&#10005;</a></label> \
+										<select class='required' id='pro_conn_comps_1'>"+selects.pro_conn_comps+"</select> \
+										<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_conn_comp_types_1' value='1' checked='checked' /> Fee built-in<br /> \
+										<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_conn_comp_types_1' value='0' /> Fee not built-in \
+									</div> \
+								</div> \
+								<div class='clear'></div> \
+								<br /> \
+								<div class='form-break'></div> \
+								<br />";
+					form +=		"<h1 class='add-proposal-section'>Miscellaneous Materials&nbsp;&nbsp;<a class='adder' title='Add Miscellaneous Material' href='javascript:void(0);'>+</a></h1> \
+								<div> \
+									<div class='form-column' id='miscellaneous_1'> \
+										<label style='padding-bottom:5px;' for='pro_miscellaneous_materials_1'> \
+											Misc. Material Kit <a href='javascript:void(0);' title='Delete Miscellaneous Material' class='lesser' style='vertical-align:bottom; padding:0 0 0 5px;'>&#10005;</a> \
+										</label> \
+										<select class='required' id='pro_miscellaneous_materials_1'>"+selects.pro_miscellaneous_materials+"</select> \
+										<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_miscellaneous_material_types_1' value='1' checked='checked' /> Fee built-in<br /> \
+										<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_miscellaneous_material_types_1' value='0' /> Fee not built-in \
+									</div> \
+								</div> \
+								<div class='clear'></div> \
+								<br /> \
+								<div class='form-break'></div> \
+								<br />";
+					form +=		"<h1 class='add-proposal-section'>Data Monitors&nbsp;&nbsp;<a class='adder' title='Add Data Monitor' href='javascript:void(0);'>+</a></h1> \
+								<div> \
+									<div class='form-column' id='monitor_1'> \
+										<label style='padding-bottom:5px;' for='pro_data_monitors_1'> \
+											Monitor Model <a href='javascript:void(0);' title='Delete Data Monitor' class='lesser' style='vertical-align:bottom; padding:0 0 0 5px;'>&#10005;</a> \
+										</label> \
+										<select class='required' id='pro_data_monitors_1'>"+selects.pro_data_monitors+"</select> \
+										<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_data_monitor_types_1' value='1' checked='checked' /> Fee built-in<br /> \
+										<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_data_monitor_types_1' value='0' /> Fee not built-in \
+									</div> \
+								</div> \
+								<div class='clear'></div> \
+								<br /> \
+								<div class='form-break'></div> \
+								<br />";
+					form +=		"<h1 class='add-proposal-section'>Labor</h1> \
+								<table class='pro-table'> \
+									<tr> \
+										<td class='pro-td'> \
+											<label for='pro_winter' class='pro-label'>1)&nbsp;Is this an off-season installation?</label> \
+										</td> \
+										<td class='pro-td'> \
+											<select class='required pro-select' id='pro_winter'> \
+												<option value='1'>yes</option> \
+												<option value='0' selected='selected'>no</option> \
+											</select> \
+										</td> \
+									</tr> \
+									<tr> \
+										<td class='pro-td'> \
+											<label for='pro_others_involved' class='pro-label'>2)&nbsp;Contractor coordination required?</label> \
+										</td> \
+										<td class='pro-td'> \
+											<select class='required pro-select' id='pro_others_involved'> \
+												<option value='1'>yes</option> \
+												<option value='0' selected='selected'>no</option> \
+											</select> \
+										</td> \
+									</tr> \
+									<tr> \
+										<td class='pro-td'> \
+											<label for='pro_num_trips' class='pro-label'>3)&nbsp;# of Install Days:</label> \
+										</td> \
+										<td class='pro-td'> \
+											<input class='required pro-input ar' type='text' id='pro_num_trips' value='2' /> \
+										</td> \
+									</tr> \
+									<tr> \
+										<td class='pro-td'> \
+											<label for='pro_num_installers' class='pro-label'>4)&nbsp;Avg. # of Installers Onsite:</label> \
+										</td> \
+										<td class='pro-td'> \
+											<input class='required pro-input ar' type='text' id='pro_num_installers' value='3' /> \
+										</td> \
+									</tr> \
+									<tr> \
+										<td class='pro-td'> \
+											<label for='pro_fluctuation' class='pro-label'>5)&nbsp;Additional Labor Hours:</label> \
+										</td> \
+										<td class='pro-td'> \
+											<input class='required pro-input ar' type='text' id='pro_fluctuation' value='0' /> \
+										</td> \
+									</tr> \
+								</table> \
+								<div class='clear'></div> \
+								<br /> \
+								<div class='form-break'></div> \
+								<br />";
+						
+							// <!--<h1 class='add-proposal-section'>Additional Costs & Fees</h1> \
+							// <div class='form-column'> \
+							// 	<label for='pro_conduit_out'>Overground Conduit (ft)</label> \
+							// 	<input class='required' type='text' id='pro_conduit_out' value='0' /> \
+							// 	<label for='pro_conduit_in'>Indoor Conduit (ft)</label> \
+							// 	<input class='required' type='text' id='pro_conduit_in' value='0' /> \
+							// 	<label for='pro_conduit_under'>Underground Conduit (ft)</label> \
+							// 	<input class='required' type='text' id='pro_conduit_under' value='0' /> \
+							// </div> \
+							// <div class='clear'></div> \
+							// <br /> \
+							// <div class='form-break'></div> \
+							// <br />--> \
+							
+					form +=		"<h1 class='add-proposal-section'>Additional Costs & Fees</h1>\
+								<table class='pro-table'> \
+									<tr> \
+										<td class='pro-td'> \
+											<label for='pro_contingiency' class='pro-label'>1)&nbsp;Contingiency:</label> \
+										</td> \
+										<td class='pro-td'> \
+											<input class='required pro-input ar' type='text' id='pro_contingiency' value='0' /> \
+										</td> \
+										<td class='pro-td'> \
+											<label class='pro-label'>%</label> \
+										</td> \
+									</tr> \
+									<tr> \
+										<td class='pro-td'> \
+											<label for='pro_inspection' class='pro-label'>2)&nbsp;Des. / Ins. / Comm. Fee ($):</label> \
+										</td> \
+										<td class='pro-td'> \
+											<input class='required pro-input ar' type='text' id='pro_inspection' value='0' /> \
+										</td> \
+									</tr> \
+									<tr> \
+										<td class='pro-td'> \
+											<label for='pro_engin_fee' class='pro-label'>3)&nbsp;Engineering Fee ($):</label> \
+										</td> \
+										<td class='pro-td'> \
+											<input class='required pro-input ar' type='text' id='pro_engin_fee' value='0' /> \
+										</td> \
+									</tr> \
+									<tr> \
+										<td class='pro-td'> \
+											<label for='pro_equip_rental' class='pro-label'>4)&nbsp;Equipment Rental Fee ($):</label> \
+										</td> \
+										<td class='pro-td'> \
+											<input class='required pro-input ar' type='text' id='pro_equip_rental' value='0' /> \
+										</td> \
+									</tr> \
+									<tr> \
+										<td class='pro-td'> \
+											<label for='pro_extra_fee' class='pro-label'>5)&nbsp;Extra Fees ($):</label> \
+										</td> \
+										<td class='pro-td'> \
+											<input class='pro-input ar' type='text' id='pro_extra_fee' value='0' /> \
+										</td> \
+										<td class='pro-td'> \
+											<label for='pro_extra_desc' class='pro-label'>desc.:</label> \
+										</td> \
+										<td class='pro-td'> \
+											<input class='pro-input' type='text' id='pro_extra_desc' value='' title='Extra Fees Description' /> \
+										</td> \
+									</tr> \
+									<tr> \
+										<td class='pro-td'> \
+											<label for='pro_discount' class='pro-label'>6)&nbsp;Discount ($):</label> \
+										</td> \
+										<td class='pro-td'> \
+											<input class='required pro-input ar' type='text' id='pro_discount' value='0' /> \
+										</td> \
+										</td> \
+										<td class='pro-td'> \
+											<label for='pro_discount_desc' class='pro-label'>desc.:</label> \
+										</td> \
+										<td class='pro-td'> \
+											<input class='pro-input' type='text' id='pro_discount_desc' value='' title='Discount Description' /> \
+										</td> \
+									</tr> \
+								</table> \
+								<div class='clear'></div> \
+								<br /> \
+								<div class='form-break'></div> \
+								<br />";
+								// <!--<div class='form-column'> \
+								// 	<label for='pro_misc_materials' class='pro-label'>&ndash;&nbsp;Misc. Materials ($)</label> \
+								// 	<input class='pro-input' type='text' id='pro_misc_materials' value='0' /> \
+								// 
+								// 	<label for='pro_misc_materials_up' class='pro-label'>&ndash;&nbsp;Misc. Mat. Extra Margin (%)</label> \
+								// 	<input class='pro-input' type='text' id='pro_misc_materials_up' value='0' /> \
+								// 
+								// 	<label for='pro_misc_materials_desc' class='pro-label'>&ndash;&nbsp;Misc. Materials Description</label> \
+								// 	<input class='pro-input' type='text' id='pro_misc_materials_desc' value='' /> \
+								// </div>--> \
+					form += 	"<h1 class='add-proposal-section'>Permits</h1> \
+								<table class='pro-table'> \
+									<tr> \
+										<td class='pro-td'> \
+											<label for='pro_permit_fee' class='pro-label'>Permit Fee ($):</label> \
+										</td> \
+										<td class='pro-td'> \
+											<input class='required pro-input ar' type='text' id='pro_permit_fee' value='0' /> \
+										</td> \
+									</tr> \
+								</table> \
+								<div class='clear'></div> \
+								<br /> \
+								<div class='form-break'></div> \
+								<br />";
+					form +=		"<h1 class='add-proposal-section'>Taxes</h1> \
+								<table class='pro-table'> \
+									<tr> \
+										<td class='pro-td'> \
+											<label for='pro_taxrate' class='pro-label'>Sales Tax Rate:</label> \
+										</td> \
+										<td class='pro-td'> \
+											<input class='required pro-input ar' type='text' id='pro_taxrate' value='3.41' /> \
+										</td> \
+										<td class='pro-td'> \
+											<label for='pro_taxrate_desc' class='pro-label'>%&nbsp;&nbsp;&nbsp;&nbsp;desc.:</label> \
+										</td> \
+										<td class='pro-td'> \
+											<input class='pro-input' type='text' id='pro_taxrate_desc' value='' title='Sales Tax Rate Description' /> \
+										</td> \
+									</tr> \
+								</table> \
+								<div class='clear'></div> \
+								<br /> \
+								<div class='form-break'></div> \
+								<br />";
+					form +=		"<h1 class='add-proposal-section'>Additional Rebates&nbsp;&nbsp;<a class='adder' title='Add Rebate' href='javascript:void(0);'>+</a></h1> \
+								<div> \
+									<div class='form-column' id='rebate_1'> \
+										<label for='pro_rebate_type_1'>Rebate Type <a href='javascript:void(0);' title='Delete Rebate' class='lesser' style='vertical-align:bottom; padding:0 0 0 5px;'>&#10005;</a></label> \
+										<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_rebate_type_1' value='0' checked='checked' /> $/W \
+										<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_rebate_type_1' value='1' /> Percent \
+										<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_rebate_type_1' value='2' /> Fixed \
+										<label for='pro_rebate_amnt_1' style='padding:5px 0 2px;'>Rebate Amount</label> \
+										<input type='text' id='pro_rebate_amnt_1' value='' /> \
+										<label for='pro_rebate_desc_1'>Rebate Description</label> \
+										<input type='text' id='pro_rebate_desc_1' value='' /> \
+										<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_rebate_display_weight_1' value='0' checked='checked' /> Take before total<br /> \
+										<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_rebate_display_weight_1' value='1' /> Take after total \
+									</div> \
+								</div> \
+								<div class='clear'></div> \
+								<br /> \
+								<div class='form-break'></div> \
+								<br />";
+					form +=		"<h1 class='add-proposal-section'>Options</h1> \
+								<div class='form-column'> \
+									<input style='display:inline;' type='checkbox' class='no-postify' id='pro_credit' value='' checked='checked' /> Include 30% Tax Credit? \
+									<br /> \
+									<input style='display:inline; margin:5px 0 0;' type='checkbox' class='pro-incentive' id='pro_incentive' value='' /> Include Production Based Incentive?&nbsp;&nbsp; \
+									<span style='display:none;'> \
+										<input style='display:inline; width:30px; text-align:right;' type='text' id='pro_incentive_rate' value='0.11' />&nbsp;&nbsp;<span style='color:#808080;'>$/kWh for</span>&nbsp; \
+										<input style='display:inline; width:30px; text-align:right;' type='text' id='pro_incentive_yrs' value='20' />&nbsp;&nbsp;<span style='color:#808080;'>Years</span> \
+									</span> \
+								</div> \
+								<div class='clear'></div> \
+								<br /> \
+								<div class='form-break'></div> \
+								<br />";
+					form +=		"<input type='submit' title='Preview' value='Preview' /> \
+								<input type='submit' title='Add' value='Add New' /> \
+								<input type='submit' title='Cancel' value='Cancel' /> \
+								<div class='preview-panel'></div> \
+							</form>";
 						// write the form
 						$(".dashboard-item-content",$(this.el)).html("<h1 id='proposals-header' class='addform-header'>New Proposal Info - <span style='text-transform:none;'>"+json.data.pro_name+"</span>:</h1><br />"+form);
 						// add data for interconnections and monitors
-						$("#data").data("inter_methods",selects.pro_inter_method).data("inverters",selects.pro_inverter).data("data_monitors",selects.pro_data_monitors);
-						//$("#data").data("inter-holder-id","new");
+						$("#data")
+							.data("inter_methods",selects.pro_inter_method)
+							.data("inverters",selects.pro_inverter)
+							.data("data_monitors",selects.pro_data_monitors)
+							.data("add_mounting_mats",selects.pro_add_mounting_mats)
+							.data("conn_comps",selects.pro_conn_comps)
+							.data("miscellaneous_materials",selects.pro_miscellaneous_materials);
 						// go to it
 						$.scrollTo(this.el);
 				break;
@@ -7121,13 +7605,22 @@ var Proposals = Module.extend({
 			if(set=="pro_zones"+data.ID) {
 				var menu = "";
 				var used_zone_ids = data['pro_zones'].substring(0,data['pro_zones'].length-1).split(",");
-				for(options in data2[set]) {
+				for(var options in data2[set]) {
 					var checked = "";
-					for(id in used_zone_ids) if(used_zone_ids[id]==data2[set][options].ID) checked = "checked='yes'";
-					menu += "<input style='display:inline;' type='checkbox' id='choose-zone"+data2[set][options].ID+"' class='choose-zones' value='' "+checked+" /> "+data2[set][options].zon_name+" ("+data2[set][options].zon_size+" kW)<br />";
+					for(var id in used_zone_ids) if(used_zone_ids[id]==data2[set][options].ID) checked = "checked='yes'";
+					menu += "<input style='display:inline;' type='checkbox' id='choose-zone"+data2[set][options].ID+"' class='choose-zones' value='' "+checked+" /> <em>"+data2[set][options].zon_name+" ("+data2[set][options].zon_size+" kW)</em><br />";
 				}
 				selects['pro_zones'] = menu;
-			} else if(set=="pro_inter_method" || set=="pro_inverter" || set=="pro_data_monitors") {
+			} else if(set=="pro_ref_sheets") {
+				var menu = "";
+				var used_ref_ids = data['pro_ref_sheets'].substring(0,data['pro_ref_sheets'].length-1).split(",");
+				for(var options in data2[set]) {
+					var checked = "";
+					for(var id in used_ref_ids) if(used_zone_ids[id]==data2[set][options].ID) checked = "checked='yes'";
+					menu += "<input style='display:inline;' type='checkbox' id='choose-ref_sheet"+data2[set][options].ID+"' class='choose-ref_sheets' value='' "+checked+" /> <em>"+data2[set][options].ref_name+"</em><br />";
+				}
+				selects['pro_ref_sheets'] = menu;
+			} else if(set=="pro_inter_method" || set=="pro_inverter" || set=="pro_data_monitors" || set=="pro_add_mounting_mats" || set=="pro_conn_comps" || set=="pro_miscellaneous_materials") {
 				var parsed = data[set].substring(0,data[set].length-1).split(",");
 				// clean up, remove duplicates
 				if(set=="pro_inverter") {
@@ -7273,6 +7766,7 @@ var Proposals = Module.extend({
 		var types = data.pro_data_monitor_types ? data.pro_data_monitor_types.substring(0,data.pro_data_monitor_types.length-1).split(",") : [];
 		// built data monitors
 		for(i=0;i<monitors.length;i++) {
+			var monitor_types_html = "";
 			switch(types[i]) {
 				case "1": case undefined :
 					monitor_types_html = "<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_data_monitor_types_"+(i+1)+"' value='1' checked='checked' /> Fee built-in<br /> \
@@ -7289,6 +7783,75 @@ var Proposals = Module.extend({
 								"+monitor_types_html+" \
 							</div>";
 		}
+		// additional mounting materials
+		var mounting_html = "";
+		var mounting = data.pro_add_mounting_mats ? data.pro_add_mounting_mats.substring(0,data.pro_add_mounting_mats.length-1).split(",") : [];
+		var types = data.pro_add_mounting_mat_types ? data.pro_add_mounting_mat_types.substring(0,data.pro_add_mounting_mat_types.length-1).split(",") : [];
+		// built mounting materials
+		for(i=0;i<mounting.length;i++) {
+			var mounting_types_html = "";
+			switch(types[i]) {
+				case "1": case undefined :
+					mounting_types_html = "<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_add_mounting_mat_types_"+(i+1)+"' value='1' checked='checked' /> Fee built-in<br /> \
+										  <input style='display:inline; margin:5px 0 0;' type='radio' name='pro_add_mounting_mat_types_"+(i+1)+"' value='0' /> Fee not built-in";
+					break;
+				case "0" :
+					mounting_types_html = "<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_add_mounting_mat_types_"+(i+1)+"' value='1' /> Fee built-in<br /> \
+										  <input style='display:inline; margin:5px 0 0;' type='radio' name='pro_add_mounting_mat_types_"+(i+1)+"' value='0' checked='checked' /> Fee not built-in";
+					break;
+			}
+			mounting_html += "<div class='form-column' id='mounting_"+(i+1)+"'> \
+								<label style='padding-bottom:5px;' for='pro_add_mounting_mats_"+(i+1)+"'>Mounting Material <a href='javascript:void(0);' title='Delete Additional Mounting Material' class='lesser' style='vertical-align:bottom; padding:0 0 0 5px;'>&#10005;</a></label> \
+								<select class='required' id='pro_add_mounting_mats_"+(i+1)+"'>"+selects['pro_add_mounting_mats_'+(i+1)]+"</select> \
+								"+mounting_types_html+" \
+							</div>";
+		}
+		// conduit and wire runs
+		var connection_html = "";
+		var connection = data.pro_conn_comps ? data.pro_conn_comps.substring(0,data.pro_conn_comps.length-1).split(",") : [];
+		var types = data.pro_conn_comp_types ? data.pro_conn_comp_types.substring(0,data.pro_conn_comp_types.length-1).split(",") : [];
+		// built conduit runs
+		for(i=0;i<connection.length;i++) {
+			var connection_types_html = "";
+			switch(types[i]) {
+				case "1": case undefined :
+					connection_types_html = "<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_conn_comp_types_"+(i+1)+"' value='1' checked='checked' /> Fee built-in<br /> \
+										  <input style='display:inline; margin:5px 0 0;' type='radio' name='pro_conn_comp_types_"+(i+1)+"' value='0' /> Fee not built-in";
+					break;
+				case "0" :
+					connection_types_html = "<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_conn_comp_types_"+(i+1)+"' value='1' /> Fee built-in<br /> \
+										  <input style='display:inline; margin:5px 0 0;' type='radio' name='pro_conn_comp_types_"+(i+1)+"' value='0' checked='checked' /> Fee not built-in";
+					break;
+			}
+			connection_html += "<div class='form-column' id='mounting_"+(i+1)+"'> \
+								<label style='padding-bottom:5px;' for='pro_conn_comps_"+(i+1)+"'>Conduit Run Kit <a href='javascript:void(0);' title='Delete Conduit or Wire Run' class='lesser' style='vertical-align:bottom; padding:0 0 0 5px;'>&#10005;</a></label> \
+								<select class='required' id='pro_conn_comps_"+(i+1)+"'>"+selects['pro_conn_comps_'+(i+1)]+"</select> \
+								"+connection_types_html+" \
+							</div>";
+		}
+		// miscellaneous materials
+		var miscellaneous_html = "";
+		var miscellaneous = data.pro_miscellaneous_materials ? data.pro_miscellaneous_materials.substring(0,data.pro_miscellaneous_materials.length-1).split(",") : [];
+		var types = data.pro_miscellaneous_material_types ? data.pro_miscellaneous_material_types.substring(0,data.pro_miscellaneous_material_types.length-1).split(",") : [];
+		// built miscellaneous materials
+		for(i=0;i<miscellaneous.length;i++) {
+			var miscellaneous_types_html = "";
+			switch(types[i]) {
+				case "1": case undefined :
+					miscellaneous_types_html = "<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_miscellaneous_material_types_"+(i+1)+"' value='1' checked='checked' /> Fee built-in<br /> \
+										  <input style='display:inline; margin:5px 0 0;' type='radio' name='pro_miscellaneous_material_types_"+(i+1)+"' value='0' /> Fee not built-in";
+					break;
+				case "0" :
+					miscellaneous_types_html = "<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_miscellaneous_material_types_"+(i+1)+"' value='1' /> Fee built-in<br /> \
+										  <input style='display:inline; margin:5px 0 0;' type='radio' name='pro_add_miscellaneous_material_types_"+(i+1)+"' value='0' checked='checked' /> Fee not built-in";
+					break;
+			}
+			miscellaneous_html += "<div class='form-column' id='mounting_"+(i+1)+"'> \
+								<label style='padding-bottom:5px;' for='pro_miscellaneous_materials_"+(i+1)+"'>Misc. Material Kit <a href='javascript:void(0);' title='Delete Miscellaneous Material' class='lesser' style='vertical-align:bottom; padding:0 0 0 5px;'>&#10005;</a></label> \
+								<select class='required' id='pro_miscellaneous_materials_"+(i+1)+"'>"+selects['pro_miscellaneous_materials_'+(i+1)]+"</select> \
+								"+miscellaneous_types_html+" \
+							</div>";
+		}
 		// yes or no selects
 		var pro_winter_selects = (data.pro_winter==1) ? "<option value='1' selected='selected'>yes</option><option value='0'>no</option>" : "<option value='1'>yes</option><option value='0' selected='selected'>no</option>";
 		var pro_others_involved_selects = (data.pro_others_involved==1) ? "<option value='1' selected='selected'>yes</option><option value='0'>no</option>" : "<option value='1'>yes</option><option value='0' selected='selected'>no</option>";
@@ -7300,157 +7863,293 @@ var Proposals = Module.extend({
 		if(data.pro_cover_letter==null) data.pro_cover_letter = "";
 		else data.pro_cover_letter = data.pro_cover_letter.replace(/#amp;/g,"&");
 		// add data for interconnections
-		$("#data").data("inter_methods",selects.pro_inter_method).data("inverters",selects.pro_inverter).data("data_monitors",selects.pro_data_monitors);
+		$("#data")
+			.data("inter_methods",selects.pro_inter_method)
+			.data("inverters",selects.pro_inverter)
+			.data("data_monitors",selects.pro_data_monitors)
+			.data("add_mounting_mats",selects.pro_add_mounting_mats)
+			.data("conn_comps",selects.pro_conn_comps)
+			.data("miscellaneous_materials",selects.pro_miscellaneous_materials);
 		// create the quick edit form
 		var edit = "<td colspan='10'>";
-		edit += "<form class='updateproposalform' action='javascript:void(0);'> \
-					<h1 class='addform-header'>Quick Edit - <span style='text-transform:none;'>"+data.pro_name+", #"+data.ID+"</span>:</h1> \
-					<br /> \
-					<div class='form-break'></div> \
-					<br /> \
-					\
-					<h1 class='add-proposal-section'>Proposal Name</h1> \
-					<input class='required' type='text' id='pro_name' value='"+data.pro_name+"' /> \
-					<br /> \
-					<div class='form-break'></div> \
-					<br /> \
-					\
-					<h1 class='add-proposal-section'>Zones</h1> \
-					<div class='form-column'> \
-						<label style='line-height:16px;' id='pro_zones"+data.ID+"'>Choose Project Zones:</label> \
-						"+selects.pro_zones+" \
-					</div> \
-					<div class='clear'></div> \
-					<br /> \
-					<div class='form-break'></div> \
-					<br /> \
-					\
-					<h1 class='add-proposal-section'>Inverters&nbsp;&nbsp;<a class='adder' title='Add Inverter(s)' href='javascript:void(0);'>+</a></h1> \
-					<div> \
-						"+inverters_html+" \
-					</div> \
-					<div class='clear'></div> \
-					<br /> \
-					<div class='form-break'></div> \
-					<br /> \
-					\
-					<h1 class='add-proposal-section'>Miscellaneous</h1> \
-					<div class='form-column'> \
-						<label for='pro_conduit_out'>Overground Conduit (ft)</label> \
-						<input class='required' type='text' id='pro_conduit_out' value='"+data.pro_conduit_out+"' /> \
-						<label for='pro_conduit_in'>Indoor Conduit (ft)</label> \
-						<input class='required' type='text' id='pro_conduit_in' value='"+data.pro_conduit_in+"' /> \
-						<label for='pro_conduit_under'>Underground Conduit (ft)</label> \
-						<input class='required' type='text' id='pro_conduit_under' value='"+data.pro_conduit_under+"' /> \
-					</div> \
-					<div class='form-column'> \
-						<label for='pro_num_trips'># Install Days</label> \
-						<input class='required' type='text' id='pro_num_trips' value='"+data.pro_num_trips+"' /> \
-						<label for='pro_num_installers'># Installers</label> \
-						<input class='required' type='text' id='pro_num_installers' value='"+data.pro_num_installers+"' /> \
-					</div> \
-					<div class='form-column'> \
-						<label for='pro_winter'>Off-season installation?</label> \
-						<select class='required' id='pro_winter'> \
-							"+pro_winter_selects+" \
-						</select> \
-						<label for='pro_others_involved'>Other builders involved?</label> \
-						<select class='required' id='pro_others_involved'> \
-							"+pro_others_involved_selects+" \
-						</select> \
-					</div> \
-					<div class='clear'></div> \
-					<br /> \
-					<div class='form-break'></div> \
-					<br /> \
-					\
-					<h1 class='add-proposal-section'>Other Costs & Fees</h1> \
-					<div class='form-column'> \
-						<label for='pro_taxrate'>Sales Tax Rate (%)</label> \
-						<input class='required' type='text' id='pro_taxrate' value='"+data.pro_taxrate+"' /> \
-						<label for='pro_engin_fee'>Engineering Fee ($)</label> \
-						<input class='required' type='text' id='pro_engin_fee' value='"+data.pro_engin_fee+"' /> \
-						<label for='pro_permit_fee'>Permit Fee ($)</label> \
-						<input class='required' type='text' id='pro_permit_fee' value='"+data.pro_permit_fee+"' /> \
-					</div> \
-					<div class='form-column'> \
-						<label for='pro_inspection'>Des. / Ins. / Comm. Fee ($)</label> \
-						<input class='required' type='text' id='pro_inspection' value='"+data.pro_inspection+"' /> \
-						<label for='pro_equip_rental'>Equipment Rental Fee ($)</label> \
-						<input class='required' type='text' id='pro_equip_rental' value='"+data.pro_equip_rental+"' /> \
-						<label for='pro_fluctuation'>Add / Subtract Labor ($)</label> \
-						<input class='required' type='text' id='pro_fluctuation' value='"+data.pro_fluctuation+"' /> \
-					</div> \
-					<div class='form-column'> \
-						<label for='pro_misc_materials'>Misc. Materials ($)</label> \
-						<input type='text' id='pro_misc_materials' value='"+data.pro_misc_materials+"' /> \
-						<label for='pro_misc_materials_up'>Misc. Mat. Extra Margin (%)</label> \
-						<input type='text' id='pro_misc_materials_up' value='"+data.pro_misc_materials_up+"' /> \
-						<label for='pro_misc_materials_desc'>Misc. Materials Description</label> \
-						<input type='text' id='pro_misc_materials_desc' value='"+data.pro_misc_materials_desc+"' /> \
-					</div> \
-					<div class='form-column'> \
-						<label for='pro_extra_fee'>Extra Fees ($)</label> \
-						<input type='text' id='pro_extra_fee' value='"+data.pro_extra_fee+"' /> \
-						<label for='pro_extra_desc'>Extra Fees Description</label> \
-						<input type='text' id='pro_extra_desc' value='"+data.pro_extra_desc+"' /> \
-					</div> \
-					<div class='form-column-right'> \
-						<label for='pro_discount'>Discount ($)</label> \
-						<input class='required' type='text' id='pro_discount' value='"+data.pro_discount+"' /> \
-						<label for='pro_discount_desc'>Discount Description</label> \
-						<input type='text' id='pro_discount_desc' value='"+data.pro_discount_desc+"' /> \
-					</div> \
-					<div class='clear'></div> \
-					<br /> \
-					<div class='form-break'></div> \
-					<br /> \
-					\
-					<h1 class='add-proposal-section'>Additional Rebates&nbsp;&nbsp;<a class='adder' title='Add Rebate' href='javascript:void(0);'>+</a></h1> \
-					<div> \
-						"+rebates_html+" \
-					</div> \
-					<div class='clear'></div> \
-					<br /> \
-					<div class='form-break'></div> \
-					<br /> \
-					\
-					<h1 class='add-proposal-section'>Data Monitors&nbsp;&nbsp;<a class='adder' title='Add Data Monitor' href='javascript:void(0);'>+</a></h1> \
-					<div> \
-						"+monitors_html+" \
-					</div> \
-					<div class='clear'></div> \
-					<br /> \
-					<div class='form-break'></div> \
-					<br /> \
-					\
-					<h1 class='add-proposal-section'>Options</h1> \
-					<div class='form-column'> \
-						<input style='display:inline;' type='checkbox' class='no-postify' id='pro_credit"+data.ID+"' value='' "+pro_credit_checked+" /> Include 30% Tax Credit? \
-						<br /> \
-						<input style='display:inline; margin:5px 0 0;' type='checkbox' class='pro-incentive' id='pro_incentive"+data.ID+"' value='' "+pro_incentive_checked+" /> Include Production Based Incentive?&nbsp;&nbsp; \
-						<span style='"+pro_incentive_display+"'> \
-							<input style='display:inline; width:30px; text-align:right;' type='text' id='pro_incentive_rate' value='"+data.pro_incentive_rate+"' />&nbsp;&nbsp;<span style='color:#808080;'>$/kWh for</span>&nbsp; \
-							<input style='display:inline; width:30px; text-align:right;' type='text' id='pro_incentive_yrs' value='"+data.pro_incentive_yrs+"' />&nbsp;&nbsp;<span style='color:#808080;'>Years</span> \
-						</span> \
-					</div> \
-					<div class='clear'></div> \
-					<br /> \
-					<div class='form-break'></div> \
-					<br /> \
-					\
-					<h1 class='add-proposal-section'>Cover Letter</h1> \
-					<textarea id='pro_cover_letter' style='width:100%; height:200px;'>"+data.pro_cover_letter+"</textarea> \
-					<div class='clear'></div> \
-					<br /> \
-					<div class='form-break'></div> \
-					<br /> \
-					<input type='submit' title='PreviewQ' value='Preview' /> \
-					<input type='submit' title='Update' value='Update' /> \
-					<input type='submit' title='CancelQ' value='Cancel' /> \
-					<div class='preview-panel'></div> \
-				</form>";
-		edit += "</td>";
+			edit += 	"<form class='updateproposalform' action='javascript:void(0);'>";
+			edit +=			"<h1 class='addform-header'>Quick Edit - <span style='text-transform:none;'>"+data.pro_name+", #"+data.ID+"</span>:</h1> \
+							<br /> \
+							<div class='form-break'></div> \
+							<br />";
+			edit +=			"<h1 class='add-proposal-section' id='pro_name-label'>Your Proposal Name</h1> \
+							<input class='required input-long' type='text' id='pro_name' value='"+data.pro_name+"' /> \
+							<br /> \
+							<div class='form-break'></div> \
+							<br />";
+			edit +=			"<h1 class='add-proposal-section'>Cover Letter</h1> \
+							<textarea id='pro_cover_letter' style='width:65%; height:200px;'>"+data.pro_cover_letter+"</textarea> \
+							<div class='clear'></div> \
+							<br /> \
+							<div class='form-break'></div> \
+							<br />";
+			edit +=			"<h1 class='add-proposal-section' id='pro_ref_sheets-label-"+data.ID+"'>Include Reference Sheets</h1> \
+							<div class='form-column'> \
+								"+selects.pro_ref_sheets+" \
+							</div> \
+							<div class='clear'></div> \
+							<br /> \
+							<div class='form-break'></div> \
+							<br />";			
+			edit +=			"<h1 class='add-proposal-section' id='pro_zones-label-"+data.ID+"'>Choose Project Zones</h1> \
+							<div class='form-column'> \
+								"+selects.pro_zones+" \
+							</div> \
+							<div class='clear'></div> \
+							<br /> \
+							<div class='form-break'></div> \
+							<br />";
+			edit +=			"<h1 class='add-proposal-section'>Inverters&nbsp;&nbsp;<a class='adder' title='Add Inverter(s)' href='javascript:void(0);'>+</a></h1> \
+							<div> \
+								"+inverters_html+" \
+							</div> \
+							<div class='clear'></div> \
+							<br /> \
+							<div class='form-break'></div> \
+							<br />";
+			edit +=			"<h1 class='add-proposal-section'>Additional Mounting Materials&nbsp;&nbsp;<a class='adder' title='Add Additional Mounting Material' href='javascript:void(0);'>+</a></h1> \
+							<div> \
+								"+mounting_html+" \
+							</div> \
+							<div class='clear'></div> \
+							<br /> \
+							<div class='form-break'></div> \
+							<br />";
+			edit +=			"<h1 class='add-proposal-section'>Conduit and Wire Runs&nbsp;&nbsp;<a class='adder' title='Add Conduit or Wire Run' href='javascript:void(0);'>+</a></h1> \
+							<div> \
+								"+connection_html+" \
+							</div> \
+							<div class='clear'></div> \
+							<br /> \
+							<div class='form-break'></div> \
+							<br />";
+			edit +=			"<h1 class='add-proposal-section'>Miscellaneous Materials&nbsp;&nbsp;<a class='adder' title='Add Miscellaneous Material' href='javascript:void(0);'>+</a></h1> \
+							<div> \
+								"+miscellaneous_html+" \
+							</div> \
+							<div class='clear'></div> \
+							<br /> \
+							<div class='form-break'></div> \
+							<br />";
+			edit += 		"<h1 class='add-proposal-section'>Data Monitors&nbsp;&nbsp;<a class='adder' title='Add Data Monitor' href='javascript:void(0);'>+</a></h1> \
+							<div> \
+								"+monitors_html+" \
+							</div> \
+							<div class='clear'></div> \
+							<br /> \
+							<div class='form-break'></div> \
+							<br />";
+			edit +=			"<h1 class='add-proposal-section'>Labor</h1> \
+							<table class='pro-table'> \
+								<tr> \
+									<td class='pro-td'> \
+										<label for='pro_winter' class='pro-label'>1)&nbsp;Is this an off-season installation?</label> \
+									</td> \
+									<td class='pro-td'> \
+										<select class='required pro-select' id='pro_winter'> \
+											"+pro_winter_selects+" \
+										</select> \
+									</td> \
+								</tr> \
+								<tr> \
+									<td class='pro-td'> \
+										<label for='pro_others_involved' class='pro-label'>2)&nbsp;Contractor coordination required?</label> \
+									</td> \
+									<td class='pro-td'> \
+										<select class='required pro-select' id='pro_others_involved'> \
+											"+pro_others_involved_selects+" \
+										</select> \
+									</td> \
+								</tr> \
+								<tr> \
+									<td class='pro-td'> \
+										<label for='pro_num_trips' class='pro-label'>3)&nbsp;# of Install Days:</label> \
+									</td> \
+									<td class='pro-td'> \
+										<input class='required pro-input ar' type='text' id='pro_num_trips' value='"+data.pro_num_trips+"' /> \
+									</td> \
+								</tr> \
+								<tr> \
+									<td class='pro-td'> \
+										<label for='pro_num_installers' class='pro-label'>4)&nbsp;Avg. # of Installers Onsite:</label> \
+									</td> \
+									<td class='pro-td'> \
+										<input class='required pro-input ar' type='text' id='pro_num_installers' value='"+data.pro_num_installers+"' /> \
+									</td> \
+								</tr> \
+								<tr> \
+									<td class='pro-td'> \
+										<label for='pro_fluctuation' class='pro-label'>5)&nbsp;Additional Labor Hours:</label> \
+									</td> \
+									<td class='pro-td'> \
+										<input class='required pro-input ar' type='text' id='pro_fluctuation' value='"+data.pro_fluctuation+"' /> \
+									</td> \
+								</tr> \
+							</table> \
+							<div class='clear'></div> \
+							<br /> \
+							<div class='form-break'></div> \
+							<br />";
+
+							// <div class='form-column'> \
+							// 	<label for='pro_conduit_out'>Overground Conduit (ft)</label> \
+							// 	<input class='required' type='text' id='pro_conduit_out' value='"+data.pro_conduit_out+"' /> \
+							// 	<label for='pro_conduit_in'>Indoor Conduit (ft)</label> \
+							// 	<input class='required' type='text' id='pro_conduit_in' value='"+data.pro_conduit_in+"' /> \
+							// 	<label for='pro_conduit_under'>Underground Conduit (ft)</label> \
+							// 	<input class='required' type='text' id='pro_conduit_under' value='"+data.pro_conduit_under+"' /> \
+							// </div> \
+						
+							// <div class='form-column'> \
+							// 	<label for='pro_misc_materials'>Misc. Materials ($)</label> \
+							// 	<input type='text' id='pro_misc_materials' value='"+data.pro_misc_materials+"' /> \
+							// 	<label for='pro_misc_materials_up'>Misc. Mat. Extra Margin (%)</label> \
+							// 	<input type='text' id='pro_misc_materials_up' value='"+data.pro_misc_materials_up+"' /> \
+							// 	<label for='pro_misc_materials_desc'>Misc. Materials Description</label> \
+							// 	<input type='text' id='pro_misc_materials_desc' value='"+data.pro_misc_materials_desc+"' /> \
+							// </div> \
+
+			edit +=			"<h1 class='add-proposal-section'>Additional Costs & Fees</h1>\
+							<table class='pro-table'> \
+								<tr> \
+									<td class='pro-td'> \
+										<label for='pro_contingiency' class='pro-label'>1)&nbsp;Contingiency:</label> \
+									</td> \
+									<td class='pro-td'> \
+										<input class='required pro-input ar' type='text' id='pro_contingiency' value='"+data.pro_contingiency+"' /> \
+									</td> \
+									<td class='pro-td'> \
+										<label class='pro-label'>%</label> \
+									</td> \
+								</tr> \
+								<tr> \
+									<td class='pro-td'> \
+										<label for='pro_inspection' class='pro-label'>2)&nbsp;Des. / Ins. / Comm. Fee ($):</label> \
+									</td> \
+									<td class='pro-td'> \
+										<input class='required pro-input ar' type='text' id='pro_inspection' value='"+data.pro_inspection+"' /> \
+									</td> \
+								</tr> \
+								<tr> \
+									<td class='pro-td'> \
+										<label for='pro_engin_fee' class='pro-label'>3)&nbsp;Engineering Fee ($):</label> \
+									</td> \
+									<td class='pro-td'> \
+										<input class='required pro-input ar' type='text' id='pro_engin_fee' value='"+data.pro_engin_fee+"' /> \
+									</td> \
+								</tr> \
+								<tr> \
+									<td class='pro-td'> \
+										<label for='pro_equip_rental' class='pro-label'>4)&nbsp;Equipment Rental Fee ($):</label> \
+									</td> \
+									<td class='pro-td'> \
+										<input class='required pro-input ar' type='text' id='pro_equip_rental' value='"+data.pro_equip_rental+"' /> \
+									</td> \
+								</tr> \
+								<tr> \
+									<td class='pro-td'> \
+										<label for='pro_extra_fee' class='pro-label'>5)&nbsp;Extra Fees ($):</label> \
+									</td> \
+									<td class='pro-td'> \
+										<input class='pro-input ar' type='text' id='pro_extra_fee' value='"+data.pro_extra_fee+"' /> \
+									</td> \
+									<td class='pro-td'> \
+										<label for='pro_extra_desc' class='pro-label'>desc.:</label> \
+									</td> \
+									<td class='pro-td'> \
+										<input class='pro-input' type='text' id='pro_extra_desc' value='"+data.pro_extra_desc+"' title='Extra Fees Description' /> \
+									</td> \
+								</tr> \
+								<tr> \
+									<td class='pro-td'> \
+										<label for='pro_discount' class='pro-label'>6)&nbsp;Discount ($):</label> \
+									</td> \
+									<td class='pro-td'> \
+										<input class='required pro-input ar' type='text' id='pro_discount' value='"+data.pro_discount+"' /> \
+									</td> \
+									</td> \
+									<td class='pro-td'> \
+										<label for='pro_discount_desc' class='pro-label'>desc.:</label> \
+									</td> \
+									<td class='pro-td'> \
+										<input class='pro-input' type='text' id='pro_discount_desc' value='"+data.pro_discount_desc+"' title='Discount Description' /> \
+									</td> \
+								</tr> \
+							</table> \
+							<div class='clear'></div> \
+							<br /> \
+							<div class='form-break'></div> \
+							<br />";
+			edit += 		"<h1 class='add-proposal-section'>Permits</h1> \
+							<table class='pro-table'> \
+								<tr> \
+									<td class='pro-td'> \
+										<label for='pro_permit_fee' class='pro-label'>Permit Fee ($):</label> \
+									</td> \
+									<td class='pro-td'> \
+										<input class='required pro-input ar' type='text' id='pro_permit_fee' value='"+data.pro_permit_fee+"' /> \
+									</td> \
+								</tr> \
+							</table> \
+							<div class='clear'></div> \
+							<br /> \
+							<div class='form-break'></div> \
+							<br />";
+			edit +=			"<h1 class='add-proposal-section'>Taxes</h1> \
+							<table class='pro-table'> \
+								<tr> \
+									<td class='pro-td'> \
+										<label for='pro_taxrate' class='pro-label'>Sales Tax Rate:</label> \
+									</td> \
+									<td class='pro-td'> \
+										<input class='required pro-input ar' type='text' id='pro_taxrate' value='"+data.pro_taxrate+"' /> \
+									</td> \
+									<td class='pro-td'> \
+										<label for='pro_taxrate_desc' class='pro-label'>%&nbsp;&nbsp;&nbsp;&nbsp;desc.:</label> \
+									</td> \
+									<td class='pro-td'> \
+										<input class='pro-input' type='text' id='pro_taxrate_desc' value='"+data.pro_taxrate_desc+"' title='Sales Tax Rate Description' /> \
+									</td> \
+								</tr> \
+							</table> \
+							<div class='clear'></div> \
+							<br /> \
+							<div class='form-break'></div> \
+							<br />";			
+			edit +=			"<h1 class='add-proposal-section'>Additional Rebates&nbsp;&nbsp;<a class='adder' title='Add Rebate' href='javascript:void(0);'>+</a></h1> \
+							<div> \
+								"+rebates_html+" \
+							</div> \
+							<div class='clear'></div> \
+							<br /> \
+							<div class='form-break'></div> \
+							<br />";
+				
+			edit +=			"<h1 class='add-proposal-section'>Options</h1> \
+							<div class='form-column'> \
+								<input style='display:inline;' type='checkbox' class='no-postify' id='pro_credit"+data.ID+"' value='' "+pro_credit_checked+" /> Include 30% Tax Credit? \
+								<br /> \
+								<input style='display:inline; margin:5px 0 0;' type='checkbox' class='pro-incentive' id='pro_incentive"+data.ID+"' value='' "+pro_incentive_checked+" /> Include Production Based Incentive?&nbsp;&nbsp; \
+								<span style='"+pro_incentive_display+"'> \
+									<input style='display:inline; width:30px; text-align:right;' type='text' id='pro_incentive_rate' value='"+data.pro_incentive_rate+"' />&nbsp;&nbsp;<span style='color:#808080;'>$/kWh for</span>&nbsp; \
+									<input style='display:inline; width:30px; text-align:right;' type='text' id='pro_incentive_yrs' value='"+data.pro_incentive_yrs+"' />&nbsp;&nbsp;<span style='color:#808080;'>Years</span> \
+								</span> \
+							</div> \
+							<div class='clear'></div> \
+							<br /> \
+							<div class='form-break'></div> \
+							<br />";
+			edit +=			"<input type='submit' title='PreviewQ' value='Preview' /> \
+							<input type='submit' title='Update' value='Update' /> \
+							<input type='submit' title='CancelQ' value='Cancel' />";
+			edit += 	"<div class='preview-panel'></div>";
+			edit += "</form>";
+			edit += "</td>";
 		return edit;
 	},
 	empty:function() {
@@ -7567,10 +8266,17 @@ $(function() {
 			// create post string for name - value pairs
 			var valid = true; var returning = "";
 			$("input[type!='submit'], select, textarea",this).each(function(i) {
-				if(this.className.substring(0,8)=="required" && this.value.trim()=="") { $("label[for='"+this.id+"']").css("color","red"); valid=false; }
+				if(this.className.substring(0,8)=="required" && this.value.trim()=="") {
+					var toRed = $("label[for='"+this.id+"']");
+					console.log("bhkkhbhbhibi");
+					if(toRed.length != 0) toRed.css("color","red");
+					else $("h1[id='"+this.id+"-label']").css("color","red");
+					valid = false; 
+				}
 				else if(this.id!=exclude
 						&& this.type!="radio"
 						&& this.className!="choose-zones"
+						&& this.className!="choose-ref_sheets"
 						&& this.className!="file-input"
 						&& this.className!="no-postify"
 						&& this.className!="pro-incentive") {
@@ -7643,9 +8349,11 @@ $(function() {
 	// create office io
 	var _settings_io = new IO();
 	var _reps_io = new IO();
+	var _ref_sheets_io = new IO();
 	// create office objects
 	var settings = new Settings("#m_settings",_settings_io);
 	var reps = new Reps("#m_reps",_reps_io);
+	var ref_sheets = new ReferenceSheets("#m_ref_sheets",_ref_sheets_io);
 	// create rep io
 	var _customers_io = new IO();
 	var _jobs_io = new IO();
@@ -7722,7 +8430,7 @@ $(function() {
 	approved.drafts = drafts;
 	// set login actions
 	login.isSuper = [offices, modules, inverters, racking, mounting_mat, connects, miscellaneous_mat, inters, types, mounting_met, mounting_med, angles, data_monitoring, admin_rules];
-	login.isOffice = [settings, reps, mounting_mat, connects, miscellaneous_mat, data_monitoring];
+	login.isOffice = [settings, reps, ref_sheets, mounting_mat, connects, miscellaneous_mat, data_monitoring];
 	login.isAdmin = [customers, jobs, drafts, submitted, published, approved];
 	login.isRep = [customers, jobs, drafts, submitted, published, approved];
 	login.isSupport = [customers, jobs, drafts, submitted, published, approved];
