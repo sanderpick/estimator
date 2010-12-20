@@ -343,7 +343,7 @@ function estimate($pro,$publish=FALSE) {
 			'ppw_gross' => round($ppw_gross * 100) / 100,
 			'ppw_net' => round($ppw_net * 100) / 100,
 			// for display only
-			'misc_materials' => $non_inventory_price + $data_monitors_bi_price,
+			'misc_materials' => $non_inventory_price + $data_monitors_bi_price + $add_mounting_mats_bi_price + $conn_comps_bi_price + $miscellaneous_materials_bi_price,
 			'comp_total' => $inventory_price + $non_inventory_price,
 			'subtotal' => $cus_price - $tax_price,
 			'cus_price' => $cus_price,
