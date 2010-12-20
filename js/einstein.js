@@ -7862,14 +7862,18 @@ var Proposals = Module.extend({
 		// null values
 		if(data.pro_cover_letter==null) data.pro_cover_letter = "";
 		else data.pro_cover_letter = data.pro_cover_letter.replace(/#amp;/g,"&");
-		// add data for interconnections
-		$("#data")
-			.data("inter_methods",selects.pro_inter_method)
-			.data("inverters",selects.pro_inverter)
-			.data("data_monitors",selects.pro_data_monitors)
-			.data("add_mounting_mats",selects.pro_add_mounting_mats)
-			.data("conn_comps",selects.pro_conn_comps)
-			.data("miscellaneous_materials",selects.pro_miscellaneous_materials);
+		// check undefined on ref sheets
+		if(!selects["pro_ref_sheets"]) selects["pro_ref_sheets"] = "<em>none available</em>";
+		// check undefined on data monitors and others like it
+		//if(!selects.pro_add_mounting_mats) selects.pro_add_mounting_mats = "yes";
+		// add data for selects
+		// $("#data")
+		// 	.data("inter_methods",selects.pro_inter_method)
+		// 	.data("inverters",selects.pro_inverter)
+		// 	.data("data_monitors",selects.pro_data_monitors);
+		// $("#data").data("add_mounting_mats",selects.pro_add_mounting_mats);
+		// $("#data").data("conn_comps",selects.pro_conn_comps);
+		// $("#data").data("miscellaneous_materials",selects.pro_miscellaneous_materials);
 		// create the quick edit form
 		var edit = "<td colspan='10'>";
 			edit += 	"<form class='updateproposalform' action='javascript:void(0);'>";
