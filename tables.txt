@@ -40,10 +40,10 @@ CREATE TABLE `es_offices` (
 	`off_labor_price` decimal(10,2),
 	
 	`off_inventory_up` decimal(10,2) NOT NULL default '0.0',
-	`off_non_inventory_up` decimal(10,2) NOT NULL default '0.0',
+  #	`off_non_inventory_up` decimal(10,2) NOT NULL default '0.0',
 	
 	`off_inventory_margin` decimal(10,2) NOT NULL default '0.0',
-	`off_non_inventory_margin` decimal(10,2) NOT NULL default '0.0',
+  #	`off_non_inventory_margin` decimal(10,2) NOT NULL default '0.0',
 	
 	`off_winter_up` decimal(10,2) NOT NULL default '5.0',
 	`off_others_up` decimal(10,2) NOT NULL default '7.5',
@@ -279,9 +279,10 @@ CREATE TABLE `es_proposals` (
 	`pro_num_inter` int(3),
 	`pro_inter_method` text,
 	`pro_inverter` text,
-	`pro_conduit_out` int(6),
-	`pro_conduit_in` int(6),
-	`pro_conduit_under` int(6),
+  # `pro_conduit_out` int(6),
+  # `pro_conduit_in` int(6),
+  # `pro_conduit_under` int(6),
+  + `pro_contingiency` decimal(10,2) NOT NULL default '0.0',
 	`pro_equip_rental` decimal(10,2),
 	`pro_extra_fee` decimal(10,2),
 	`pro_extra_desc` varchar(255) NOT NULL default '',
@@ -291,15 +292,20 @@ CREATE TABLE `es_proposals` (
 	`pro_fluctuation` decimal(10,2),
 	`pro_discount` decimal(10,2),
 	`pro_discount_desc` varchar(255) NOT NULL default '',
-	`pro_misc_materials` decimal(10,2) NOT NULL default '0.0',
-	`pro_misc_materials_up` decimal(10,2) NOT NULL default '0.0',
-	`pro_misc_materials_desc` varchar(255) NOT NULL default '',
+  # `pro_misc_materials` decimal(10,2) NOT NULL default '0.0',
+  # `pro_misc_materials_up` decimal(10,2) NOT NULL default '0.0',
+  # `pro_misc_materials_desc` varchar(255) NOT NULL default '',
 	`pro_taxrate` decimal(10,2),
+  + `pro_taxrate_desc` varchar(255) NOT NULL default '',
 	
 	`pro_rebate_amnt` text NOT NULL default '',
 	`pro_rebate_desc` text NOT NULL default '',
 	`pro_rebate_type` text NOT NULL default '',
 	`pro_rebate_display_weight` text NOT NULL default '',
+	
+	`pro_credit_amnt` text NOT NULL default '',
+	`pro_credit_desc` text NOT NULL default '',
+	`pro_credit_type` text NOT NULL default '',
 	
 	`pro_credit` int(1) NOT NULL default '0',
 	`pro_incentive` int(1) NOT NULL default '0',
@@ -308,6 +314,17 @@ CREATE TABLE `es_proposals` (
 	
 	`pro_data_monitors` text NOT NULL default '',
 	`pro_data_monitor_types` text NOT NULL default '',
+	
+	`pro_add_mounting_mats` text NOT NULL default '',
+	`pro_add_mounting_mat_types` text NOT NULL default '',
+	
+	`pro_conn_comps` text NOT NULL default '',
+	`pro_conn_comp_types` text NOT NULL default '',
+	
+	`pro_miscellaneous_materials` text NOT NULL default '',
+	`pro_miscellaneous_material_types` text NOT NULL default '',
+	
+	`pro_ref_sheets` varchar(100) NOT NULL default '',
 	
 	`pro_cover_letter` text,
 	
@@ -797,6 +814,23 @@ CREATE TABLE `es_admin_rules` (
 	`rul_lt_hrs_delta` decimal(10,2),
 	`rul_gt_num_mods` decimal(10,2),
 	`rul_gt_hrs_delta` decimal(10,2),
+	
+	`active` int(1) NOT NULL default '1',
+	
+	PRIMARY KEY (ID)
+);
+
+############################# *** HAS FORM ***
+#### es_reference_sheets ####
+#############################
+
+CREATE TABLE `es_reference_sheets` (
+	`ID` int(6) NOT NULL AUTO_INCREMENT,
+
+	`ref_name` varchar(100) NOT NULL default '',
+	`ref_value` text NOT NULL default '',
+	
+	`ref_officeID` int(6),
 	
 	`active` int(1) NOT NULL default '1',
 	
