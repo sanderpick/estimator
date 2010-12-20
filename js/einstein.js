@@ -6789,6 +6789,23 @@ var Proposals = Module.extend({
 		$("a[title='Delete Rebate']",$(t.el)).live("click",function() {
 			$(this.parentNode.parentNode).remove();
 		});
+		// credits
+		$("a[title='Add Credit']",$(t.el)).live("click",function() {
+			var num = this.parentNode.nextElementSibling.childElementCount+1;
+			var ar = "<div class='form-column'> \
+						<label for='pro_credit_type_"+num+"'>Credit Type <a href='javascript:void(0);' title='Delete Credit' class='lesser' style='vertical-align:bottom; padding:0 0 0 84px;'>&#10005;</a></label> \
+						<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_credit_type_"+num+"' value='1' /> Percent \
+						<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_credit_type_"+num+"' value='2' /> Fixed \
+						<label for='pro_credit_amnt_"+num+"' style='padding:5px 0 2px;'>Credit Amount</label> \
+						<input type='text' id='pro_credit_amnt_"+num+"' value='' /> \
+						<label for='pro_credit_desc_"+num+"'>Credit Description</label> \
+						<input type='text' id='pro_credit_desc_"+num+"' value='' /> \
+					</div>";
+			$(this.parentNode.nextElementSibling).append($(ar));
+		});
+		$("a[title='Delete Credit']",$(t.el)).live("click",function() {
+			$(this.parentNode.parentNode).remove();
+		});
 		// data monitors
 		$("a[title='Add Data Monitor']",$(t.el)).live("click",function() {
 			var kids = $(this.parentNode.nextElementSibling).children();
@@ -7513,6 +7530,22 @@ var Proposals = Module.extend({
 								<br /> \
 								<div class='form-break'></div> \
 								<br />";
+					form += 	"<h1 class='add-proposal-section'>Additional Credits&nbsp;&nbsp;<a class='adder' title='Add Credit' href='javascript:void(0);'>+</a></h1> \
+								<div> \
+									<div class='form-column'> \
+										<label for='pro_credit_type_1'>Credit Type <a href='javascript:void(0);' title='Delete Credit' class='lesser' style='vertical-align:bottom; padding:0 0 0 84px;'>&#10005;</a></label> \
+										<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_credit_type_1' value='1' /> Percent \
+										<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_credit_type_1' value='2' /> Fixed \
+										<label for='pro_credit_amnt_1' style='padding:5px 0 2px;'>Credit Amount</label> \
+										<input type='text' id='pro_credit_amnt_1' value='' /> \
+										<label for='pro_credit_desc_1'>Credit Description</label> \
+										<input type='text' id='pro_credit_desc_1' value='' /> \
+									</div> \
+								</div> \
+								<div class='clear'></div> \
+								<br /> \
+								<div class='form-break'></div> \
+								<br />";
 					form +=		"<h1 class='add-proposal-section'>Options</h1> \
 								<div class='form-column'> \
 									<input style='display:inline;' type='checkbox' class='no-postify' id='pro_credit' value='' checked='checked' /> Include 30% Tax Credit? \
@@ -7759,6 +7792,37 @@ var Proposals = Module.extend({
 								<input type='text' id='pro_rebate_desc_"+(i+1)+"' value='"+descs[i]+"' /> \
 								"+display_weight_html+" \
 							</div>";
+		}
+		// additional credits
+		var credits_html = "";
+		var types = data.pro_credit_type ? data.pro_credit_type.substring(0,data.pro_credit_type.length-1).split(",") : [];
+		var amnts = data.pro_credit_amnt ? data.pro_credit_amnt.substring(0,data.pro_credit_amnt.length-1).split(",") : [];
+		var descs = data.pro_credit_desc ? data.pro_credit_desc.substring(0,data.pro_credit_desc.length-1).split(",") : [];
+		for(i=0;i<types.length;i++) {
+			var type_html = "";
+			switch(types[i]) {
+				case "0" :
+					type_html = "<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_credit_type_"+(i+1)+"' value='1' /> Percent \
+								<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_credit_type_"+(i+1)+"' value='2' /> Fixed";
+					break;
+				case "1" :
+					type_html = "<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_credit_type_"+(i+1)+"' value='1' checked='checked' /> Percent \
+								<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_credit_type_"+(i+1)+"' value='2' /> Fixed";
+					break;
+				case "2" :
+					type_html = "<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_credit_type_"+(i+1)+"' value='1' /> Percent \
+								<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_credit_type_"+(i+1)+"' value='2' checked='checked' /> Fixed";
+					break;
+			}
+			credits_html += "<div class='form-column'> \
+								<label for='pro_credit_type_"+(i+1)+"'>Rebate Type <a href='javascript:void(0);' title='Delete Rebate' class='lesser' style='vertical-align:bottom; padding:0 0 0 84px;'>&#10005;</a></label> \
+								"+type_html+" \
+								<label for='pro_credit_amnt_"+(i+1)+"' style='padding:5px 0 2px;'>Rebate Amount</label> \
+								<input type='text' id='pro_credit_amnt_"+(i+1)+"' value='"+amnts[i]+"' /> \
+								<label for='pro_credit_desc_"+(i+1)+"'>Rebate Description</label> \
+								<input type='text' id='pro_credit_desc_"+(i+1)+"' value='"+descs[i]+"' /> \
+							</div>";		
+
 		}
 		// data monitors
 		var monitors_html = "";
@@ -8133,7 +8197,14 @@ var Proposals = Module.extend({
 							<br /> \
 							<div class='form-break'></div> \
 							<br />";
-				
+			edit +=			"<h1 class='add-proposal-section'>Additional Credits&nbsp;&nbsp;<a class='adder' title='Add Credit' href='javascript:void(0);'>+</a></h1> \
+							<div> \
+								"+credits_html+" \
+							</div> \
+							<div class='clear'></div> \
+							<br /> \
+							<div class='form-break'></div> \
+							<br />";
 			edit +=			"<h1 class='add-proposal-section'>Options</h1> \
 							<div class='form-column'> \
 								<input style='display:inline;' type='checkbox' class='no-postify' id='pro_credit"+data.ID+"' value='' "+pro_credit_checked+" /> Include 30% Tax Credit? \
@@ -8272,7 +8343,6 @@ $(function() {
 			$("input[type!='submit'], select, textarea",this).each(function(i) {
 				if(this.className.substring(0,8)=="required" && this.value.trim()=="") {
 					var toRed = $("label[for='"+this.id+"']");
-					console.log("bhkkhbhbhibi");
 					if(toRed.length != 0) toRed.css("color","red");
 					else $("h1[id='"+this.id+"-label']").css("color","red");
 					valid = false; 
