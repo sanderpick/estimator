@@ -1246,8 +1246,8 @@ function makeZone($zone,$officeID) {
 	$m->getRow('es_offices',$officeID);
 	$labor_unit_cost = $m->lastData()->off_labor_cost;
 	$labor_unit_price = $m->lastData()->off_labor_price;
-	$off_inventory_up = $m->lastData()->off_inventory_up;
-	$off_inventory_margin = $m->lastData()->off_inventory_margin;
+	//$off_inventory_up = $m->lastData()->off_inventory_up;
+	//$off_inventory_margin = $m->lastData()->off_inventory_margin;
 	$pvwatts_data = $zone['zon_pvwatts']!="" ? explode(":",$zone['zon_pvwatts']) : explode(":",$m->lastData()->off_pvwatts);
 	// determine mode from array type
 	switch($zone['zon_type']) {
@@ -1343,21 +1343,21 @@ function makeZone($zone,$officeID) {
 	$m->getRow('es_mounting_mediums',$zone['zon_mounting_medium'],"med_value");
 	$racking_medium_labor_hrs = $m->lastData()->med_labor;
 	// calc module costs
-	$module_cost = $module_unit_cost*$zone['zon_num_modules']*(1 + $off_inventory_up*0.01);
-	$module_price = $module_unit_price*$zone['zon_num_modules']*(1 + $off_inventory_up*0.01);
-	$module_price += $module_price*$off_inventory_margin*0.01;
+	$module_cost = $module_unit_cost*$zone['zon_num_modules'];//*(1 + $off_inventory_up*0.01);
+	$module_price = $module_unit_price*$zone['zon_num_modules'];//*(1 + $off_inventory_up*0.01);
+	//$module_price += $module_price*$off_inventory_margin*0.01;
 	// calc racking costs
 	$racking_unit_length = 2*(((1-($zone['zon_per_landscape']/100))*$module_width)+(($zone['zon_per_landscape']/100)*$module_length))/12;
 	$racking_length = $racking_unit_length*$zone['zon_num_modules']*1.1;
-	$racking_cost = $racking_length*$racking_cost_ft*(1 + $off_inventory_up*0.01);
-	$racking_price = $racking_length*$racking_price_ft*(1 + $off_inventory_up*0.01);
-	$racking_price += $racking_price*$off_inventory_margin*0.01;
+	$racking_cost = $racking_length*$racking_cost_ft;//*(1 + $off_inventory_up*0.01);
+	$racking_price = $racking_length*$racking_price_ft;//*(1 + $off_inventory_up*0.01);
+	//$racking_price += $racking_price*$off_inventory_margin*0.01;
 	// calc connection costs
 	$num_connections = $zone['zon_support_dist']!=0 ? ceil($racking_length/$zone['zon_support_dist']) : 0;
 	$racking_method_labor_hrs = $racking_method_labor_hrs*$num_connections;
-	$connection_cost = $num_connections*$racking_method_cost_x*(1 + $off_inventory_up*0.01);
-	$connection_price = $num_connections*$racking_method_price_x*(1 + $off_inventory_up*0.01);
-	$connection_price += $connection_price*$off_inventory_margin*0.01;
+	$connection_cost = $num_connections*$racking_method_cost_x;//*(1 + $off_inventory_up*0.01);
+	$connection_price = $num_connections*$racking_method_price_x;//*(1 + $off_inventory_up*0.01);
+	//$connection_price += $connection_price*$off_inventory_margin*0.01;
 	// labor costs
 	$per_landscape_labor_hrs = 0; //$zone['zon_per_landscape']*0.005;
 	//$num_cont_arrays_labor_hrs = $zone['zon_num_cont_arrays'] > 8 ? 1 : ($zone['zon_num_cont_arrays']*0.125)-0.125;

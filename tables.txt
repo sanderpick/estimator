@@ -303,6 +303,10 @@ CREATE TABLE `es_proposals` (
 	`pro_rebate_type` text NOT NULL default '',
 	`pro_rebate_display_weight` text NOT NULL default '',
 	
+	`pro_credit_amnt` text NOT NULL default '',
+	`pro_credit_desc` text NOT NULL default '',
+	`pro_credit_type` text NOT NULL default '',
+	
 	`pro_credit` int(1) NOT NULL default '0',
 	`pro_incentive` int(1) NOT NULL default '0',
 	`pro_incentive_rate` decimal(4,3) NOT NULL default '0.0',
@@ -318,7 +322,7 @@ CREATE TABLE `es_proposals` (
 	`pro_conn_comp_types` text NOT NULL default '',
 	
 	`pro_miscellaneous_materials` text NOT NULL default '',
-	`pro_miscellaneous_material_types text NOT NULL default '',
+	`pro_miscellaneous_material_types` text NOT NULL default '',
 	
 	`pro_ref_sheets` varchar(100) NOT NULL default '',
 	

@@ -7601,7 +7601,7 @@ var Proposals = Module.extend({
 		this._super();
 		// loop over the results
 		var selects = {};
-		for(set in data2) {
+		for(var set in data2) {
 			if(set=="pro_zones"+data.ID) {
 				var menu = "";
 				var used_zone_ids = data['pro_zones'].substring(0,data['pro_zones'].length-1).split(",");
@@ -7616,7 +7616,7 @@ var Proposals = Module.extend({
 				var used_ref_ids = data['pro_ref_sheets'].substring(0,data['pro_ref_sheets'].length-1).split(",");
 				for(var options in data2[set]) {
 					var checked = "";
-					for(var id in used_ref_ids) if(used_zone_ids[id]==data2[set][options].ID) checked = "checked='yes'";
+					for(var id in used_ref_ids) if(used_ref_ids[id]==data2[set][options].ID) checked = "checked='yes'";
 					menu += "<input style='display:inline;' type='checkbox' id='choose-ref_sheet"+data2[set][options].ID+"' class='choose-ref_sheets' value='' "+checked+" /> <em>"+data2[set][options].ref_name+"</em><br />";
 				}
 				selects['pro_ref_sheets'] = menu;
@@ -7636,11 +7636,11 @@ var Proposals = Module.extend({
 				}
 				// write
 				var i = 0;
-				for(name in parsed) {
+				for(var name in parsed) {
 					i++;
 					var menu = "";
-					for(options in data2[set]) {
-						for(values in data2[set][options]) {
+					for(var options in data2[set]) {
+						for(var values in data2[set][options]) {
 							var selected = "";
 							if(parsed[name]==data2[set][options][values]) { selected = "selected='selected'"; };
 							menu += "<option value='"+data2[set][options][values]+"' "+selected+">"+data2[set][options][values]+"</option>";
@@ -7650,16 +7650,16 @@ var Proposals = Module.extend({
 				}
 				// make generic menus for adding additional inverters
 				var menu = "<option value='' selected='selected'>--select--</option>";
-				for(options in data2[set]) {
-					for(values in data2[set][options]) {
+				for(var options in data2[set]) {
+					for(var values in data2[set][options]) {
 						menu += "<option value='"+data2[set][options][values]+"'>"+data2[set][options][values]+"</option>";
 					}
 				}
 				selects[set] = menu;
 			} else if(set.substring(0,9)!="pro_zones") {
 				var menu = "";
-				for(options in data2[set]) {
-					for(values in data2[set][options]) {
+				for(var options in data2[set]) {
+					for(var values in data2[set][options]) {
 						var selected = (data[set]==data2[set][options][values]) ? "selected='selected'" : "";
 						menu += "<option value='"+data2[set][options][values]+"' "+selected+">"+data2[set][options][values]+"</option>";
 					}
@@ -7670,9 +7670,9 @@ var Proposals = Module.extend({
 		// add inverters
 		var inverters = data.pro_inverter ? data.pro_inverter.substring(0,data.pro_inverter.length-1).split(",") : [];
 		var duplicates = [];
-		for(i in inverters) duplicates[i] = 0;
-		for(i in inverters) {
-			for(j in inverters) {
+		for(var i in inverters) duplicates[i] = 0;
+		for(var i in inverters) {
+			for(var j in inverters) {
 				if(inverters[j]==inverters[i] && i!=j && inverters[i]!=null && inverters[j]!=null) {
 					if(inverters[j].substring(0,7).toLowerCase()=="enphase") {
 						duplicates[j] = -1;
@@ -7681,7 +7681,7 @@ var Proposals = Module.extend({
 				}
 			}
 		}
-		for(i=0;i<duplicates.length;i++) {
+		for(var i=0;i<duplicates.length;i++) {
 			if(duplicates[i]==0) {
 				var q = 0;
 				var j = i+1;
@@ -7694,7 +7694,7 @@ var Proposals = Module.extend({
 		}
 		inverters = inverters.filter(function(val) { return val !== null; });
 		duplicates = duplicates.filter(function(val) { return val !== -1; });
-		for(i in duplicates) { 
+		for(var i in duplicates) { 
 			if(duplicates[i]==0) {
 				if(inverters[i].substring(0,7).toLowerCase()!="enphase") duplicates[i] = -1;
 				else duplicates[i] = 1;
@@ -7702,7 +7702,7 @@ var Proposals = Module.extend({
 		}
 		// write inverters
 		var inverters_html = "";
-		for(i=0;i<inverters.length;i++) {
+		for(var i=0;i<inverters.length;i++) {
 			var qnty;
 			qnty = duplicates[i]!=-1 ? "<div class='inverter-qnty-holder'><span style='color:#808080;'>x </span>&nbsp;<input style='display:inline; width:30px; text-align:right;' type='text' id='qnty-pro_inverter_"+(i+1)+"' value='"+duplicates[i]+"' /></div>" : "";
 			inverters_html += "<div class='form-column' id='inverter_"+(i+1)+"'> \
@@ -7720,7 +7720,7 @@ var Proposals = Module.extend({
 		var descs = data.pro_rebate_desc ? data.pro_rebate_desc.substring(0,data.pro_rebate_desc.length-1).split(",") : [];
 		var display_weights = data.pro_rebate_display_weight ? data.pro_rebate_display_weight.substring(0,data.pro_rebate_display_weight.length-1).split(",") : [];
 		// build rebates
-		for(i=0;i<types.length;i++) {
+		for(var i=0;i<types.length;i++) {
 			var type_html = "";
 			var display_weight_html = "";
 			switch(types[i]) {
@@ -7765,7 +7765,7 @@ var Proposals = Module.extend({
 		var monitors = data.pro_data_monitors ? data.pro_data_monitors.substring(0,data.pro_data_monitors.length-1).split(",") : [];
 		var types = data.pro_data_monitor_types ? data.pro_data_monitor_types.substring(0,data.pro_data_monitor_types.length-1).split(",") : [];
 		// built data monitors
-		for(i=0;i<monitors.length;i++) {
+		for(var i=0;i<monitors.length;i++) {
 			var monitor_types_html = "";
 			switch(types[i]) {
 				case "1": case undefined :
@@ -7788,7 +7788,7 @@ var Proposals = Module.extend({
 		var mounting = data.pro_add_mounting_mats ? data.pro_add_mounting_mats.substring(0,data.pro_add_mounting_mats.length-1).split(",") : [];
 		var types = data.pro_add_mounting_mat_types ? data.pro_add_mounting_mat_types.substring(0,data.pro_add_mounting_mat_types.length-1).split(",") : [];
 		// built mounting materials
-		for(i=0;i<mounting.length;i++) {
+		for(var i=0;i<mounting.length;i++) {
 			var mounting_types_html = "";
 			switch(types[i]) {
 				case "1": case undefined :
@@ -7811,7 +7811,7 @@ var Proposals = Module.extend({
 		var connection = data.pro_conn_comps ? data.pro_conn_comps.substring(0,data.pro_conn_comps.length-1).split(",") : [];
 		var types = data.pro_conn_comp_types ? data.pro_conn_comp_types.substring(0,data.pro_conn_comp_types.length-1).split(",") : [];
 		// built conduit runs
-		for(i=0;i<connection.length;i++) {
+		for(var i=0;i<connection.length;i++) {
 			var connection_types_html = "";
 			switch(types[i]) {
 				case "1": case undefined :
@@ -7834,7 +7834,7 @@ var Proposals = Module.extend({
 		var miscellaneous = data.pro_miscellaneous_materials ? data.pro_miscellaneous_materials.substring(0,data.pro_miscellaneous_materials.length-1).split(",") : [];
 		var types = data.pro_miscellaneous_material_types ? data.pro_miscellaneous_material_types.substring(0,data.pro_miscellaneous_material_types.length-1).split(",") : [];
 		// built miscellaneous materials
-		for(i=0;i<miscellaneous.length;i++) {
+		for(var i=0;i<miscellaneous.length;i++) {
 			var miscellaneous_types_html = "";
 			switch(types[i]) {
 				case "1": case undefined :
@@ -7843,7 +7843,7 @@ var Proposals = Module.extend({
 					break;
 				case "0" :
 					miscellaneous_types_html = "<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_miscellaneous_material_types_"+(i+1)+"' value='1' /> Fee built-in<br /> \
-										  <input style='display:inline; margin:5px 0 0;' type='radio' name='pro_add_miscellaneous_material_types_"+(i+1)+"' value='0' checked='checked' /> Fee not built-in";
+										  <input style='display:inline; margin:5px 0 0;' type='radio' name='pro_miscellaneous_material_types_"+(i+1)+"' value='0' checked='checked' /> Fee not built-in";
 					break;
 			}
 			miscellaneous_html += "<div class='form-column' id='mounting_"+(i+1)+"'> \
