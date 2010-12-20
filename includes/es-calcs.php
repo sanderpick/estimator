@@ -281,8 +281,26 @@ function estimate($pro,$publish=FALSE) {
 				else $pro_rebate_abl += $pr;
 			}
 		}
+		// parse additional credits
+		$for_credits = $price + $tax_price + $permit_price - $pro_rebate_bbl - $pro_rebate_abl;
+		$pro_add_credits = 0;
+		$add_credit_types = explode(",",substr($pro->pro_credit_type,0,-1));
+		$add_credit_amnts = explode(",",substr($pro->pro_credit_amnt,0,-1));
+		for($i=0;$i<count($add_credit_types);$i++) {
+			if($add_credit_amnts[$i]!="") {
+				switch($add_credit_types[$i]) {
+					case 1 :
+						$pr = $add_credit_amnts[$i]*$for_credits*0.01;
+						break;
+					case 2 :
+						$pr = $add_credit_amnts[$i];
+						break;
+				}
+				$pro_add_credits += $pr;
+			}
+		}
 		// credit
-		$credit = ($pro->pro_credit==1) ? ($price + $tax_price + $permit_price - $pro_rebate_bbl) * 0.30 : 0;
+		$credit = ($pro->pro_credit==1) ? $for_credits*0.30 : 0;
 		// set margins
 		$permit_margin = ($permit_price!=0) ? ($permit_price - $permit_cost) / $permit_price : 0;
 		$sub_margin = ($sub_price!=0) ? ($sub_price - $sub_cost) / $sub_price : 0;
@@ -329,7 +347,7 @@ function estimate($pro,$publish=FALSE) {
 			'comp_total' => $inventory_price + $non_inventory_price,
 			'subtotal' => $cus_price - $tax_price,
 			'cus_price' => $cus_price,
-			'cus_after_credit' => $cus_price - $credit - $pro_rebate_abl,
+			'cus_after_credit' => $cus_price - $credit - $pro_rebate_abl - $pro_add_credits,
 			'ppw_cus_net' => round($ppw_cus_net * 100) / 100,
 			'credits_total' => $pro_rebate_bbl + $pro_rebate_abl + $pro->pro_discount,
 			'fees_total' => $permit_price + $sub_price + $equip_price + $pro->pro_inspection

@@ -374,6 +374,22 @@ function addProposal() {
 			unset($pro[$key]);
 		}
 	}
+	// parse credits
+	$pro['pro_credit_amnt'] = "";
+	$pro['pro_credit_desc'] = "";
+	$pro['pro_credit_type'] = "";
+	foreach($pro as $key=>$val) {
+		if(substr($key,0,16)=="pro_credit_amnt_") {
+			$pro['pro_credit_amnt'] .= $val.",";
+			unset($pro[$key]);
+		} else if(substr($key,0,16)=="pro_credit_desc_") {
+			$pro['pro_credit_desc'] .= $val.",";
+			unset($pro[$key]);
+		} else if(substr($key,0,16)=="pro_credit_type_") {
+			$pro['pro_credit_type'] .= $val.",";
+			unset($pro[$key]);
+		}
+	}
 	// parse monitors
 	$pro['pro_data_monitors'] = "";
 	$pro['pro_data_monitor_types'] = "";
@@ -809,6 +825,22 @@ function updateProposal() {
 			unset($pro[$key]);
 		} else if(substr($key,0,26)=="pro_rebate_display_weight_") {
 			$pro['pro_rebate_display_weight'] .= $val.",";
+			unset($pro[$key]);
+		}
+	}
+	// parse credits
+	$pro['pro_credit_amnt'] = "";
+	$pro['pro_credit_desc'] = "";
+	$pro['pro_credit_type'] = "";
+	foreach($pro as $key=>$val) {
+		if(substr($key,0,16)=="pro_credit_amnt_") {
+			$pro['pro_credit_amnt'] .= $val.",";
+			unset($pro[$key]);
+		} else if(substr($key,0,16)=="pro_credit_desc_") {
+			$pro['pro_credit_desc'] .= $val.",";
+			unset($pro[$key]);
+		} else if(substr($key,0,16)=="pro_credit_type_") {
+			$pro['pro_credit_type'] .= $val.",";
 			unset($pro[$key]);
 		}
 	}
@@ -1422,6 +1454,22 @@ function peakProposal() {
 			unset($pro[$key]);
 		} else if(substr($key,0,26)=="pro_rebate_display_weight_") {
 			$pro['pro_rebate_display_weight'] .= $val.",";
+			unset($pro[$key]);
+		}
+	}
+	// parse credits
+	$pro['pro_credit_amnt'] = "";
+	$pro['pro_credit_desc'] = "";
+	$pro['pro_credit_type'] = "";
+	foreach($pro as $key=>$val) {
+		if(substr($key,0,16)=="pro_credit_amnt_") {
+			$pro['pro_credit_amnt'] .= $val.",";
+			unset($pro[$key]);
+		} else if(substr($key,0,16)=="pro_credit_desc_") {
+			$pro['pro_credit_desc'] .= $val.",";
+			unset($pro[$key]);
+		} else if(substr($key,0,16)=="pro_credit_type_") {
+			$pro['pro_credit_type'] .= $val.",";
 			unset($pro[$key]);
 		}
 	}
