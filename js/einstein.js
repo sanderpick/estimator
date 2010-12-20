@@ -6791,9 +6791,17 @@ var Proposals = Module.extend({
 		});
 		// credits
 		$("a[title='Add Credit']",$(t.el)).live("click",function() {
-			var num = this.parentNode.nextElementSibling.childElementCount+1;
-			var ar = "<div class='form-column'> \
-						<label for='pro_credit_type_"+num+"'>Credit Type <a href='javascript:void(0);' title='Delete Credit' class='lesser' style='vertical-align:bottom; padding:0 0 0 84px;'>&#10005;</a></label> \
+			var kids = $(this.parentNode.nextElementSibling).children();
+			var num = 1;
+			if(kids.length > 0) {
+				kids.each(function(i) {
+					var id = parseInt(this.id.substring(7));
+					if(id > num) num = id;
+				});
+				num++;
+			}
+			var ac = "<div class='form-column' id='credit_"+num+"'> \
+						<label for='pro_credit_type_"+num+"'>Credit Type <a href='javascript:void(0);' title='Delete Credit' class='lesser' style='vertical-align:bottom; padding:0 0 0 5px;'>&#10005;</a></label> \
 						<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_credit_type_"+num+"' value='1' /> Percent \
 						<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_credit_type_"+num+"' value='2' /> Fixed \
 						<label for='pro_credit_amnt_"+num+"' style='padding:5px 0 2px;'>Credit Amount</label> \
@@ -6801,7 +6809,7 @@ var Proposals = Module.extend({
 						<label for='pro_credit_desc_"+num+"'>Credit Description</label> \
 						<input type='text' id='pro_credit_desc_"+num+"' value='' /> \
 					</div>";
-			$(this.parentNode.nextElementSibling).append($(ar));
+			$(this.parentNode.nextElementSibling).append($(ac));
 		});
 		$("a[title='Delete Credit']",$(t.el)).live("click",function() {
 			$(this.parentNode.parentNode).remove();
@@ -6864,13 +6872,13 @@ var Proposals = Module.extend({
 				num++;
 			}
 			var dms = $('#data').data('conn_comps') ? $('#data').data('conn_comps') : "<option value='' selected='selected'>--select--</option>";
-			var am = "<div class='form-column' id='connection_"+num+"'> \
+			var aw = "<div class='form-column' id='connection_"+num+"'> \
 						<label style='padding-bottom:5px;' for='pro_conn_comps_"+num+"'>Conduit Run Kit <a href='javascript:void(0);' title='Delete Conduit or Wire Run' class='lesser' style='vertical-align:bottom; padding:0 0 0 5px;'>&#10005;</a></label> \
 						<select class='required' id='pro_conn_comps_"+num+"'>"+dms+"</select> \
 						<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_conn_comp_types_"+num+"' value='1' checked='checked' /> Fee built-in<br /> \
 						<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_conn_comp_types_"+num+"' value='0' /> Fee not built-in \
 					</div>";
-			$(this.parentNode.nextElementSibling).append($(am));
+			$(this.parentNode.nextElementSibling).append($(aw));
 		});
 		$("a[title='Delete Conduit or Wire Run']",$(t.el)).live("click",function() {
 			$(this.parentNode.parentNode).remove();
@@ -7532,8 +7540,8 @@ var Proposals = Module.extend({
 								<br />";
 					form += 	"<h1 class='add-proposal-section'>Additional Credits&nbsp;&nbsp;<a class='adder' title='Add Credit' href='javascript:void(0);'>+</a></h1> \
 								<div> \
-									<div class='form-column'> \
-										<label for='pro_credit_type_1'>Credit Type <a href='javascript:void(0);' title='Delete Credit' class='lesser' style='vertical-align:bottom; padding:0 0 0 84px;'>&#10005;</a></label> \
+									<div class='form-column' id='credit_1'> \
+										<label for='pro_credit_type_1'>Credit Type <a href='javascript:void(0);' title='Delete Credit' class='lesser' style='vertical-align:bottom; padding:0 0 0 5px;'>&#10005;</a></label> \
 										<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_credit_type_1' value='1' /> Percent \
 										<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_credit_type_1' value='2' /> Fixed \
 										<label for='pro_credit_amnt_1' style='padding:5px 0 2px;'>Credit Amount</label> \
@@ -7814,12 +7822,12 @@ var Proposals = Module.extend({
 								<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_credit_type_"+(i+1)+"' value='2' checked='checked' /> Fixed";
 					break;
 			}
-			credits_html += "<div class='form-column'> \
-								<label for='pro_credit_type_"+(i+1)+"'>Rebate Type <a href='javascript:void(0);' title='Delete Rebate' class='lesser' style='vertical-align:bottom; padding:0 0 0 84px;'>&#10005;</a></label> \
+			credits_html += "<div class='form-column' id='credit_"+(i+1)+"'> \
+								<label for='pro_credit_type_"+(i+1)+"'>Credit Type <a href='javascript:void(0);' title='Delete Credit' class='lesser' style='vertical-align:bottom; padding:0 0 0 5px;'>&#10005;</a></label> \
 								"+type_html+" \
-								<label for='pro_credit_amnt_"+(i+1)+"' style='padding:5px 0 2px;'>Rebate Amount</label> \
+								<label for='pro_credit_amnt_"+(i+1)+"' style='padding:5px 0 2px;'>Credit Amount</label> \
 								<input type='text' id='pro_credit_amnt_"+(i+1)+"' value='"+amnts[i]+"' /> \
-								<label for='pro_credit_desc_"+(i+1)+"'>Rebate Description</label> \
+								<label for='pro_credit_desc_"+(i+1)+"'>Credit Description</label> \
 								<input type='text' id='pro_credit_desc_"+(i+1)+"' value='"+descs[i]+"' /> \
 							</div>";		
 
