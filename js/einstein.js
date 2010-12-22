@@ -6115,7 +6115,7 @@ var Zones = Module.extend({
 			// iframe event handling
 			var uploaded = function(e) {
 				// remove events
-				$.removeEvent("f-"+ref,"load",uploaded);
+				$("f-"+ref).bind("load",uploaded);
 				// show image
 				var big_src = $("#f-"+ref).contents().find("body").html()+"_sized_800.jpg";
 				var small_src = $("#f-"+ref).contents().find("body").html()+"_thumb.jpg";
@@ -6140,7 +6140,7 @@ var Zones = Module.extend({
 					$("#view-job"+t.jobID).data("jc-disabled",false);
 				}, 1000);
 			}
-			$.addEvent("f-"+ref,"load",uploaded);
+			$("f-"+ref).unbind("load",uploaded);
 			// get ids
 			var row = this.parentNode.parentNode.parentNode.parentNode;
 			var oid = $(row).data("officeID");
@@ -6445,8 +6445,8 @@ var Zones = Module.extend({
 		row += "<table cellpadding='0' cellspacing='0' style='width:100%; margin:0; padding:10px;'>";
 		row += "<thead class='module-thead'>";
 		// Parameters and Layout
-		row += "<th colspan='3' style='padding:5px 0; border-bottom:1px solid grey; font-weight:bold;'>Parameters:</th>";
-		row += "<th colspan='1' style='padding:5px 0; border-bottom:1px solid grey; font-weight:bold;'>Layout:"+trash+"</th>";
+		row += "<th colspan='3' style='padding:10px 0 5px 0; border-bottom:1px solid grey; font-weight:bold;'>Parameters:</th>";
+		row += "<th colspan='1' style='padding:10px 0 5px 0; border-bottom:1px solid grey; font-weight:bold;'>Layout:"+trash+"</th>";
 		row += "</thead>";
 		row += "<tbody>";
 		row += "<tr class='dark'>";
@@ -6778,9 +6778,9 @@ var Proposals = Module.extend({
 						<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_rebate_type_"+num+"' value='1' /> Percent \
 						<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_rebate_type_"+num+"' value='2' /> Fixed \
 						<label for='pro_rebate_amnt_"+num+"' style='padding:5px 0 2px;'>Rebate Amount</label> \
-						<input type='text' id='pro_rebate_amnt_"+num+"' value='' /> \
+						<input class='required' type='text' id='pro_rebate_amnt_"+num+"' value='' /> \
 						<label for='pro_rebate_desc_"+num+"'>Rebate Description</label> \
-						<input type='text' id='pro_rebate_desc_"+num+"' value='' /> \
+						<input class='required' type='text' id='pro_rebate_desc_"+num+"' value='' /> \
 						<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_rebate_display_weight_"+num+"' value='0' checked='checked' /> Take before total<br /> \
 						<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_rebate_display_weight_"+num+"' value='1' /> Take after total \
 					</div>";
@@ -6802,12 +6802,12 @@ var Proposals = Module.extend({
 			}
 			var ac = "<div class='form-column' id='credit_"+num+"'> \
 						<label for='pro_credit_type_"+num+"'>Credit Type <a href='javascript:void(0);' title='Delete Credit' class='lesser' style='vertical-align:bottom; padding:0 0 0 5px;'>&#10005;</a></label> \
-						<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_credit_type_"+num+"' value='1' /> Percent \
+						<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_credit_type_"+num+"' value='1' checked='checked' /> Percent \
 						<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_credit_type_"+num+"' value='2' /> Fixed \
 						<label for='pro_credit_amnt_"+num+"' style='padding:5px 0 2px;'>Credit Amount</label> \
-						<input type='text' id='pro_credit_amnt_"+num+"' value='' /> \
+						<input class='required' type='text' id='pro_credit_amnt_"+num+"' value='' /> \
 						<label for='pro_credit_desc_"+num+"'>Credit Description</label> \
-						<input type='text' id='pro_credit_desc_"+num+"' value='' /> \
+						<input class='required' type='text' id='pro_credit_desc_"+num+"' value='' /> \
 					</div>";
 			$(this.parentNode.nextElementSibling).append($(ac));
 		});
@@ -7278,14 +7278,14 @@ var Proposals = Module.extend({
 								<br />";
 					form +=		"<h1 class='add-proposal-section'>Additional Mounting Materials&nbsp;&nbsp;<a class='adder' title='Add Additional Mounting Material' href='javascript:void(0);'>+</a></h1> \
 								<div> \
-									<div class='form-column' id='mounting_1'> \
+									<!--<div class='form-column' id='mounting_1'> \
 										<label style='padding-bottom:5px;' for='pro_add_mounting_mats_1'> \
 											Mounting Material <a href='javascript:void(0);' title='Delete Additional Mounting Material' class='lesser' style='vertical-align:bottom; padding:0 0 0 5px;'>&#10005;</a> \
 										</label> \
 										<select class='required' id='pro_add_mounting_mats_1'>"+selects.pro_add_mounting_mats+"</select> \
 										<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_add_mounting_mat_types_1' value='1' checked='checked' /> Fee built-in<br /> \
 										<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_add_mounting_mat_types_1' value='0' /> Fee not built-in \
-									</div> \
+									</div>--> \
 								</div> \
 								<div class='clear'></div> \
 								<br /> \
@@ -7293,12 +7293,12 @@ var Proposals = Module.extend({
 								<br />";
 					form +=		"<h1 class='add-proposal-section'>Conduit and Wire Runs&nbsp;&nbsp;<a class='adder' title='Add Conduit or Wire Run' href='javascript:void(0);'>+</a></h1> \
 								<div> \
-									<div class='form-column' id='connection_1'> \
+									<!--<div class='form-column' id='connection_1'> \
 										<label style='padding-bottom:5px;' for='pro_conn_comps_1'>Conduit Run Kit <a href='javascript:void(0);' title='Delete Conduit or Wire Run' class='lesser' style='vertical-align:bottom; padding:0 0 0 5px;'>&#10005;</a></label> \
 										<select class='required' id='pro_conn_comps_1'>"+selects.pro_conn_comps+"</select> \
 										<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_conn_comp_types_1' value='1' checked='checked' /> Fee built-in<br /> \
 										<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_conn_comp_types_1' value='0' /> Fee not built-in \
-									</div> \
+									</div>--> \
 								</div> \
 								<div class='clear'></div> \
 								<br /> \
@@ -7306,14 +7306,14 @@ var Proposals = Module.extend({
 								<br />";
 					form +=		"<h1 class='add-proposal-section'>Miscellaneous Materials&nbsp;&nbsp;<a class='adder' title='Add Miscellaneous Material' href='javascript:void(0);'>+</a></h1> \
 								<div> \
-									<div class='form-column' id='miscellaneous_1'> \
+									<!--<div class='form-column' id='miscellaneous_1'> \
 										<label style='padding-bottom:5px;' for='pro_miscellaneous_materials_1'> \
 											Misc. Material Kit <a href='javascript:void(0);' title='Delete Miscellaneous Material' class='lesser' style='vertical-align:bottom; padding:0 0 0 5px;'>&#10005;</a> \
 										</label> \
 										<select class='required' id='pro_miscellaneous_materials_1'>"+selects.pro_miscellaneous_materials+"</select> \
 										<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_miscellaneous_material_types_1' value='1' checked='checked' /> Fee built-in<br /> \
 										<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_miscellaneous_material_types_1' value='0' /> Fee not built-in \
-									</div> \
+									</div>--> \
 								</div> \
 								<div class='clear'></div> \
 								<br /> \
@@ -7321,14 +7321,14 @@ var Proposals = Module.extend({
 								<br />";
 					form +=		"<h1 class='add-proposal-section'>Data Monitors&nbsp;&nbsp;<a class='adder' title='Add Data Monitor' href='javascript:void(0);'>+</a></h1> \
 								<div> \
-									<div class='form-column' id='monitor_1'> \
+									<!--<div class='form-column' id='monitor_1'> \
 										<label style='padding-bottom:5px;' for='pro_data_monitors_1'> \
 											Monitor Model <a href='javascript:void(0);' title='Delete Data Monitor' class='lesser' style='vertical-align:bottom; padding:0 0 0 5px;'>&#10005;</a> \
 										</label> \
 										<select class='required' id='pro_data_monitors_1'>"+selects.pro_data_monitors+"</select> \
 										<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_data_monitor_types_1' value='1' checked='checked' /> Fee built-in<br /> \
 										<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_data_monitor_types_1' value='0' /> Fee not built-in \
-									</div> \
+									</div>--> \
 								</div> \
 								<div class='clear'></div> \
 								<br /> \
@@ -7521,7 +7521,7 @@ var Proposals = Module.extend({
 								<br />";
 					form +=		"<h1 class='add-proposal-section'>Additional Rebates&nbsp;&nbsp;<a class='adder' title='Add Rebate' href='javascript:void(0);'>+</a></h1> \
 								<div> \
-									<div class='form-column' id='rebate_1'> \
+									<!--<div class='form-column' id='rebate_1'> \
 										<label for='pro_rebate_type_1'>Rebate Type <a href='javascript:void(0);' title='Delete Rebate' class='lesser' style='vertical-align:bottom; padding:0 0 0 5px;'>&#10005;</a></label> \
 										<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_rebate_type_1' value='0' checked='checked' /> $/W \
 										<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_rebate_type_1' value='1' /> Percent \
@@ -7532,7 +7532,7 @@ var Proposals = Module.extend({
 										<input type='text' id='pro_rebate_desc_1' value='' /> \
 										<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_rebate_display_weight_1' value='0' checked='checked' /> Take before total<br /> \
 										<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_rebate_display_weight_1' value='1' /> Take after total \
-									</div> \
+									</div>--> \
 								</div> \
 								<div class='clear'></div> \
 								<br /> \
@@ -7540,7 +7540,7 @@ var Proposals = Module.extend({
 								<br />";
 					form += 	"<h1 class='add-proposal-section'>Additional Credits&nbsp;&nbsp;<a class='adder' title='Add Credit' href='javascript:void(0);'>+</a></h1> \
 								<div> \
-									<div class='form-column' id='credit_1'> \
+									<!--<div class='form-column' id='credit_1'> \
 										<label for='pro_credit_type_1'>Credit Type <a href='javascript:void(0);' title='Delete Credit' class='lesser' style='vertical-align:bottom; padding:0 0 0 5px;'>&#10005;</a></label> \
 										<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_credit_type_1' value='1' /> Percent \
 										<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_credit_type_1' value='2' /> Fixed \
@@ -7548,7 +7548,7 @@ var Proposals = Module.extend({
 										<input type='text' id='pro_credit_amnt_1' value='' /> \
 										<label for='pro_credit_desc_1'>Credit Description</label> \
 										<input type='text' id='pro_credit_desc_1' value='' /> \
-									</div> \
+									</div>--> \
 								</div> \
 								<div class='clear'></div> \
 								<br /> \
@@ -7795,9 +7795,9 @@ var Proposals = Module.extend({
 								<label for='pro_rebate_type_"+(i+1)+"'>Rebate Type <a href='javascript:void(0);' title='Delete Rebate' class='lesser' style='vertical-align:bottom; padding:0 0 0 5px;'>&#10005;</a></label> \
 								"+type_html+" \
 								<label for='pro_rebate_amnt_"+(i+1)+"' style='padding:5px 0 2px;'>Rebate Amount</label> \
-								<input type='text' id='pro_rebate_amnt_"+(i+1)+"' value='"+amnts[i]+"' /> \
+								<input class='required' type='text' id='pro_rebate_amnt_"+(i+1)+"' value='"+amnts[i]+"' /> \
 								<label for='pro_rebate_desc_"+(i+1)+"'>Rebate Description</label> \
-								<input type='text' id='pro_rebate_desc_"+(i+1)+"' value='"+descs[i]+"' /> \
+								<input class='required' type='text' id='pro_rebate_desc_"+(i+1)+"' value='"+descs[i]+"' /> \
 								"+display_weight_html+" \
 							</div>";
 		}
@@ -7826,9 +7826,9 @@ var Proposals = Module.extend({
 								<label for='pro_credit_type_"+(i+1)+"'>Credit Type <a href='javascript:void(0);' title='Delete Credit' class='lesser' style='vertical-align:bottom; padding:0 0 0 5px;'>&#10005;</a></label> \
 								"+type_html+" \
 								<label for='pro_credit_amnt_"+(i+1)+"' style='padding:5px 0 2px;'>Credit Amount</label> \
-								<input type='text' id='pro_credit_amnt_"+(i+1)+"' value='"+amnts[i]+"' /> \
+								<input class='required' type='text' id='pro_credit_amnt_"+(i+1)+"' value='"+amnts[i]+"' /> \
 								<label for='pro_credit_desc_"+(i+1)+"'>Credit Description</label> \
-								<input type='text' id='pro_credit_desc_"+(i+1)+"' value='"+descs[i]+"' /> \
+								<input class='required' type='text' id='pro_credit_desc_"+(i+1)+"' value='"+descs[i]+"' /> \
 							</div>";		
 
 		}
@@ -8288,16 +8288,6 @@ $(function() {
 		    		return unescape(document.cookie.substring(c_start,c_end));
 		    	}
 		  	} return "";
-		},
-		addEvent:function(obj_id,type,cb) {
-			var obj = document.getElementById(obj_id);
-			if(obj.addEventListener) obj.addEventListener(type,cb,true);
-			if(obj.attachEvent) obj.attachEvent("on"+type,cb);
-		},
-		removeEvent:function(obj_id,type,cb) {
-			var obj = document.getElementById(obj_id);
-			if(obj.detachEvent) obj.detachEvent('on'+type,cb);
-			else obj.removeEventListener(type,cb,false);
 		},
 		addCommas:function(nStr) {
 			nStr += '';
