@@ -1773,20 +1773,28 @@ var Connects = Module.extend({
 					<div class='form-column'> \
 						<label for='con_model_num'>Model #</label> \
 						<input class='required' type='text' id='con_model_num' value='' /> \
+					</div> \
+					<div class='form-column'> \
 						<label for='con_desc'>Description</label> \
 						<input class='required' type='text' id='con_desc' value='' /> \
 					</div> \
 					<div class='form-column'> \
 						<label for='con_unit'>Price Unit</label> \
 						<input class='required' type='text' id='con_unit' value='' /> \
+					</div> \
+					<div class='form-column'> \
 						<label for='con_cost'>Cost ($)</label> \
 						<input class='required' type='text' id='con_cost' value='' /> \
 					</div> \
-					<div class='form-column-right'> \
+					<div class='form-column'> \
 						<label for='con_price'>Price ($)</label> \
 						<input class='required' type='text' id='con_price' value='' /> \
+					</div> \
+					<div class='form-column'> \
 						<label for='con_labor'>Labor (hrs/20')</label> \
 						<input class='required' type='text' id='con_labor' value='' /> \
+					</div> \
+					<div class='form-column-right'> \
 						<label for='active'>Active</label> \
 						<select class='required' id='active'> \
 							<option value='' selected='selected'>--select--</option> \
@@ -1896,20 +1904,28 @@ var Connects = Module.extend({
 					<div class='form-column'> \
 						<label for='con_model_num'>Model #</label> \
 						<input class='required' type='text' id='con_model_num' value='"+data.con_model_num+"' /> \
+					</div> \
+					<div class='form-column'> \
 						<label for='con_desc'>Description</label> \
 						<input class='required' type='text' id='con_desc' value='"+data.con_desc+"' /> \
+					</div> \
+					<div class='form-column'> \
 						<label for='con_unit'>Price Unit</label> \
 						<input class='required' type='text' id='con_unit' value='"+data.con_unit+"' /> \
 					</div> \
 					<div class='form-column'> \
 						<label for='con_cost'>Cost ($)</label> \
 						<input class='required' type='text' id='con_cost' value='"+data.con_cost+"' /> \
+					</div> \
+					<div class='form-column'> \
 						<label for='con_price'>Price ($)</label> \
 						<input class='required' type='text' id='con_price' value='"+data.con_price+"' /> \
 					</div> \
-					<div class='form-column-right'> \
+					<div class='form-column'> \
 						<label for='con_labor'>Labor (hrs/20')</label> \
 						<input class='required' type='text' id='con_labor' value='"+data.con_labor+"' /> \
+					</div> \
+					<div class='form-column-right'> \
 						<label for='active'>Active</label> \
 						<select class='required' id='active'> \
 							<option value='1' "+sel_yes+">yes</option> \
@@ -3355,18 +3371,24 @@ var DataMonitoring = Module.extend({
 					<div class='form-column'> \
 						<label for='dat_model_num'>Model #</label> \
 						<input class='required' type='text' id='dat_model_num' value='' /> \
+					</div> \
+					<div class='form-column'> \
 						<label for='dat_desc'>Description</label> \
 						<input class='required' type='text' id='dat_desc' value='' /> \
 					</div> \
 					<div class='form-column'> \
 						<label for='dat_unit'>Price Unit</label> \
 						<input class='required' type='text' id='dat_unit' value='' /> \
+					</div> \
+					<div class='form-column'> \
 						<label for='dat_cost'>Cost ($)</label> \
 						<input class='required' type='text' id='dat_cost' value='' /> \
 					</div> \
 					<div class='form-column'> \
 						<label for='dat_price'>Price ($)</label> \
 						<input class='required' type='text' id='dat_price' value='' /> \
+					</div> \
+					<div class='form-column'> \
 						<label for='dat_labor'>Labor (hrs)</label> \
 						<input class='required' type='text' id='dat_labor' value='' /> \
 					</div> \
@@ -3483,18 +3505,24 @@ var DataMonitoring = Module.extend({
 					<div class='form-column'> \
 						<label for='dat_model_num'>Model #</label> \
 						<input class='required' type='text' id='dat_model_num' value='"+data.dat_model_num+"' /> \
+					</div> \
+					<div class='form-column'> \
 						<label for='dat_desc'>Description</label> \
 						<input class='required' type='text' id='dat_desc' value='"+data.dat_desc+"' /> \
 					</div> \
 					<div class='form-column'> \
 						<label for='dat_unit'>Price Unit</label> \
 						<input class='required' type='text' id='dat_unit' value='"+data.dat_unit+"' /> \
+					</div> \
+					<div class='form-column'> \
 						<label for='dat_cost'>Cost ($)</label> \
 						<input class='required' type='text' id='dat_cost' value='"+data.dat_cost+"' /> \
 					</div> \
 					<div class='form-column'> \
 						<label for='dat_price'>Price ($)</label> \
 						<input class='required' type='text' id='dat_price' value='"+data.dat_price+"' /> \
+					</div> \
+					<div class='form-column'> \
 						<label for='dat_labor'>Labor (hrs)</label> \
 						<input class='required' type='text' id='dat_labor' value='"+data.dat_labor+"' /> \
 					</div> \
