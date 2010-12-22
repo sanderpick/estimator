@@ -829,6 +829,7 @@ CREATE TABLE `es_reference_sheets` (
 
 	`ref_name` varchar(100) NOT NULL default '',
 	`ref_value` text NOT NULL default '',
+	`ref_print_value` text NOT NULL default '',
 	
 	`ref_officeID` int(6),
 	
