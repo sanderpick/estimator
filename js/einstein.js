@@ -6969,10 +6969,11 @@ var Proposals = Module.extend({
 	},
 	itemFormOptions:function() {
 		var oID = $($('#data').data('job')).data('officeID') || $("#data").data("rep").rep_officeID;
+		var both = "officeID='"+oID+"'::officeID='0'";
 		var o = "menus=pro_name,pro_zones,pro_ref_sheets,pro_inter_method,pro_inverter,pro_data_monitors,pro_add_mounting_mats,pro_conn_comps,pro_miscellaneous_materials";
 		o += "&sources=es_jobs,es_zones,es_reference_sheets,es_inter_comps,es_inverters,es_data_monitoring,es_mounting_materials,es_conn_comps,es_miscellaneous_materials";
 		o += "&columns=job_name,ID,*,int_model_num,inv_model_num,dat_model_num,mat_model_num,con_model_num,mis_model_num";
-		o += "&wcs=,,ref_officeID='"+oID+"',,,officeID='"+oID+"',officeID='"+oID+"',officeID='"+oID+"',officeID='"+oID+"'";
+		o += "&wcs=,,ref_officeID='"+oID+"',,,"+both+","+both+","+both+","+both;
 		return o;
 	},
 	receive:function(json) {
