@@ -1258,12 +1258,19 @@ function getOptions() {
 		// write TO
 		$customer_title = $cus->cus_company!="" ? $cus->cus_company : $cus->cus_name_first." ".$cus->cus_name_last;
 		$job_title = $job->job_company!="" ? $job->job_company : ($job->job_contact!="" ? $job->job_contact : $customer_title);
-		// write letter
+		// write letter - HTML
+		// $cover_letter = "Dear ".$job_title.",\n\n".$off->off_cover_letter;
+		// $cover_letter .= "\n\nYours truly,\n".$rep->rep_name_first." ".$rep->rep_name_last.", <em>".$rep->rep_title."</em>\n\n";
+		// $cover_letter .= "<a href='".$E->LHS_LOC."' target='_blank'><strong>Lighthouse</strong>solar</a>\n";
+		// $cover_letter .= $off->off_city.", ".$off->off_state." ".$off->off_zip."\n";
+		// $cover_letter .= "<a href='mailto:".$rep->rep_email."'>".$rep->rep_email."</a> (e)\n";
+		// $cover_letter .= $rep->rep_phone!="" ? $rep->rep_phone." (p)" : $off->off_phone." (p)";
+		////
 		$cover_letter = "Dear ".$job_title.",\n\n".$off->off_cover_letter;
-		$cover_letter .= "\n\nYours truly,\n".$rep->rep_name_first." ".$rep->rep_name_last.", <em>".$rep->rep_title."</em>\n\n";
-		$cover_letter .= "<a href='".$E->LHS_LOC."' target='_blank'><strong>Lighthouse</strong>solar</a>\n";
+		$cover_letter .= "\n\nYours truly,\n".$rep->rep_name_first." ".$rep->rep_name_last.", ".$rep->rep_title."\n\n";
+		$cover_letter .= "Lighthousesolar\n";
 		$cover_letter .= $off->off_city.", ".$off->off_state." ".$off->off_zip."\n";
-		$cover_letter .= "<a href='mailto:".$rep->rep_email."'>".$rep->rep_email."</a> (e)\n";
+		$cover_letter .= $rep->rep_email." (e)\n";
 		$cover_letter .= $rep->rep_phone!="" ? $rep->rep_phone." (p)" : $off->off_phone." (p)";
 		// done
 		$r['did'] = "got ".$table." options";
