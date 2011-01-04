@@ -177,7 +177,7 @@ input[type='file'] { border:none; width:80px; }
 
 .date-txt { font-size:9px; line-height:12px; width:100px; }
 
-.prop-dash-head { white-space:nowrap; }
+.prop-dash-head { /*white-space:nowrap;*/ }
 
 /*---------------------------------*/
 h1.main-header { 

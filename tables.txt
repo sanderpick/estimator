@@ -276,7 +276,7 @@ CREATE TABLE `es_proposals` (
 	`pro_num_installers` int(4),
 	`pro_zones` varchar(100) NOT NULL default '',
 	`pro_zones_o` varchar(100) NOT NULL default '',
-	`pro_num_inter` int(3),
+  #	`pro_num_inter` int(3),
 	`pro_inter_method` text,
 	`pro_inverter` text,
   # `pro_conduit_out` int(6),
@@ -314,15 +314,19 @@ CREATE TABLE `es_proposals` (
 	
 	`pro_data_monitors` text NOT NULL default '',
 	`pro_data_monitor_types` text NOT NULL default '',
+	`pro_data_monitor_qntys` text NOT NULL default '',
 	
 	`pro_add_mounting_mats` text NOT NULL default '',
 	`pro_add_mounting_mat_types` text NOT NULL default '',
+	`pro_add_mounting_mat_qntys` text NOT NULL default '',
 	
 	`pro_conn_comps` text NOT NULL default '',
 	`pro_conn_comp_types` text NOT NULL default '',
+	`pro_conn_comp_qntys` text NOT NULL default '',
 	
 	`pro_miscellaneous_materials` text NOT NULL default '',
 	`pro_miscellaneous_material_types` text NOT NULL default '',
+	`pro_miscellaneous_material_qntys` text NOT NULL default '',
 	
 	`pro_ref_sheets` varchar(100) NOT NULL default '',
 	
