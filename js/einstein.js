@@ -7421,10 +7421,13 @@ var Proposals = Module.extend({
 									</tr> \
 									<tr> \
 										<td class='pro-td'> \
-											<label for='pro_fluctuation' class='pro-label'>5)&nbsp;Additional Labor Hours:</label> \
+											<label for='pro_fluctuation' class='pro-label'>5)&nbsp;Additional Labor:</label> \
 										</td> \
 										<td class='pro-td'> \
 											<input class='required pro-input ar' type='text' id='pro_fluctuation' value='0' /> \
+										</td> \
+										<td class='pro-td'> \
+											<label class='pro-label'>hrs.</label> \
 										</td> \
 									</tr> \
 								</table> \
@@ -8103,10 +8106,13 @@ var Proposals = Module.extend({
 								</tr> \
 								<tr> \
 									<td class='pro-td'> \
-										<label for='pro_fluctuation' class='pro-label'>5)&nbsp;Additional Labor Hours:</label> \
+										<label for='pro_fluctuation' class='pro-label'>5)&nbsp;Additional Labor:</label> \
 									</td> \
 									<td class='pro-td'> \
 										<input class='required pro-input ar' type='text' id='pro_fluctuation' value='"+data.pro_fluctuation+"' /> \
+									</td> \
+									<td class='pro-td'> \
+										<label class='pro-label'>hrs.</label> \
 									</td> \
 								</tr> \
 							</table> \
