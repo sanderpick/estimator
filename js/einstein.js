@@ -374,7 +374,7 @@ var Login = Module.extend({
 				$("#data").data("rep",null);
 				$("#topper-menu, #main").html("");
 				$("#footer, #topper-menu").hide();
-				$("#logo .left").html("<div style='padding:5px 0 0 0;'><a href='http://lighthousesolar.com' target='_blank'><img src='gfx/logo-black.png' width='' height='24' alt='lighthouse solar logo' /></a></div>");
+				$("#logo .left").html("<div style='padding:5px 0 0 0;'><a href='http://lighthousesolar.com' target='_blank'><img src='gfx/logo-black.png' width='127' height='24' alt='lighthouse solar logo' /></a></div>");
 				this.message = "You are now logged out.";
 				// set the title
 				this.docTitle = "Log In / Einstein Estimator - Lighthouse Solar";

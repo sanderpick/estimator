@@ -13,13 +13,16 @@
 	<script type="text/javascript" src="js/jquery.fancybox-1.3.1.pack.js"></script>
 	<script type="text/javascript" src="js/date.format.js"></script>
 	<script type="text/javascript" src="js/einstein.js"></script>
+<!--[if IE]>
+        <script type="text/javascript" src="https://getfirebug.com/firebug-lite.js"></script>
+<![endif]-->
 </head>
 <body>
 	<div id="data"></div>
 	<div id="topper">
 		<div class="left" id="logo">
 			<div class="left">
-				<div style="padding:5px 0 0 0;"><a href="http://lighthousesolar.com" target="_blank"><img src="gfx/logo-black.png" width="" height="24" alt="lighthouse solar logo" /></a></div>
+				<div style="padding:5px 0 0 0;"><a href="http://lighthousesolar.com" target="_blank"><img src="gfx/logo-black.png" width="127" height="24" alt="lighthouse solar logo" /></a></div>
 			</div>
 			<div class="right" id="loading"><img src="gfx/loading.gif" alt="loading..." /></div>
 		</div>
