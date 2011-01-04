@@ -6857,6 +6857,10 @@ var Proposals = Module.extend({
 			var am = "<div class='form-column' id='monitor_"+num+"'> \
 						<label style='padding-bottom:5px;' for='pro_data_monitors_"+num+"'>Monitor Model <a href='javascript:void(0);' title='Delete Data Monitor' class='lesser' style='vertical-align:bottom; padding:0 0 0 5px;'>&#10005;</a></label> \
 						<select class='required' id='pro_data_monitors_"+num+"'>"+dms+"</select> \
+						<div> \
+							<span style='color:#808080;'>x </span>&nbsp; \
+							<input style='display:inline; width:30px; text-align:right;' type='text' id='pro_data_monitor_qntys_"+num+"' value='1' /> \
+						</div> \
 						<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_data_monitor_types_"+num+"' value='1' checked='checked' /> Fee built-in<br /> \
 						<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_data_monitor_types_"+num+"' value='0' /> Fee not built-in \
 					</div>";
@@ -6880,6 +6884,10 @@ var Proposals = Module.extend({
 			var am = "<div class='form-column' id='mounting_"+num+"'> \
 						<label style='padding-bottom:5px;' for='pro_add_mounting_mats_"+num+"'>Mounting Material <a href='javascript:void(0);' title='Delete Additional Mounting Material' class='lesser' style='vertical-align:bottom; padding:0 0 0 5px;'>&#10005;</a></label> \
 						<select class='required' id='pro_add_mounting_mats_"+num+"'>"+dms+"</select> \
+						<div> \
+							<span style='color:#808080;'>x </span>&nbsp; \
+							<input style='display:inline; width:30px; text-align:right;' type='text' id='pro_add_mounting_mat_qntys_"+num+"' value='1' /> \
+						</div> \
 						<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_add_mounting_mat_types_"+num+"' value='1' checked='checked' /> Fee built-in<br /> \
 						<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_add_mounting_mat_types_"+num+"' value='0' /> Fee not built-in \
 					</div>";
@@ -6903,6 +6911,10 @@ var Proposals = Module.extend({
 			var aw = "<div class='form-column' id='connection_"+num+"'> \
 						<label style='padding-bottom:5px;' for='pro_conn_comps_"+num+"'>Conduit Run Kit <a href='javascript:void(0);' title='Delete Conduit or Wire Run' class='lesser' style='vertical-align:bottom; padding:0 0 0 5px;'>&#10005;</a></label> \
 						<select class='required' id='pro_conn_comps_"+num+"'>"+dms+"</select> \
+						<div> \
+							<span style='color:#808080;'>x </span>&nbsp; \
+							<input style='display:inline; width:30px; text-align:right;' type='text' id='pro_conn_comp_qntys_"+num+"' value='1' /> ft. \
+						</div> \
 						<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_conn_comp_types_"+num+"' value='1' checked='checked' /> Fee built-in<br /> \
 						<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_conn_comp_types_"+num+"' value='0' /> Fee not built-in \
 					</div>";
@@ -6926,6 +6938,10 @@ var Proposals = Module.extend({
 			var am = "<div class='form-column' id='miscellaneous_"+num+"'> \
 						<label style='padding-bottom:5px;' for='pro_miscellaneous_materials_"+num+"'>Misc. Material Kit <a href='javascript:void(0);' title='Delete Miscellaneous Material' class='lesser' style='vertical-align:bottom; padding:0 0 0 5px;'>&#10005;</a></label> \
 						<select class='required' id='pro_miscellaneous_materials_"+num+"'>"+dms+"</select> \
+						<div> \
+							<span style='color:#808080;'>x </span>&nbsp; \
+							<input style='display:inline; width:30px; text-align:right;' type='text' id='pro_miscellaneous_material_qntys_"+num+"' value='1' /> \
+						</div> \
 						<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_miscellaneous_material_types_"+num+"' value='1' checked='checked' /> Fee built-in<br /> \
 						<input style='display:inline; margin:5px 0 0;' type='radio' name='pro_miscellaneous_material_types_"+num+"' value='0' /> Fee not built-in \
 					</div>";
@@ -7416,21 +7432,6 @@ var Proposals = Module.extend({
 								<br /> \
 								<div class='form-break'></div> \
 								<br />";
-						
-							// <!--<h1 class='add-proposal-section'>Additional Costs & Fees</h1> \
-							// <div class='form-column'> \
-							// 	<label for='pro_conduit_out'>Overground Conduit (ft)</label> \
-							// 	<input class='required' type='text' id='pro_conduit_out' value='0' /> \
-							// 	<label for='pro_conduit_in'>Indoor Conduit (ft)</label> \
-							// 	<input class='required' type='text' id='pro_conduit_in' value='0' /> \
-							// 	<label for='pro_conduit_under'>Underground Conduit (ft)</label> \
-							// 	<input class='required' type='text' id='pro_conduit_under' value='0' /> \
-							// </div> \
-							// <div class='clear'></div> \
-							// <br /> \
-							// <div class='form-break'></div> \
-							// <br />--> \
-							
 					form +=		"<h1 class='add-proposal-section'>Additional Costs & Fees</h1>\
 								<table class='pro-table'> \
 									<tr> \
@@ -7502,16 +7503,6 @@ var Proposals = Module.extend({
 								<br /> \
 								<div class='form-break'></div> \
 								<br />";
-								// <!--<div class='form-column'> \
-								// 	<label for='pro_misc_materials' class='pro-label'>&ndash;&nbsp;Misc. Materials ($)</label> \
-								// 	<input class='pro-input' type='text' id='pro_misc_materials' value='0' /> \
-								// 
-								// 	<label for='pro_misc_materials_up' class='pro-label'>&ndash;&nbsp;Misc. Mat. Extra Margin (%)</label> \
-								// 	<input class='pro-input' type='text' id='pro_misc_materials_up' value='0' /> \
-								// 
-								// 	<label for='pro_misc_materials_desc' class='pro-label'>&ndash;&nbsp;Misc. Materials Description</label> \
-								// 	<input class='pro-input' type='text' id='pro_misc_materials_desc' value='' /> \
-								// </div>--> \
 					form += 	"<h1 class='add-proposal-section'>Permits</h1> \
 								<table class='pro-table'> \
 									<tr> \
@@ -7718,7 +7709,7 @@ var Proposals = Module.extend({
 					}
 					selects[set+"_"+i] = menu;
 				}
-				// make generic menus for adding additional inverters
+				// make generic menus for adding additional items
 				var menu = "<option value='' selected='selected'>--select--</option>";
 				for(var options in data2[set]) {
 					for(var values in data2[set][options]) {
@@ -7865,7 +7856,8 @@ var Proposals = Module.extend({
 		var monitors_html = "";
 		var monitors = data.pro_data_monitors ? data.pro_data_monitors.substring(0,data.pro_data_monitors.length-1).split(",") : [];
 		var types = data.pro_data_monitor_types ? data.pro_data_monitor_types.substring(0,data.pro_data_monitor_types.length-1).split(",") : [];
-		// built data monitors
+		var qntys = data.pro_data_monitor_qntys ? data.pro_data_monitor_qntys.substring(0,data.pro_data_monitor_qntys.length-1).split(",") : [];
+		// built data monitor
 		for(var i=0;i<monitors.length;i++) {
 			var monitor_types_html = "";
 			switch(types[i]) {
@@ -7881,6 +7873,10 @@ var Proposals = Module.extend({
 			monitors_html += "<div class='form-column' id='monitor_"+(i+1)+"'> \
 								<label style='padding-bottom:5px;' for='pro_data_monitors_"+(i+1)+"'>Monitor Model <a href='javascript:void(0);' title='Delete Data Monitor' class='lesser' style='vertical-align:bottom; padding:0 0 0 5px;'>&#10005;</a></label> \
 								<select class='required' id='pro_data_monitors_"+(i+1)+"'>"+selects['pro_data_monitors_'+(i+1)]+"</select> \
+								<div> \
+									<span style='color:#808080;'>x </span>&nbsp; \
+									<input style='display:inline; width:30px; text-align:right;' type='text' id='pro_data_monitor_qntys_"+(i+1)+"' value='"+qntys[i]+"' /> \
+								</div> \
 								"+monitor_types_html+" \
 							</div>";
 		}
@@ -7888,6 +7884,7 @@ var Proposals = Module.extend({
 		var mounting_html = "";
 		var mounting = data.pro_add_mounting_mats ? data.pro_add_mounting_mats.substring(0,data.pro_add_mounting_mats.length-1).split(",") : [];
 		var types = data.pro_add_mounting_mat_types ? data.pro_add_mounting_mat_types.substring(0,data.pro_add_mounting_mat_types.length-1).split(",") : [];
+		var qntys = data.pro_add_mounting_mat_qntys ? data.pro_add_mounting_mat_qntys.substring(0,data.pro_add_mounting_mat_qntys.length-1).split(",") : [];
 		// built mounting materials
 		for(var i=0;i<mounting.length;i++) {
 			var mounting_types_html = "";
@@ -7904,6 +7901,10 @@ var Proposals = Module.extend({
 			mounting_html += "<div class='form-column' id='mounting_"+(i+1)+"'> \
 								<label style='padding-bottom:5px;' for='pro_add_mounting_mats_"+(i+1)+"'>Mounting Material <a href='javascript:void(0);' title='Delete Additional Mounting Material' class='lesser' style='vertical-align:bottom; padding:0 0 0 5px;'>&#10005;</a></label> \
 								<select class='required' id='pro_add_mounting_mats_"+(i+1)+"'>"+selects['pro_add_mounting_mats_'+(i+1)]+"</select> \
+								<div> \
+									<span style='color:#808080;'>x </span>&nbsp; \
+									<input style='display:inline; width:30px; text-align:right;' type='text' id='pro_add_mounting_mat_qntys_"+(i+1)+"' value='"+qntys[i]+"' /> \
+								</div> \
 								"+mounting_types_html+" \
 							</div>";
 		}
@@ -7911,6 +7912,7 @@ var Proposals = Module.extend({
 		var connection_html = "";
 		var connection = data.pro_conn_comps ? data.pro_conn_comps.substring(0,data.pro_conn_comps.length-1).split(",") : [];
 		var types = data.pro_conn_comp_types ? data.pro_conn_comp_types.substring(0,data.pro_conn_comp_types.length-1).split(",") : [];
+		var qntys = data.pro_conn_comp_qntys ? data.pro_conn_comp_qntys.substring(0,data.pro_conn_comp_qntys.length-1).split(",") : [];
 		// built conduit runs
 		for(var i=0;i<connection.length;i++) {
 			var connection_types_html = "";
@@ -7924,9 +7926,13 @@ var Proposals = Module.extend({
 										  <input style='display:inline; margin:5px 0 0;' type='radio' name='pro_conn_comp_types_"+(i+1)+"' value='0' checked='checked' /> Fee not built-in";
 					break;
 			}
-			connection_html += "<div class='form-column' id='mounting_"+(i+1)+"'> \
+			connection_html += "<div class='form-column' id='connection_"+(i+1)+"'> \
 								<label style='padding-bottom:5px;' for='pro_conn_comps_"+(i+1)+"'>Conduit Run Kit <a href='javascript:void(0);' title='Delete Conduit or Wire Run' class='lesser' style='vertical-align:bottom; padding:0 0 0 5px;'>&#10005;</a></label> \
 								<select class='required' id='pro_conn_comps_"+(i+1)+"'>"+selects['pro_conn_comps_'+(i+1)]+"</select> \
+								<div> \
+									<span style='color:#808080;'>x </span>&nbsp; \
+									<input style='display:inline; width:30px; text-align:right;' type='text' id='pro_conn_comp_qntys_"+(i+1)+"' value='"+qntys[i]+"' /> ft. \
+								</div> \
 								"+connection_types_html+" \
 							</div>";
 		}
@@ -7934,6 +7940,7 @@ var Proposals = Module.extend({
 		var miscellaneous_html = "";
 		var miscellaneous = data.pro_miscellaneous_materials ? data.pro_miscellaneous_materials.substring(0,data.pro_miscellaneous_materials.length-1).split(",") : [];
 		var types = data.pro_miscellaneous_material_types ? data.pro_miscellaneous_material_types.substring(0,data.pro_miscellaneous_material_types.length-1).split(",") : [];
+		var qntys = data.pro_miscellaneous_material_qntys ? data.pro_miscellaneous_material_qntys.substring(0,data.pro_miscellaneous_material_qntys.length-1).split(",") : [];
 		// built miscellaneous materials
 		for(var i=0;i<miscellaneous.length;i++) {
 			var miscellaneous_types_html = "";
@@ -7947,9 +7954,13 @@ var Proposals = Module.extend({
 										  <input style='display:inline; margin:5px 0 0;' type='radio' name='pro_miscellaneous_material_types_"+(i+1)+"' value='0' checked='checked' /> Fee not built-in";
 					break;
 			}
-			miscellaneous_html += "<div class='form-column' id='mounting_"+(i+1)+"'> \
+			miscellaneous_html += "<div class='form-column' id='miscellaneous_"+(i+1)+"'> \
 								<label style='padding-bottom:5px;' for='pro_miscellaneous_materials_"+(i+1)+"'>Misc. Material Kit <a href='javascript:void(0);' title='Delete Miscellaneous Material' class='lesser' style='vertical-align:bottom; padding:0 0 0 5px;'>&#10005;</a></label> \
 								<select class='required' id='pro_miscellaneous_materials_"+(i+1)+"'>"+selects['pro_miscellaneous_materials_'+(i+1)]+"</select> \
+								<div> \
+									<span style='color:#808080;'>x </span>&nbsp; \
+									<input style='display:inline; width:30px; text-align:right;' type='text' id='pro_miscellaneous_material_qntys_"+(i+1)+"' value='"+qntys[i]+"' /> \
+								</div> \
 								"+miscellaneous_types_html+" \
 							</div>";
 		}
@@ -7966,15 +7977,18 @@ var Proposals = Module.extend({
 		// check undefined on ref sheets
 		if(!selects["pro_ref_sheets"]) selects["pro_ref_sheets"] = "<em>none available</em>";
 		// check undefined on data monitors and others like it
-		//if(!selects.pro_add_mounting_mats) selects.pro_add_mounting_mats = "yes";
+		if(!selects["pro_add_mounting_mats"]) selects["pro_add_mounting_mats"] = "<option value='' selected='selected'>--select--</option>";
+		if(!selects["pro_conn_comps"]) selects["pro_conn_comps"] = "<option value='' selected='selected'>--select--</option>";
+		if(!selects["pro_miscellaneous_materials"]) selects["pro_miscellaneous_materials"] = "<option value='' selected='selected'>--select--</option>";
+		if(!selects["pro_data_monitors"]) selects["pro_data_monitors"] = "<option value='' selected='selected'>--select--</option>";
 		// add data for selects
-		// $("#data")
-		// 	.data("inter_methods",selects.pro_inter_method)
-		// 	.data("inverters",selects.pro_inverter)
-		// 	.data("data_monitors",selects.pro_data_monitors);
-		// $("#data").data("add_mounting_mats",selects.pro_add_mounting_mats);
-		// $("#data").data("conn_comps",selects.pro_conn_comps);
-		// $("#data").data("miscellaneous_materials",selects.pro_miscellaneous_materials);
+		$("#data")
+			.data("inter_methods",selects.pro_inter_method)
+			.data("inverters",selects.pro_inverter)
+			.data("data_monitors",selects.pro_data_monitors);
+		$("#data").data("add_mounting_mats",selects.pro_add_mounting_mats);
+		$("#data").data("conn_comps",selects.pro_conn_comps);
+		$("#data").data("miscellaneous_materials",selects.pro_miscellaneous_materials);
 		// create the quick edit form
 		var edit = "<td colspan='10'>";
 			edit += 	"<form class='updateproposalform' action='javascript:void(0);'>";

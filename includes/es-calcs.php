@@ -76,6 +76,7 @@ function estimate($pro,$publish=FALSE) {
 		// parse data monitors
 		$data_monitors = explode(",",substr($pro->pro_data_monitors,0,-1));
 		$data_monitor_types = explode(",",substr($pro->pro_data_monitor_types,0,-1));
+		$data_monitor_qntys = explode(",",substr($pro->pro_data_monitor_qntys,0,-1));
 		$data_monitors_bi_cost = 0;
 		$data_monitors_bi_price = 0;
 		$data_monitors_cost = 0;
@@ -85,13 +86,13 @@ function estimate($pro,$publish=FALSE) {
 			if($m->getRow('es_data_monitoring',$data_monitors[$i],'dat_model_num')) {
 				if($data_monitor_types[$i]!="") {
 					if($data_monitor_types[$i]==1) {
-						$data_monitors_bi_cost += $m->lastData()->dat_cost;
-						$data_monitors_bi_price += $m->lastData()->dat_price;
+						$data_monitors_bi_cost += $data_monitor_qntys[$i] * $m->lastData()->dat_cost;
+						$data_monitors_bi_price += $data_monitor_qntys[$i] * $m->lastData()->dat_price;
 					}
 				}
-				$data_monitors_cost += $m->lastData()->dat_cost;
-				$data_monitors_price += $m->lastData()->dat_price;
-				$data_monitors_labor_hrs += $m->lastData()->dat_labor;
+				$data_monitors_cost += $data_monitor_qntys[$i] * $m->lastData()->dat_cost;
+				$data_monitors_price += $data_monitor_qntys[$i] * $m->lastData()->dat_price;
+				$data_monitors_labor_hrs += $data_monitor_qntys[$i] * $m->lastData()->dat_labor;
 			}
 		}
 		//$data_monitors_bi_cost *= (1 + $off->off_inventory_up * 0.01);
@@ -101,6 +102,7 @@ function estimate($pro,$publish=FALSE) {
 		// additional mounting materials
 		$add_mounting_mats = explode(",",substr($pro->pro_add_mounting_mats,0,-1));
 		$add_mounting_mat_types = explode(",",substr($pro->pro_add_mounting_mat_types,0,-1));
+		$add_mounting_mat_qntys = explode(",",substr($pro->pro_add_mounting_mat_qntys,0,-1));
 		$add_mounting_mats_bi_cost = 0;
 		$add_mounting_mats_bi_price = 0;
 		$add_mounting_mats_cost = 0;
@@ -110,13 +112,13 @@ function estimate($pro,$publish=FALSE) {
 			if($m->getRow('es_mounting_materials',$add_mounting_mats[$i],'mat_model_num')) {
 				if($add_mounting_mat_types[$i]!="") {
 					if($add_mounting_mat_types[$i]==1) {
-						$add_mounting_mats_bi_cost += $m->lastData()->mat_cost;
-						$add_mounting_mats_bi_price += $m->lastData()->mat_price;
+						$add_mounting_mats_bi_cost += $add_mounting_mat_qntys[$i] * $m->lastData()->mat_cost;
+						$add_mounting_mats_bi_price += $add_mounting_mat_qntys[$i] * $m->lastData()->mat_price;
 					}
 				}
-				$add_mounting_mats_cost += $m->lastData()->mat_cost;
-				$add_mounting_mats_price += $m->lastData()->mat_price;
-				$add_mounting_mats_labor_hrs += $m->lastData()->mat_labor;
+				$add_mounting_mats_cost += $add_mounting_mat_qntys[$i] * $m->lastData()->mat_cost;
+				$add_mounting_mats_price += $add_mounting_mat_qntys[$i] * $m->lastData()->mat_price;
+				$add_mounting_mats_labor_hrs += $add_mounting_mat_qntys[$i] * $m->lastData()->mat_labor;
 			}
 		}
 		//$add_mounting_mats_bi_cost *= (1 + $off->off_inventory_up * 0.01);
@@ -126,6 +128,7 @@ function estimate($pro,$publish=FALSE) {
 		// parse conduit and wire runs
 		$conn_comps = explode(",",substr($pro->pro_conn_comps,0,-1));
 		$conn_comp_types = explode(",",substr($pro->pro_conn_comp_types,0,-1));
+		$conn_comp_qntys = explode(",",substr($pro->pro_conn_comp_qntys,0,-1));
 		$conn_comps_bi_cost = 0;
 		$conn_comps_bi_price = 0;
 		$conn_comps_cost = 0;
@@ -135,15 +138,16 @@ function estimate($pro,$publish=FALSE) {
 			if($m->getRow('es_conn_comps',$conn_comps[$i],'con_model_num')) {
 				if($conn_comp_types[$i]!="") {
 					if($conn_comp_types[$i]==1) {
-						$conn_comps_bi_cost += $m->lastData()->con_cost;
-						$conn_comps_bi_price += $m->lastData()->con_price;
+						$conn_comps_bi_cost += $conn_comp_qntys[$i] * $m->lastData()->con_cost;
+						$conn_comps_bi_price += $conn_comp_qntys[$i] * $m->lastData()->con_price;
 					}
 				}
-				$conn_comps_cost += $m->lastData()->con_cost;
-				$conn_comps_price += $m->lastData()->con_price;
-				$conn_comps_labor_hrs += $m->lastData()->con_labor;
+				$conn_comps_cost += $conn_comp_qntys[$i] * $m->lastData()->con_cost;
+				$conn_comps_price += $conn_comp_qntys[$i] * $m->lastData()->con_price;
+				$conn_comps_labor_hrs += $conn_comp_qntys[$i] * $m->lastData()->con_labor;
 			}
 		}
+		$conn_comps_labor_hrs = round(100 * $conn_comps_labor_hrs / 20) / 100;
 		//$conn_comps_bi_cost *= (1 + $off->off_inventory_up * 0.01);
 		//$conn_comps_bi_price *= (1 + $off->off_inventory_up * 0.01) * (1 + $off->off_inventory_margin * 0.01);
 		//$conn_comps_cost *= (1 + $off->off_inventory_up * 0.01);
@@ -151,7 +155,7 @@ function estimate($pro,$publish=FALSE) {
 		// parse miscellaneous materials
 		$miscellaneous_materials = explode(",",substr($pro->pro_miscellaneous_materials,0,-1));
 		$miscellaneous_material_types = explode(",",substr($pro->pro_miscellaneous_material_types,0,-1));
-		//error_log($pro->pro_miscellaneous_material_types);
+		$miscellaneous_material_qntys = explode(",",substr($pro->pro_miscellaneous_material_qntys,0,-1));
 		$miscellaneous_materials_bi_cost = 0;
 		$miscellaneous_materials_bi_price = 0;
 		$miscellaneous_materials_cost = 0;
@@ -161,13 +165,13 @@ function estimate($pro,$publish=FALSE) {
 			if($m->getRow('es_miscellaneous_materials',$miscellaneous_materials[$i],'mis_model_num')) {
 				if($miscellaneous_material_types[$i]!="") {
 					if($miscellaneous_material_types[$i]==1) {
-						$miscellaneous_materials_bi_cost += $m->lastData()->mis_cost;
-						$miscellaneous_materials_bi_price += $m->lastData()->mis_price;
+						$miscellaneous_materials_bi_cost += $miscellaneous_material_qntys[$i] * $m->lastData()->mis_cost;
+						$miscellaneous_materials_bi_price += $miscellaneous_material_qntys[$i] * $m->lastData()->mis_price;
 					}
 				}
-				$miscellaneous_materials_cost += $m->lastData()->mis_cost;
-				$miscellaneous_materials_price += $m->lastData()->mis_price;
-				$miscellaneous_materials_labor_hrs += $m->lastData()->mis_labor;
+				$miscellaneous_materials_cost += $miscellaneous_material_qntys[$i] * $m->lastData()->mis_cost;
+				$miscellaneous_materials_price += $miscellaneous_material_qntys[$i] * $m->lastData()->mis_price;
+				$miscellaneous_materials_labor_hrs += $miscellaneous_material_qntys[$i] * $m->lastData()->mis_labor;
 			}
 		}
 		//$miscellaneous_materials_bi_cost *= (1 + $off->off_inventory_up * 0.01);
@@ -200,13 +204,15 @@ function estimate($pro,$publish=FALSE) {
 		$add_labor_hrs += $data_monitors_labor_hrs + $add_mounting_mats_labor_hrs + $conn_comps_labor_hrs + $miscellaneous_materials_labor_hrs;
 		####//$add_labor_hrs = $inter_labor_hrs+$data_monitors_labor_hrs+$conduit_labor_hrs+$zones_labor_hrs+$drive_labor_hrs;
 		$add_labor_cost = $add_labor_hrs * $labor_unit_cost;
-		$add_labor_price = ($add_labor_hrs * $labor_unit_price) + $pro->pro_fluctuation;
+		$add_labor_price = ($add_labor_hrs + $pro->pro_fluctuation) * $labor_unit_price;
 		// account for off season
-		$winter_labor_cost = ($pro->pro_winter==1) ? ($pro_install_labor_cost + $add_labor_cost) * $off->off_winter_up * 0.01 : 0;
-		$winter_labor_price = ($pro->pro_winter==1) ? ($pro_install_labor_price + $add_labor_price) * $off->off_winter_up * 0.01 : 0;
+		$winter_labor_hrs = ($pro->pro_winter==1) ? ($pro_install_labor_hrs + $add_labor_hrs) * $off->off_winter_up * 0.01 : 0;
+		$winter_labor_cost = $labor_unit_cost * $winter_labor_hrs;
+		$winter_labor_price = $labor_unit_price * $winter_labor_hrs;
 		// account for others involved
-		$others_labor_cost = ($pro->pro_others_involved==1) ? ($pro_install_labor_cost + $add_labor_cost) * $off->off_others_up * 0.01 : 0;
-		$others_labor_price = ($pro->pro_others_involved==1) ? ($pro_install_labor_price + $add_labor_price) * $off->off_others_up * 0.01 : 0;
+		$others_labor_hrs = ($pro->pro_others_involved==1) ? ($pro_install_labor_hrs + $add_labor_hrs) * $off->off_others_up * 0.01 : 0;
+		$others_labor_cost = $labor_unit_cost * $others_labor_hrs;
+		$others_labor_price = $labor_unit_price * $others_labor_hrs;
 		// inverters
 		$inverters = explode(",",substr($pro->pro_inverter,0,-1));
 		$inverter_cost = 0;
@@ -224,6 +230,7 @@ function estimate($pro,$publish=FALSE) {
 		//$misc_materials_price = $misc_materials_cost*(1 + $pro->pro_misc_materials_up*0.01);
 		///////////////////////////////////////////////////////// TOTALS
 		// install labor
+		$install_labor_total_hrs = $pro_install_labor_hrs + $add_labor_hrs + $winter_labor_hrs + $others_labor_hrs;
 		$install_labor_total_cost = $pro_install_labor_cost + $add_labor_cost + $winter_labor_cost + $others_labor_cost;
 		$install_labor_total_price = $pro_install_labor_price + $add_labor_price + $winter_labor_price + $others_labor_price;
 		############################################################################################################
@@ -322,7 +329,7 @@ function estimate($pro,$publish=FALSE) {
 			'size' => $pro_size,
 			'production' => $pro_production,
 			'install_labor' => $install_labor_total_price,
-			'install_labor_hrs' => $pro_install_labor_hrs + $add_labor_hrs,
+			'install_labor_hrs' => $install_labor_total_hrs,
 			'inventory' => $inventory_price,
 			'non_inventory' => $non_inventory_price,
 			'permit' => $permit_price,
@@ -343,7 +350,7 @@ function estimate($pro,$publish=FALSE) {
 			'ppw_gross' => round($ppw_gross * 100) / 100,
 			'ppw_net' => round($ppw_net * 100) / 100,
 			// for display only
-			'misc_materials' => $non_inventory_price + $data_monitors_bi_price + $add_mounting_mats_bi_price + $conn_comps_bi_price + $miscellaneous_materials_bi_price,
+			'misc_materials' => $data_monitors_bi_price + $add_mounting_mats_bi_price + $conn_comps_bi_price + $miscellaneous_materials_bi_price,
 			'comp_total' => $inventory_price + $non_inventory_price,
 			'subtotal' => $cus_price - $tax_price,
 			'cus_price' => $cus_price,

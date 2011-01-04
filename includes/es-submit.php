@@ -391,56 +391,161 @@ function addProposal() {
 		}
 	}
 	// parse monitors
-	$pro['pro_data_monitors'] = "";
-	$pro['pro_data_monitor_types'] = "";
+	$monitors = array();
+	$monitor_types = array();
+	$monitor_qntys = array();
 	foreach($pro as $key=>$val) {
 		if(substr($key,0,18)=="pro_data_monitors_") {
-			$pro['pro_data_monitors'] .= $val.",";
+			array_push($monitors,$val);
 			unset($pro[$key]);
 		} else if(substr($key,0,23)=="pro_data_monitor_types_") {
-			$pro['pro_data_monitor_types'] .= $val.",";
+			array_push($monitor_types,$val);
+			unset($pro[$key]);
+		} else if(substr($key,0,23)=="pro_data_monitor_qntys_") {
+			array_push($monitor_qntys,$val);
 			unset($pro[$key]);
 		}
+	}
+	// add monitors if duplicate
+	for($i=0;$i<count($monitors);$i++) {
+		for($j=0;$j<count($monitors);$j++) {
+			if($monitors[$j]==$monitors[$i] && $monitor_types[$j]==$monitor_types[$i] && $i!=$j && $monitors[$i]!=NULL && $monitors[$j]!=NULL) {
+				$monitor_qntys[$i] += $monitor_qntys[$j];
+				$monitors[$j] = NULL;
+				$monitor_types[$j] = NULL;
+				$monitor_qntys[$j] = NULL;
+			}
+		}
+	}
+	$monitors = array_values(array_filter($monitors,"strlen"));
+	$monitor_types = array_values(array_filter($monitor_types,"strlen"));
+	$monitor_qntys = array_values(array_filter($monitor_qntys,"strlen"));
+	// write monitors
+	$pro['pro_data_monitors'] = "";
+	$pro['pro_data_monitor_types'] = "";
+	$pro['pro_data_monitor_qntys'] = "";
+	for($i=0;$i<count($monitors);$i++) {
+		$pro['pro_data_monitors'] .= $monitors[$i].",";
+		$pro['pro_data_monitor_types'] .= $monitor_types[$i].",";
+		$pro['pro_data_monitor_qntys'] .= $monitor_qntys[$i].",";
 	}
 	// parse additional mounting materials
-	$pro['pro_add_mounting_mats'] = "";
-	$pro['pro_add_mounting_mat_types'] = "";
+	$mounting_mats = array();
+	$mounting_mat_types = array();
+	$mounting_mat_qntys = array();
 	foreach($pro as $key=>$val) {
 		if(substr($key,0,22)=="pro_add_mounting_mats_") {
-			$pro['pro_add_mounting_mats'] .= $val.",";
+			array_push($mounting_mats,$val);
 			unset($pro[$key]);
 		} else if(substr($key,0,27)=="pro_add_mounting_mat_types_") {
-			$pro['pro_add_mounting_mat_types'] .= $val.",";
+			array_push($mounting_mat_types,$val);
+			unset($pro[$key]);
+		} else if(substr($key,0,27)=="pro_add_mounting_mat_qntys_") {
+			array_push($mounting_mat_qntys,$val);
 			unset($pro[$key]);
 		}
+	}
+	// add mounting mats if duplicate
+	for($i=0;$i<count($mounting_mats);$i++) {
+		for($j=0;$j<count($mounting_mats);$j++) {
+			if($mounting_mats[$j]==$mounting_mats[$i] && $mounting_mat_types[$j]==$mounting_mat_types[$i] && $i!=$j && $mounting_mats[$i]!=NULL && $mounting_mats[$j]!=NULL) {
+				$mounting_mat_qntys[$i] += $mounting_mat_qntys[$j];
+				$mounting_mats[$j] = NULL;
+				$mounting_mat_types[$j] = NULL;
+				$mounting_mat_qntys[$j] = NULL;
+			}
+		}
+	}
+	$mounting_mats = array_values(array_filter($mounting_mats,"strlen"));
+	$mounting_mat_types = array_values(array_filter($mounting_mat_types,"strlen"));
+	$mounting_mat_qntys = array_values(array_filter($mounting_mat_qntys,"strlen"));
+	// write mounting mats
+	$pro['pro_add_mounting_mats'] = "";
+	$pro['pro_add_mounting_mat_types'] = "";
+	$pro['pro_add_mounting_mat_qntys'] = "";
+	for($i=0;$i<count($mounting_mats);$i++) {
+		$pro['pro_add_mounting_mats'] .= $mounting_mats[$i].",";
+		$pro['pro_add_mounting_mat_types'] .= $mounting_mat_types[$i].",";
+		$pro['pro_add_mounting_mat_qntys'] .= $mounting_mat_qntys[$i].",";
 	}
 	// parse conduit and wire runs
-	$pro['pro_conn_comps'] = "";
-	$pro['pro_conn_comp_types'] = "";
+	$conn_comps = array();
+	$conn_comp_types = array();
+	$conn_comp_qntys = array();
 	foreach($pro as $key=>$val) {
 		if(substr($key,0,15)=="pro_conn_comps_") {
-			$pro['pro_conn_comps'] .= $val.",";
+			array_push($conn_comps,$val);
 			unset($pro[$key]);
 		} else if(substr($key,0,20)=="pro_conn_comp_types_") {
-			$pro['pro_conn_comp_types'] .= $val.",";
+			array_push($conn_comp_types,$val);
+			unset($pro[$key]);
+		} else if(substr($key,0,20)=="pro_conn_comp_qntys_") {
+			array_push($conn_comp_qntys,$val);
 			unset($pro[$key]);
 		}
+	}
+	// add conduit and wire runs if duplicate
+	for($i=0;$i<count($conn_comps);$i++) {
+		for($j=0;$j<count($conn_comps);$j++) {
+			if($conn_comps[$j]==$conn_comps[$i] && $conn_comp_types[$j]==$conn_comp_types[$i] && $i!=$j && $conn_comps[$i]!=NULL && $conn_comps[$j]!=NULL) {
+				$conn_comp_qntys[$i] += $conn_comp_qntys[$j];
+				$conn_comps[$j] = NULL;
+				$conn_comp_types[$j] = NULL;
+				$conn_comp_qntys[$j] = NULL;
+			}
+		}
+	}
+	$conn_comps = array_values(array_filter($conn_comps,"strlen"));
+	$conn_comp_types = array_values(array_filter($conn_comp_types,"strlen"));
+	$conn_comp_qntys = array_values(array_filter($conn_comp_qntys,"strlen"));
+	// write conduit and wire runs
+	$pro['pro_conn_comps'] = "";
+	$pro['pro_conn_comp_types'] = "";
+	$pro['pro_conn_comp_qntys'] = "";
+	for($i=0;$i<count($conn_comps);$i++) {
+		$pro['pro_conn_comps'] .= $conn_comps[$i].",";
+		$pro['pro_conn_comp_types'] .= $conn_comp_types[$i].",";
+		$pro['pro_conn_comp_qntys'] .= $conn_comp_qntys[$i].",";
 	}
 	// parse miscellaneous materials
-	$pro['pro_miscellaneous_materials'] = "";
-	$pro['pro_miscellaneous_material_types'] = "";
+	$miscellaneous_materials = array();
+	$miscellaneous_material_types = array();
+	$miscellaneous_material_qntys = array();
 	foreach($pro as $key=>$val) {
 		if(substr($key,0,28)=="pro_miscellaneous_materials_") {
-			$pro['pro_miscellaneous_materials'] .= $val.",";
+			array_push($miscellaneous_materials,$val);
 			unset($pro[$key]);
 		} else if(substr($key,0,33)=="pro_miscellaneous_material_types_") {
-			$pro['pro_miscellaneous_material_types'] .= $val.",";
+			array_push($miscellaneous_material_types,$val);
+			unset($pro[$key]);
+		} else if(substr($key,0,33)=="pro_miscellaneous_material_qntys_") {
+			array_push($miscellaneous_material_qntys,$val);
 			unset($pro[$key]);
 		}
 	}
-	// get name
-	$m->getRow('es_jobs',$pro['pro_jobID']);
-	$pro['pro_name'] = $m->lastData()->job_name;
+	// add miscellaneous materials if duplicate
+	for($i=0;$i<count($miscellaneous_materials);$i++) {
+		for($j=0;$j<count($miscellaneous_materials);$j++) {
+			if($miscellaneous_materials[$j]==$miscellaneous_materials[$i] && $miscellaneous_material_types[$j]==$miscellaneous_material_types[$i] && $i!=$j && $miscellaneous_materials[$i]!=NULL && $miscellaneous_materials[$j]!=NULL) {
+				$miscellaneous_material_qntys[$i] += $miscellaneous_material_qntys[$j];
+				$miscellaneous_materials[$j] = NULL;
+				$miscellaneous_material_types[$j] = NULL;
+				$miscellaneous_material_qntys[$j] = NULL;
+			}
+		}
+	}
+	$miscellaneous_materials = array_values(array_filter($miscellaneous_materials,"strlen"));
+	$miscellaneous_material_types = array_values(array_filter($miscellaneous_material_types,"strlen"));
+	$miscellaneous_material_qntys = array_values(array_filter($miscellaneous_material_qntys,"strlen"));
+	// write miscellaneous materials
+	$pro['pro_miscellaneous_materials'] = "";
+	$pro['pro_miscellaneous_material_types'] = "";
+	$pro['pro_miscellaneous_material_qntys'] = "";
+	for($i=0;$i<count($miscellaneous_materials);$i++) {
+		$pro['pro_miscellaneous_materials'] .= $miscellaneous_materials[$i].",";
+		$pro['pro_miscellaneous_material_types'] .= $miscellaneous_material_types[$i].",";
+		$pro['pro_miscellaneous_material_qntys'] .= $miscellaneous_material_qntys[$i].",";
+	}
 	// set date
 	$pro['pro_date'] = date('Y-m-d H:i:s');
 	// make link
@@ -845,52 +950,160 @@ function updateProposal() {
 		}
 	}
 	// parse monitors
-	$pro['pro_data_monitors'] = "";
-	$pro['pro_data_monitor_types'] = "";
+	$monitors = array();
+	$monitor_types = array();
+	$monitor_qntys = array();
 	foreach($pro as $key=>$val) {
 		if(substr($key,0,18)=="pro_data_monitors_") {
-			$pro['pro_data_monitors'] .= $val.",";
+			array_push($monitors,$val);
 			unset($pro[$key]);
 		} else if(substr($key,0,23)=="pro_data_monitor_types_") {
-			$pro['pro_data_monitor_types'] .= $val.",";
+			array_push($monitor_types,$val);
+			unset($pro[$key]);
+		} else if(substr($key,0,23)=="pro_data_monitor_qntys_") {
+			array_push($monitor_qntys,$val);
 			unset($pro[$key]);
 		}
+	}
+	// add monitors if duplicate
+	for($i=0;$i<count($monitors);$i++) {
+		for($j=0;$j<count($monitors);$j++) {
+			if($monitors[$j]==$monitors[$i] && $monitor_types[$j]==$monitor_types[$i] && $i!=$j && $monitors[$i]!=NULL && $monitors[$j]!=NULL) {
+				$monitor_qntys[$i] += $monitor_qntys[$j];
+				$monitors[$j] = NULL;
+				$monitor_types[$j] = NULL;
+				$monitor_qntys[$j] = NULL;
+			}
+		}
+	}
+	$monitors = array_values(array_filter($monitors,"strlen"));
+	$monitor_types = array_values(array_filter($monitor_types,"strlen"));
+	$monitor_qntys = array_values(array_filter($monitor_qntys,"strlen"));
+	// write monitors
+	$pro['pro_data_monitors'] = "";
+	$pro['pro_data_monitor_types'] = "";
+	$pro['pro_data_monitor_qntys'] = "";
+	for($i=0;$i<count($monitors);$i++) {
+		$pro['pro_data_monitors'] .= $monitors[$i].",";
+		$pro['pro_data_monitor_types'] .= $monitor_types[$i].",";
+		$pro['pro_data_monitor_qntys'] .= $monitor_qntys[$i].",";
 	}
 	// parse additional mounting materials
-	$pro['pro_add_mounting_mats'] = "";
-	$pro['pro_add_mounting_mat_types'] = "";
+	$mounting_mats = array();
+	$mounting_mat_types = array();
+	$mounting_mat_qntys = array();
 	foreach($pro as $key=>$val) {
 		if(substr($key,0,22)=="pro_add_mounting_mats_") {
-			$pro['pro_add_mounting_mats'] .= $val.",";
+			array_push($mounting_mats,$val);
 			unset($pro[$key]);
 		} else if(substr($key,0,27)=="pro_add_mounting_mat_types_") {
-			$pro['pro_add_mounting_mat_types'] .= $val.",";
+			array_push($mounting_mat_types,$val);
+			unset($pro[$key]);
+		} else if(substr($key,0,27)=="pro_add_mounting_mat_qntys_") {
+			array_push($mounting_mat_qntys,$val);
 			unset($pro[$key]);
 		}
+	}
+	// add mounting mats if duplicate
+	for($i=0;$i<count($mounting_mats);$i++) {
+		for($j=0;$j<count($mounting_mats);$j++) {
+			if($mounting_mats[$j]==$mounting_mats[$i] && $mounting_mat_types[$j]==$mounting_mat_types[$i] && $i!=$j && $mounting_mats[$i]!=NULL && $mounting_mats[$j]!=NULL) {
+				$mounting_mat_qntys[$i] += $mounting_mat_qntys[$j];
+				$mounting_mats[$j] = NULL;
+				$mounting_mat_types[$j] = NULL;
+				$mounting_mat_qntys[$j] = NULL;
+			}
+		}
+	}
+	$mounting_mats = array_values(array_filter($mounting_mats,"strlen"));
+	$mounting_mat_types = array_values(array_filter($mounting_mat_types,"strlen"));
+	$mounting_mat_qntys = array_values(array_filter($mounting_mat_qntys,"strlen"));
+	// write mounting mats
+	$pro['pro_add_mounting_mats'] = "";
+	$pro['pro_add_mounting_mat_types'] = "";
+	$pro['pro_add_mounting_mat_qntys'] = "";
+	for($i=0;$i<count($mounting_mats);$i++) {
+		$pro['pro_add_mounting_mats'] .= $mounting_mats[$i].",";
+		$pro['pro_add_mounting_mat_types'] .= $mounting_mat_types[$i].",";
+		$pro['pro_add_mounting_mat_qntys'] .= $mounting_mat_qntys[$i].",";
 	}
 	// parse conduit and wire runs
-	$pro['pro_conn_comps'] = "";
-	$pro['pro_conn_comp_types'] = "";
+	$conn_comps = array();
+	$conn_comp_types = array();
+	$conn_comp_qntys = array();
 	foreach($pro as $key=>$val) {
 		if(substr($key,0,15)=="pro_conn_comps_") {
-			$pro['pro_conn_comps'] .= $val.",";
+			array_push($conn_comps,$val);
 			unset($pro[$key]);
 		} else if(substr($key,0,20)=="pro_conn_comp_types_") {
-			$pro['pro_conn_comp_types'] .= $val.",";
+			array_push($conn_comp_types,$val);
+			unset($pro[$key]);
+		} else if(substr($key,0,20)=="pro_conn_comp_qntys_") {
+			array_push($conn_comp_qntys,$val);
 			unset($pro[$key]);
 		}
 	}
+	// add conduit and wire runs if duplicate
+	for($i=0;$i<count($conn_comps);$i++) {
+		for($j=0;$j<count($conn_comps);$j++) {
+			if($conn_comps[$j]==$conn_comps[$i] && $conn_comp_types[$j]==$conn_comp_types[$i] && $i!=$j && $conn_comps[$i]!=NULL && $conn_comps[$j]!=NULL) {
+				$conn_comp_qntys[$i] += $conn_comp_qntys[$j];
+				$conn_comps[$j] = NULL;
+				$conn_comp_types[$j] = NULL;
+				$conn_comp_qntys[$j] = NULL;
+			}
+		}
+	}
+	$conn_comps = array_values(array_filter($conn_comps,"strlen"));
+	$conn_comp_types = array_values(array_filter($conn_comp_types,"strlen"));
+	$conn_comp_qntys = array_values(array_filter($conn_comp_qntys,"strlen"));
+	// write conduit and wire runs
+	$pro['pro_conn_comps'] = "";
+	$pro['pro_conn_comp_types'] = "";
+	$pro['pro_conn_comp_qntys'] = "";
+	for($i=0;$i<count($conn_comps);$i++) {
+		$pro['pro_conn_comps'] .= $conn_comps[$i].",";
+		$pro['pro_conn_comp_types'] .= $conn_comp_types[$i].",";
+		$pro['pro_conn_comp_qntys'] .= $conn_comp_qntys[$i].",";
+	}
 	// parse miscellaneous materials
-	$pro['pro_miscellaneous_materials'] = "";
-	$pro['pro_miscellaneous_material_types'] = "";
+	$miscellaneous_materials = array();
+	$miscellaneous_material_types = array();
+	$miscellaneous_material_qntys = array();
 	foreach($pro as $key=>$val) {
 		if(substr($key,0,28)=="pro_miscellaneous_materials_") {
-			$pro['pro_miscellaneous_materials'] .= $val.",";
+			array_push($miscellaneous_materials,$val);
 			unset($pro[$key]);
 		} else if(substr($key,0,33)=="pro_miscellaneous_material_types_") {
-			$pro['pro_miscellaneous_material_types'] .= $val.",";
+			array_push($miscellaneous_material_types,$val);
+			unset($pro[$key]);
+		} else if(substr($key,0,33)=="pro_miscellaneous_material_qntys_") {
+			array_push($miscellaneous_material_qntys,$val);
 			unset($pro[$key]);
 		}
+	}
+	// add miscellaneous materials if duplicate
+	for($i=0;$i<count($miscellaneous_materials);$i++) {
+		for($j=0;$j<count($miscellaneous_materials);$j++) {
+			if($miscellaneous_materials[$j]==$miscellaneous_materials[$i] && $miscellaneous_material_types[$j]==$miscellaneous_material_types[$i] && $i!=$j && $miscellaneous_materials[$i]!=NULL && $miscellaneous_materials[$j]!=NULL) {
+				$miscellaneous_material_qntys[$i] += $miscellaneous_material_qntys[$j];
+				$miscellaneous_materials[$j] = NULL;
+				$miscellaneous_material_types[$j] = NULL;
+				$miscellaneous_material_qntys[$j] = NULL;
+			}
+		}
+	}
+	$miscellaneous_materials = array_values(array_filter($miscellaneous_materials,"strlen"));
+	$miscellaneous_material_types = array_values(array_filter($miscellaneous_material_types,"strlen"));
+	$miscellaneous_material_qntys = array_values(array_filter($miscellaneous_material_qntys,"strlen"));
+	// write miscellaneous materials
+	$pro['pro_miscellaneous_materials'] = "";
+	$pro['pro_miscellaneous_material_types'] = "";
+	$pro['pro_miscellaneous_material_qntys'] = "";
+	for($i=0;$i<count($miscellaneous_materials);$i++) {
+		$pro['pro_miscellaneous_materials'] .= $miscellaneous_materials[$i].",";
+		$pro['pro_miscellaneous_material_types'] .= $miscellaneous_material_types[$i].",";
+		$pro['pro_miscellaneous_material_qntys'] .= $miscellaneous_material_qntys[$i].",";
 	}
 	// update date
 	$pro['pro_date'] = date('Y-m-d H:i:s');
@@ -1256,8 +1469,14 @@ function getOptions() {
 		if($m->getRow("es_customers",$job->job_customerID)) $cus = $m->lastData();
 		if($m->getRow("es_reps",$job->job_repID)) $rep = $m->lastData();
 		// write TO
-		$customer_title = $cus->cus_company!="" ? $cus->cus_company : $cus->cus_name_first." ".$cus->cus_name_last;
-		$job_title = $job->job_company!="" ? $job->job_company : ($job->job_contact!="" ? $job->job_contact : $customer_title);
+		$customer_title = $cus->cus_name_first." ".$cus->cus_name_last;
+		$job_title = $job->job_contact!="" ? 
+						$job->job_contact : 
+						($customer_title!="" ?
+							$customer_title :
+							($job->job_company!="" ? 
+								$job->job_company :
+								$cus->cus_company));
 		// write letter - HTML
 		// $cover_letter = "Dear ".$job_title.",\n\n".$off->off_cover_letter;
 		// $cover_letter .= "\n\nYours truly,\n".$rep->rep_name_first." ".$rep->rep_name_last.", <em>".$rep->rep_title."</em>\n\n";
@@ -1481,52 +1700,160 @@ function peakProposal() {
 		}
 	}
 	// parse monitors
-	$pro['pro_data_monitors'] = "";
-	$pro['pro_data_monitor_types'] = "";
+	$monitors = array();
+	$monitor_types = array();
+	$monitor_qntys = array();
 	foreach($pro as $key=>$val) {
 		if(substr($key,0,18)=="pro_data_monitors_") {
-			$pro['pro_data_monitors'] .= $val.",";
+			array_push($monitors,$val);
 			unset($pro[$key]);
 		} else if(substr($key,0,23)=="pro_data_monitor_types_") {
-			$pro['pro_data_monitor_types'] .= $val.",";
+			array_push($monitor_types,$val);
+			unset($pro[$key]);
+		} else if(substr($key,0,23)=="pro_data_monitor_qntys_") {
+			array_push($monitor_qntys,$val);
 			unset($pro[$key]);
 		}
+	}
+	// add monitors if duplicate
+	for($i=0;$i<count($monitors);$i++) {
+		for($j=0;$j<count($monitors);$j++) {
+			if($monitors[$j]==$monitors[$i] && $monitor_types[$j]==$monitor_types[$i] && $i!=$j && $monitors[$i]!=NULL && $monitors[$j]!=NULL) {
+				$monitor_qntys[$i] += $monitor_qntys[$j];
+				$monitors[$j] = NULL;
+				$monitor_types[$j] = NULL;
+				$monitor_qntys[$j] = NULL;
+			}
+		}
+	}
+	$monitors = array_values(array_filter($monitors,"strlen"));
+	$monitor_types = array_values(array_filter($monitor_types,"strlen"));
+	$monitor_qntys = array_values(array_filter($monitor_qntys,"strlen"));
+	// write monitors
+	$pro['pro_data_monitors'] = "";
+	$pro['pro_data_monitor_types'] = "";
+	$pro['pro_data_monitor_qntys'] = "";
+	for($i=0;$i<count($monitors);$i++) {
+		$pro['pro_data_monitors'] .= $monitors[$i].",";
+		$pro['pro_data_monitor_types'] .= $monitor_types[$i].",";
+		$pro['pro_data_monitor_qntys'] .= $monitor_qntys[$i].",";
 	}
 	// parse additional mounting materials
-	$pro['pro_add_mounting_mats'] = "";
-	$pro['pro_add_mounting_mat_types'] = "";
+	$mounting_mats = array();
+	$mounting_mat_types = array();
+	$mounting_mat_qntys = array();
 	foreach($pro as $key=>$val) {
 		if(substr($key,0,22)=="pro_add_mounting_mats_") {
-			$pro['pro_add_mounting_mats'] .= $val.",";
+			array_push($mounting_mats,$val);
 			unset($pro[$key]);
 		} else if(substr($key,0,27)=="pro_add_mounting_mat_types_") {
-			$pro['pro_add_mounting_mat_types'] .= $val.",";
+			array_push($mounting_mat_types,$val);
+			unset($pro[$key]);
+		} else if(substr($key,0,27)=="pro_add_mounting_mat_qntys_") {
+			array_push($mounting_mat_qntys,$val);
 			unset($pro[$key]);
 		}
+	}
+	// add mounting mats if duplicate
+	for($i=0;$i<count($mounting_mats);$i++) {
+		for($j=0;$j<count($mounting_mats);$j++) {
+			if($mounting_mats[$j]==$mounting_mats[$i] && $mounting_mat_types[$j]==$mounting_mat_types[$i] && $i!=$j && $mounting_mats[$i]!=NULL && $mounting_mats[$j]!=NULL) {
+				$mounting_mat_qntys[$i] += $mounting_mat_qntys[$j];
+				$mounting_mats[$j] = NULL;
+				$mounting_mat_types[$j] = NULL;
+				$mounting_mat_qntys[$j] = NULL;
+			}
+		}
+	}
+	$mounting_mats = array_values(array_filter($mounting_mats,"strlen"));
+	$mounting_mat_types = array_values(array_filter($mounting_mat_types,"strlen"));
+	$mounting_mat_qntys = array_values(array_filter($mounting_mat_qntys,"strlen"));
+	// write mounting mats
+	$pro['pro_add_mounting_mats'] = "";
+	$pro['pro_add_mounting_mat_types'] = "";
+	$pro['pro_add_mounting_mat_qntys'] = "";
+	for($i=0;$i<count($mounting_mats);$i++) {
+		$pro['pro_add_mounting_mats'] .= $mounting_mats[$i].",";
+		$pro['pro_add_mounting_mat_types'] .= $mounting_mat_types[$i].",";
+		$pro['pro_add_mounting_mat_qntys'] .= $mounting_mat_qntys[$i].",";
 	}
 	// parse conduit and wire runs
-	$pro['pro_conn_comps'] = "";
-	$pro['pro_conn_comp_types'] = "";
+	$conn_comps = array();
+	$conn_comp_types = array();
+	$conn_comp_qntys = array();
 	foreach($pro as $key=>$val) {
 		if(substr($key,0,15)=="pro_conn_comps_") {
-			$pro['pro_conn_comps'] .= $val.",";
+			array_push($conn_comps,$val);
 			unset($pro[$key]);
 		} else if(substr($key,0,20)=="pro_conn_comp_types_") {
-			$pro['pro_conn_comp_types'] .= $val.",";
+			array_push($conn_comp_types,$val);
+			unset($pro[$key]);
+		} else if(substr($key,0,20)=="pro_conn_comp_qntys_") {
+			array_push($conn_comp_qntys,$val);
 			unset($pro[$key]);
 		}
 	}
+	// add conduit and wire runs if duplicate
+	for($i=0;$i<count($conn_comps);$i++) {
+		for($j=0;$j<count($conn_comps);$j++) {
+			if($conn_comps[$j]==$conn_comps[$i] && $conn_comp_types[$j]==$conn_comp_types[$i] && $i!=$j && $conn_comps[$i]!=NULL && $conn_comps[$j]!=NULL) {
+				$conn_comp_qntys[$i] += $conn_comp_qntys[$j];
+				$conn_comps[$j] = NULL;
+				$conn_comp_types[$j] = NULL;
+				$conn_comp_qntys[$j] = NULL;
+			}
+		}
+	}
+	$conn_comps = array_values(array_filter($conn_comps,"strlen"));
+	$conn_comp_types = array_values(array_filter($conn_comp_types,"strlen"));
+	$conn_comp_qntys = array_values(array_filter($conn_comp_qntys,"strlen"));
+	// write conduit and wire runs
+	$pro['pro_conn_comps'] = "";
+	$pro['pro_conn_comp_types'] = "";
+	$pro['pro_conn_comp_qntys'] = "";
+	for($i=0;$i<count($conn_comps);$i++) {
+		$pro['pro_conn_comps'] .= $conn_comps[$i].",";
+		$pro['pro_conn_comp_types'] .= $conn_comp_types[$i].",";
+		$pro['pro_conn_comp_qntys'] .= $conn_comp_qntys[$i].",";
+	}
 	// parse miscellaneous materials
-	$pro['pro_miscellaneous_materials'] = "";
-	$pro['pro_miscellaneous_material_types'] = "";
+	$miscellaneous_materials = array();
+	$miscellaneous_material_types = array();
+	$miscellaneous_material_qntys = array();
 	foreach($pro as $key=>$val) {
 		if(substr($key,0,28)=="pro_miscellaneous_materials_") {
-			$pro['pro_miscellaneous_materials'] .= $val.",";
+			array_push($miscellaneous_materials,$val);
 			unset($pro[$key]);
 		} else if(substr($key,0,33)=="pro_miscellaneous_material_types_") {
-			$pro['pro_miscellaneous_material_types'] .= $val.",";
+			array_push($miscellaneous_material_types,$val);
+			unset($pro[$key]);
+		} else if(substr($key,0,33)=="pro_miscellaneous_material_qntys_") {
+			array_push($miscellaneous_material_qntys,$val);
 			unset($pro[$key]);
 		}
+	}
+	// add miscellaneous materials if duplicate
+	for($i=0;$i<count($miscellaneous_materials);$i++) {
+		for($j=0;$j<count($miscellaneous_materials);$j++) {
+			if($miscellaneous_materials[$j]==$miscellaneous_materials[$i] && $miscellaneous_material_types[$j]==$miscellaneous_material_types[$i] && $i!=$j && $miscellaneous_materials[$i]!=NULL && $miscellaneous_materials[$j]!=NULL) {
+				$miscellaneous_material_qntys[$i] += $miscellaneous_material_qntys[$j];
+				$miscellaneous_materials[$j] = NULL;
+				$miscellaneous_material_types[$j] = NULL;
+				$miscellaneous_material_qntys[$j] = NULL;
+			}
+		}
+	}
+	$miscellaneous_materials = array_values(array_filter($miscellaneous_materials,"strlen"));
+	$miscellaneous_material_types = array_values(array_filter($miscellaneous_material_types,"strlen"));
+	$miscellaneous_material_qntys = array_values(array_filter($miscellaneous_material_qntys,"strlen"));
+	// write miscellaneous materials
+	$pro['pro_miscellaneous_materials'] = "";
+	$pro['pro_miscellaneous_material_types'] = "";
+	$pro['pro_miscellaneous_material_qntys'] = "";
+	for($i=0;$i<count($miscellaneous_materials);$i++) {
+		$pro['pro_miscellaneous_materials'] .= $miscellaneous_materials[$i].",";
+		$pro['pro_miscellaneous_material_types'] .= $miscellaneous_material_types[$i].",";
+		$pro['pro_miscellaneous_material_qntys'] .= $miscellaneous_material_qntys[$i].",";
 	}
 	// for statics compatability
 	$pro['pro_published'] = 0;
