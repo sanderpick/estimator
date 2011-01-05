@@ -525,6 +525,7 @@ CREATE TABLE `es_modules` (
 	`mod_ptc` decimal(10,2),
 	`mod_labor` decimal(10,2),
 	`mod_unit` varchar(10) NOT NULL default '',
+	`mod_cost_basis` int(1) NOT NULL default '0',
 	`mod_cost` decimal(10,2),
 	`mod_price` decimal(10,2),
 	
