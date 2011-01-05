@@ -225,9 +225,9 @@ var Login = Module.extend({
 			var t = this;
 			$("#view-pv-bids").live("click",function() {
 				// set styles
-				if($(this).hasClass("extra-nav-hover")) return false;
-				$(this).addClass("extra-nav-hover");
-				$("#view-pv-comps").removeClass("extra-nav-hover");
+				if($(this).hasClass("extra-nav-selected")) return false;
+				$(this).addClass("extra-nav-selected");
+				$("#view-pv-comps").removeClass("extra-nav-selected");
 				$(".main-header").html("&rsaquo;&rsaquo;&nbsp;"+t.dashboardText);
 				$("#extra-nav-right").show();
 				// set content
@@ -236,9 +236,9 @@ var Login = Module.extend({
 			});
 			$("#view-pv-comps").live("click",function() {
 				// set styles
-				if($(this).hasClass("extra-nav-hover")) return false;
-				$(this).addClass("extra-nav-hover");
-				$("#view-pv-bids").removeClass("extra-nav-hover");
+				if($(this).hasClass("extra-nav-selected")) return false;
+				$(this).addClass("extra-nav-selected");
+				$("#view-pv-bids").removeClass("extra-nav-selected");
 				$(".main-header").html("&rsaquo;&rsaquo;&nbsp;Components Dashboard");
 				$("#extra-nav-right").hide();
 				// set content
@@ -324,7 +324,7 @@ var Login = Module.extend({
 						this.docTitle = "Welcome / Einstein Estimator - Lighthouse Solar / "+this.officeLocation;
 						this.docWrapper = "<div class='dashboard-bar-left'></div><div class='dashboard-main'></div>";
 						this.docCompWrapper = "<div class='dashboard-wide'></div>";
-						this.docNavLeft = "<ul><li><a id='view-pv-bids' class='extra-nav-hover' href='javascript:void(0);' title='View PV Bidding'>PV Bidding</a></li><li><a id='view-pv-comps' href='javascript:void(0);' title='View PV Components'>PV Components</a></li></ul>";
+						this.docNavLeft = "<ul><li><a id='view-pv-bids' class='extra-nav-selected' href='javascript:void(0);' title='View PV Bidding'>PV Bidding</a></li><li><a id='view-pv-comps' href='javascript:void(0);' title='View PV Components'>PV Components</a></li></ul>";
 						this.docNavRight = "";
 						break;
 					case "3" : 
@@ -333,7 +333,7 @@ var Login = Module.extend({
 						this.docTitle = "Welcome / Einstein Estimator - Lighthouse Solar / "+this.officeLocation;
 						this.docWrapper = "<div class='dashboard-bar-left'></div><div class='dashboard-main'></div>";
 						this.docCompWrapper = "<div class='dashboard-wide'></div>";
-						this.docNavLeft = "<ul><li><a id='view-pv-bids' class='extra-nav-hover' href='javascript:void(0);' title='View PV Bidding'>PV Bidding</a></li><li><a id='view-pv-comps' href='javascript:void(0);' title='View PV Components'>PV Components</a></li></ul>";
+						this.docNavLeft = "<ul><li><a id='view-pv-bids' class='extra-nav-selected' href='javascript:void(0);' title='View PV Bidding'>PV Bidding</a></li><li><a id='view-pv-comps' href='javascript:void(0);' title='View PV Components'>PV Components</a></li></ul>";
 						this.docNavRight = "";
 						break;
 					case "4" : 
@@ -342,10 +342,12 @@ var Login = Module.extend({
 						this.docTitle = "Support / Einstein Estimator - Lighthouse Solar / "+this.officeLocation;
 						this.docWrapper = "<div class='dashboard-bar-left'></div><div class='dashboard-main'></div>";
 						this.docCompWrapper = "<div class='dashboard-wide'></div>";
-						this.docNavLeft = "<ul><li><a id='view-pv-bids' class='extra-nav-hover' href='javascript:void(0);' title='View PV Bidding'>PV Bidding</a></li><li><a id='view-pv-comps' href='javascript:void(0);' title='View PV Components'>PV Components</a></li></ul>";
+						this.docNavLeft = "<ul><li><a id='view-pv-bids' class='extra-nav-selected' href='javascript:void(0);' title='View PV Bidding'>PV Bidding</a></li><li><a id='view-pv-comps' href='javascript:void(0);' title='View PV Components'>PV Components</a></li></ul>";
 						this.docNavRight = "<ul>";
 						for(var n in json.data3) {
-							this.docNavRight += n==0 ? "<li><a id='sup"+json.data3[n].ID+"' class='extra-nav-hover' href='javascript:void(0);' title='"+json.data3[n].off_city+", "+json.data3[n].off_state+"'>"+json.data3[n].off_city+"</a></li>" : "<li><a id='sup"+json.data3[n].ID+"' href='javascript:void(0);' title='"+json.data3[n].off_city+", "+json.data3[n].off_state+"'>"+json.data3[n].off_city+"</a></li>";
+							this.docNavRight += n==0 ? 
+								"<li><a id='sup"+json.data3[n].ID+"' class='extra-nav-selected' href='javascript:void(0);' title='"+json.data3[n].off_city+", "+json.data3[n].off_state+"'>"+json.data3[n].off_franchise_name+"</a></li>" : 
+								"<li><a id='sup"+json.data3[n].ID+"' href='javascript:void(0);' title='"+json.data3[n].off_city+", "+json.data3[n].off_state+"'>"+json.data3[n].off_franchise_name+"</a></li>";
 						}
 						this.docNavRight += "</ul>";
 						// set initial office
@@ -353,11 +355,11 @@ var Login = Module.extend({
 						// add clicks to nav
 						var t = this;
 						$("a",$("#extra-nav-right")).live("click",function() {
-							if($(this).hasClass("extra-nav-hover")) return false;
+							if($(this).hasClass("extra-nav-selected")) return false;
 							$("a",$("#extra-nav-right")).each(function(i) {
-								$(this).removeClass("extra-nav-hover");
+								$(this).removeClass("extra-nav-selected");
 							});
-							$(this).addClass("extra-nav-hover");
+							$(this).addClass("extra-nav-selected");
 							$(".main-header").html("&rsaquo;&rsaquo;&nbsp;Support Dashboard: <span style='font-variant:small-caps; font-size:16px; color:#808080;'>"+this.title+"</span>");
 							$("#data").data("rep").rep_officeID = this.id.substring(3);
 							for(var m in t.next) t.next[m].begin(true);
@@ -420,6 +422,12 @@ var Offices = Module.extend({
 		$("input[title='Add']",$(t.el)).live("click",function() {
 			var ds = $(this).closest("form").postify();
 			if(ds=="") return false;
+			// email check
+			if(!$("#off_manager_list",$(this).closest("form")).validate() || !$("#off_email",$(this).closest("form")).validate()) {
+				alert("Please use a valid email address.");
+				return false;
+			}
+			
 			t.io.request(t,ds+"table="+t.dbTable+"&es_do=addOffice");
 		});
 		// hover over rows
@@ -444,6 +452,11 @@ var Offices = Module.extend({
 			t.currentRowID = this.parentNode.parentNode.parentNode.id.substring(8);
 			var ds = $(this).closest("form").postify();
 			if(ds=="") return false;
+			// email check
+			if(!$("#off_manager_list",$(this).closest("form")).validate() || !$("#off_email",$(this).closest("form")).validate()) {
+				alert("Please use a valid email address.");
+				return false;
+			}
 			t.io.request(t,ds+"id="+t.currentRowID+"&table="+t.dbTable+"&es_do=updateItem");
 		});
 		// trash link
@@ -453,13 +466,17 @@ var Offices = Module.extend({
 			t.io.request(t,"id="+t.currentRowID+"&table="+t.dbTable+"&es_do=deleteOffice");
 		});
 		// for manager list
-		$("#off_city",$(t.el)).live("keyup",function() {
-			var city = this.value.trim().replace(" ","_").toLowerCase();
-			if($(this).closest("form").hasClass("addform")) {	
-				if(city!="") $("#manager-warning",$(this).closest("form")).show();
+		$("#off_manager_list",$(t.el)).live("keyup",function() {
+			if($(this).closest("form").hasClass("addform")) {
+				if(this.value.trim()!="" && $(this).validate()) $("#manager-warning",$(this).closest("form")).show();
 				else $("#manager-warning",$(this).closest("form")).hide();
-				$(".off_manager_list-display",$(this).closest("form")).text(city+"_gm@lighthousesolar.com");
+				$(".off_manager_list-display",$(this).closest("form")).text(this.value.trim());
 			}
+		});
+		// test email
+		$(".email",$(t.el)).live("keyup",function() {
+			var tc = $(this).validate() ? "#404040" : "red";
+			$(this).css("color",tc);
 		});
 	},
   	show:function(holder) { this._super(holder); },
@@ -491,10 +508,18 @@ var Offices = Module.extend({
 					<h1 class='addform-header'>New Office Info:</h1> \
 					<br /> \
 					<div class='form-column'> \
+						<label for='off_franchise_name'>Franchise Name</label> \
+						<input class='required' type='text' id='off_franchise_name' value='' /> \
+						<label for='off_license_num'>Contractor License #</label> \
+						<input type='text' id='off_license_num' value='' /> \
+					</div> \
+					<div class='form-column'> \
 						<label for='off_address'>Address</label> \
 						<input class='required' type='text' id='off_address' value='' /> \
 						<label for='off_city'>City</label> \
 						<input class='required' type='text' id='off_city' value='' /> \
+					</div> \
+					<div class='form-column'> \
 						<label for='off_state'>State</label> \
 						<input class='required' type='text' id='off_state' value='' /> \
 						<label for='off_zip'>Zip</label> \
@@ -504,15 +529,21 @@ var Offices = Module.extend({
 						<label for='off_phone'>Phone</label> \
 						<input class='required' type='text' id='off_phone' value='' /> \
 						<label for='off_email'>Email</label> \
-						<input class='required' type='text' id='off_email' value='' /> \
-						<label for='off_labor_cost'>Labor Cost (hr)</label> \
-						<input class='required' type='text' id='off_labor_cost' value='' /> \
-						<label for='off_labor_price'>Labor Price (hr)</label> \
-						<input class='required' type='text' id='off_labor_price' value='' /> \
+						<input class='required email' type='text' id='off_email' value='' /> \
 					</div> \
-					<div class='form-column-right'> \
+					<div class='form-column'> \
+						<label for='off_manager_list'>Manager\'s List</label> \
+						<input class='required email' type='text' id='off_manager_list' value='' /> \
+						<label for='off_labor_cost'>Labor Cost ($/hr)</label> \
+						<input class='required' type='text' id='off_labor_cost' value='' /> \
+					</div> \
+					<div class='form-column'> \
+						<label for='off_labor_price'>Labor Price ($/hr)</label> \
+						<input class='required' type='text' id='off_labor_price' value='' /> \
 						<label for='off_pvwatts'>PV Watts Query</label> \
 						<input class='required' type='text' id='off_pvwatts' value='' /> \
+					</div> \
+					<div class='form-column-right'> \
 						<label for='off_lat'>Latitude (º)</label> \
 						<input class='required' type='text' id='off_lat' value='' /> \
 						<label for='off_long'>Longitude (º)</label> \
@@ -523,7 +554,7 @@ var Offices = Module.extend({
 					<input type='submit' title='Add' value='Add New' /> \
 					<input type='submit' title='Cancel' value='Cancel' /> \
 					<div id='manager-warning' style='display:inline;'> \
-						<span style='padding:0 0 0 20px; color:#808080; font-variant:small-caps;'>New Office <em>Manager\'s List</em> <span style='color:black;'>must</span> be:</span> \
+						<span style='padding:0 0 0 20px; color:#808080; font-variant:small-caps;'>Your new Office login info will be sent to:</span> \
 						<div class='off_manager_list-display' style='font-weight:bold; color:#5880C0; display:inline;'>_gm@lighthousesolar.com</div> \
 					</div> \
 				</form>";
@@ -554,6 +585,8 @@ var Offices = Module.extend({
 				// build the titles
 				html += "<thead class='module-thead'>";
 				html += "<tr>";
+				html += "<th colspan='1'>Franchise Name</th>";
+				html += "<th colspan='1'>Contractor License #</th>";
 				html += "<th colspan='1'>City</th>";
 				html += "<th colspan='1'>State</th>";
 				html += "<th colspan='1'>Zip</th>";
@@ -592,12 +625,14 @@ var Offices = Module.extend({
 		this._super();
 		// create the row
 		var row = "<td colspan='1'>";
-		row += "<span style='font-weight:bold;'>"+data.off_city+"</span><br />";
+		row += "<span style='font-weight:bold;'>"+data.off_franchise_name+"</span><br />";
 		row += "<span class='edit-panel'>";
 		row += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a> | ";
 		row += "<a href='javascript:void(0);' class='trash-link' title='Trash'>Trash</a>";
 		row += "</span>";
 		row += "</td>";
+		row += "<td colspan='1'>"+data.off_license_num+"</td>";
+		row += "<td colspan='1'>"+data.off_city+"</td>";
 		row += "<td colspan='1'>"+data.off_state+"</td>";
 		row += "<td colspan='1'>"+data.off_zip+"</td>";
 		row += "<td colspan='1'>"+data.off_phone+"</td>";
@@ -613,10 +648,18 @@ var Offices = Module.extend({
 					<h1 class='addform-header'>Quick Edit</h1> \
 					<br /> \
 					<div class='form-column'> \
+						<label for='off_franchise_name'>Franchise Name</label> \
+						<input class='required' type='text' id='off_franchise_name' value='"+data.off_franchise_name+"' /> \
+						<label for='off_license_num'>Contractor License #</label> \
+						<input type='text' id='off_license_num' value='"+data.off_license_num+"' /> \
+					</div> \
+					<div class='form-column'> \
 						<label for='off_address'>Address</label> \
 						<input class='required' type='text' id='off_address' value='"+data.off_address+"' /> \
 						<label for='off_city'>City</label> \
 						<input class='required' type='text' id='off_city' value='"+data.off_city+"' /> \
+					</div> \
+					<div class='form-column'> \
 						<label for='off_state'>State</label> \
 						<input class='required' type='text' id='off_state' value='"+data.off_state+"' /> \
 						<label for='off_zip'>Zip</label> \
@@ -626,17 +669,21 @@ var Offices = Module.extend({
 						<label for='off_phone'>Phone</label> \
 						<input class='required' type='text' id='off_phone' value='"+data.off_phone+"' /> \
 						<label for='off_email'>Email</label> \
-						<input class='required' type='text' id='off_email' value='"+data.off_email+"' /> \
+						<input class='required email' type='text' id='off_email' value='"+data.off_email+"' /> \
+					</div> \
+					<div class='form-column'> \
 						<label for='off_manager_list'>Manager\'s List</label> \
-						<input class='required' type='text' id='off_manager_list' value='"+data.off_manager_list+"' /> \
-						<label for='off_labor_cost'>Labor Cost (hr)</label> \
+						<input class='required email' type='text' id='off_manager_list' value='"+data.off_manager_list+"' /> \
+						<label for='off_labor_cost'>Labor Cost ($/hr)</label> \
 						<input class='required' type='text' id='off_labor_cost' value='"+data.off_labor_cost+"' /> \
 					</div> \
-					<div class='form-column-right'> \
-						<label for='off_labor_price'>Labor Price (hr)</label> \
+					<div class='form-column'> \
+						<label for='off_labor_price'>Labor Price ($/hr)</label> \
 						<input class='required' type='text' id='off_labor_price' value='"+data.off_labor_price+"' /> \
 						<label for='off_pvwatts'>PV Watts Query</label> \
 						<input class='required' type='text' id='off_pvwatts' value='"+data.off_pvwatts+"' /> \
+					</div> \
+					<div class='form-column-right'> \
 						<label for='off_lat'>Latitude (º)</label> \
 						<input class='required' type='text' id='off_lat' value='"+data.off_lat+"' /> \
 						<label for='off_long'>Longitude (º)</label> \
@@ -3843,9 +3890,55 @@ var Settings = Module.extend({
 				for(setting in json.data) {
 					var row = ""; var edit = "";
 					switch(setting) {
+						case "off_franchise_name" :
+							row += "<td colspan='1'>";
+							row += "<span style='font-weight:bold;'>Office Franchise Name</span><br /><span style='font-size:10px; color:#808080;'>(The name of your franchise used system-wide)</span><br />";
+							row += "<span class='edit-panel'>";
+							row += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
+							row += "</span>";
+							row += "</td>";
+							row += "<td colspan='1' align='right'>"+json.data.off_franchise_name+"</td>";
+							edit += "<td colspan='2'>";
+							edit += "<form class='updateform' action='javascript:void(0);'>";
+							edit +=	"<h1 class='addform-header'>Quick Edit</h1>";
+							edit +=	"<br />";
+							edit +=	"<div class='form-column'>";
+							edit +=	"<label for='off_franchise_name'>Office Franchise Name</label>";
+							edit +=	"<input class='required' type='text' id='off_franchise_name' value='"+json.data.off_franchise_name+"' />";
+							edit +=	"</div>";
+							edit +=	"<div class='clear'></div>";
+							edit +=	"<br />";
+							edit +=	"<input type='submit' title='Update' value='Update' />";
+							edit +=	"<input type='submit' title='CancelQ' value='Cancel' style='margin-left:3px;' />";
+							edit +=	"</form>";
+							edit += "</td>";
+							break;
+						case "off_license_num" :
+							row += "<td colspan='1'>";
+							row += "<span style='font-weight:bold;'>Office Contractor License #</span><br /><span style='font-size:10px; color:#808080;'>(The contractor license # associated with your proposals)</span><br />";
+							row += "<span class='edit-panel'>";
+							row += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
+							row += "</span>";
+							row += "</td>";
+							row += "<td colspan='1' align='right'>"+json.data.off_license_num+"</td>";
+							edit += "<td colspan='2'>";
+							edit += "<form class='updateform' action='javascript:void(0);'>";
+							edit +=	"<h1 class='addform-header'>Quick Edit</h1>";
+							edit +=	"<br />";
+							edit +=	"<div class='form-column'>";
+							edit +=	"<label for='off_license_num'>Office Contractor License #</label>";
+							edit +=	"<input class='required' type='text' id='off_license_num' value='"+json.data.off_license_num+"' />";
+							edit +=	"</div>";
+							edit +=	"<div class='clear'></div>";
+							edit +=	"<br />";
+							edit +=	"<input type='submit' title='Update' value='Update' />";
+							edit +=	"<input type='submit' title='CancelQ' value='Cancel' style='margin-left:3px;' />";
+							edit +=	"</form>";
+							edit += "</td>";
+							break;
 						case "off_phone" :
 							row += "<td colspan='1'>";
-							row += "<span style='font-weight:bold;'>Office Phone Number</span><br /><span style='font-size:10px; color:#808080;'>(Your office-wide phone number.)</span><br />";
+							row += "<span style='font-weight:bold;'>Office Phone Number</span><br /><span style='font-size:10px; color:#808080;'>(Your office-wide phone number)</span><br />";
 							row += "<span class='edit-panel'>";
 							row += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
 							row += "</span>";
@@ -3868,7 +3961,7 @@ var Settings = Module.extend({
 							break;
 						case "off_email" :
 							row += "<td colspan='1'>";
-							row += "<span style='font-weight:bold;'>Office E-mail Address</span><br /><span style='font-size:10px; color:#808080;'>(Used for general inquiries.)</span><br />";
+							row += "<span style='font-weight:bold;'>Office E-mail Address</span><br /><span style='font-size:10px; color:#808080;'>(Used for general inquiries)</span><br />";
 							row += "<span class='edit-panel'>";
 							row += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
 							row += "</span>";
@@ -3891,7 +3984,7 @@ var Settings = Module.extend({
 							break;
 						case "off_manager_list" :
 							row += "<td colspan='1'>";
-							row += "<span style='font-weight:bold;'>General Manager's List Address</span><br /><span style='font-size:10px; color:#808080;'>(This list receives monitoring requests and notifications.)</span><br />";
+							row += "<span style='font-weight:bold;'>General Manager's List Address</span><br /><span style='font-size:10px; color:#808080;'>(This list receives monitoring requests and notifications)</span><br />";
 							row += "<span class='edit-panel'>";
 							row += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
 							row += "</span>";
@@ -3914,7 +4007,7 @@ var Settings = Module.extend({
 							break;
 						case "off_cover_letter" :
 							row += "<td colspan='1'>";
-							row += "<span style='font-weight:bold;'>Default Cover Letter</span><br /><span style='font-size:10px; color:#808080;'>(This is the generic text seen when creating proposals.)</span><br />";
+							row += "<span style='font-weight:bold;'>Default Cover Letter</span><br /><span style='font-size:10px; color:#808080;'>(This is the generic text seen when creating proposals)</span><br />";
 							row += "<span class='edit-panel'>";
 							row += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
 							row += "</span>";
@@ -3935,7 +4028,7 @@ var Settings = Module.extend({
 							break;
 						case "off_labor_cost" :
 							row += "<td colspan='1'>";
-							row += "<span style='font-weight:bold;'>Labor Cost ($/hr)</span><br /><span style='font-size:10px; color:#808080;'>(Use this as an average.)</span><br />";
+							row += "<span style='font-weight:bold;'>Labor Cost ($/hr)</span><br /><span style='font-size:10px; color:#808080;'>(Use this as an average)</span><br />";
 							row += "<span class='edit-panel'>";
 							row += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
 							row += "</span>";
@@ -3958,7 +4051,7 @@ var Settings = Module.extend({
 							break;
 						case "off_labor_price" :
 							row += "<td colspan='1'>";
-							row += "<span style='font-weight:bold;'>Labor Price ($/hr)</span><br /><span style='font-size:10px; color:#808080;'>(Use this as an average.)</span><br />";
+							row += "<span style='font-weight:bold;'>Labor Price ($/hr)</span><br /><span style='font-size:10px; color:#808080;'>(Use this as an average)</span><br />";
 							row += "<span class='edit-panel'>";
 							row += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
 							row += "</span>";
@@ -3981,7 +4074,7 @@ var Settings = Module.extend({
 							break;
 						case "off_winter_up" :
 							row += "<td colspan='1'>";
-							row += "<span style='font-weight:bold;'>Off-Season Labor Up-Charge (%)</span><br /><span style='font-size:10px; color:#808080;'>(This effects total labor charge.)</span><br />";
+							row += "<span style='font-weight:bold;'>Off-Season Labor Up-Charge (%)</span><br /><span style='font-size:10px; color:#808080;'>(This effects total labor charge)</span><br />";
 							row += "<span class='edit-panel'>";
 							row += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
 							row += "</span>";
@@ -4004,7 +4097,7 @@ var Settings = Module.extend({
 							break;
 						case "off_others_up" :
 							row += "<td colspan='1'>";
-							row += "<span style='font-weight:bold;'>Contractor Coordination Labor Up-Charge (%)</span><br /><span style='font-size:10px; color:#808080;'>(This effects total labor charge.)</span><br />";
+							row += "<span style='font-weight:bold;'>Contractor Coordination Labor Up-Charge (%)</span><br /><span style='font-size:10px; color:#808080;'>(This effects total labor charge)</span><br />";
 							row += "<span class='edit-panel'>";
 							row += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
 							row += "</span>";
@@ -4027,7 +4120,7 @@ var Settings = Module.extend({
 							break;
 						case "off_inventory_up" :
 							row += "<td colspan='1'>";
-							row += "<span style='font-weight:bold;'>Material Cost Up-Charge (%)</span><br /><span style='font-size:10px; color:#808080;'>(This does NOT effect margins.)</span><br />";
+							row += "<span style='font-weight:bold;'>Material Cost Up-Charge (%)</span><br /><span style='font-size:10px; color:#808080;'>(This does NOT effect margins)</span><br />";
 							row += "<span class='edit-panel'>";
 							row += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
 							row += "</span>";
@@ -4050,7 +4143,7 @@ var Settings = Module.extend({
 							break;
 						// case "off_non_inventory_up" :
 						// 	row += "<td colspan='1'>";
-						// 	row += "<span style='font-weight:bold;'>Non-Inventory Up-Charge (%)</span><br /><span style='font-size:10px; color:#808080;'>(This does NOT effect margins.)</span><br />";
+						// 	row += "<span style='font-weight:bold;'>Non-Inventory Up-Charge (%)</span><br /><span style='font-size:10px; color:#808080;'>(This does NOT effect margins)</span><br />";
 						// 	row += "<span class='edit-panel'>";
 						// 	row += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
 						// 	row += "</span>";
@@ -4073,7 +4166,7 @@ var Settings = Module.extend({
 						// 	break;
 						case "off_inventory_margin" :
 							row += "<td colspan='1'>";
-							row += "<span style='font-weight:bold;'>Material Margin Percentage Adder (%)</span><br /><span style='font-size:10px; color:#808080;'>(In addition to item margins.)</span><br />";
+							row += "<span style='font-weight:bold;'>Material Margin Percentage Adder (%)</span><br /><span style='font-size:10px; color:#808080;'>(In addition to item margins)</span><br />";
 							row += "<span class='edit-panel'>";
 							row += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
 							row += "</span>";
@@ -4096,7 +4189,7 @@ var Settings = Module.extend({
 							break;
 						// case "off_non_inventory_margin" :
 						// 	row += "<td colspan='1'>";
-						// 	row += "<span style='font-weight:bold;'>Non-Inventory Margin (%)</span><br /><span style='font-size:10px; color:#808080;'>(In addition to item margins.)</span><br />";
+						// 	row += "<span style='font-weight:bold;'>Non-Inventory Margin (%)</span><br /><span style='font-size:10px; color:#808080;'>(In addition to item margins)</span><br />";
 						// 	row += "<span class='edit-panel'>";
 						// 	row += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
 						// 	row += "</span>";
@@ -4119,7 +4212,7 @@ var Settings = Module.extend({
 						// 	break;	
 						case "off_permit_up" :
 							row += "<td colspan='1'>";
-							row += "<span style='font-weight:bold;'>Permit Margin (%)</span><br /><span style='font-size:10px; color:#808080;'>(Determines the fixed margin.)</span><br />";
+							row += "<span style='font-weight:bold;'>Permit Margin (%)</span><br /><span style='font-size:10px; color:#808080;'>(Determines the fixed margin)</span><br />";
 							row += "<span class='edit-panel'>";
 							row += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
 							row += "</span>";
@@ -4142,7 +4235,7 @@ var Settings = Module.extend({
 							break;
 						case "off_sub_up" :
 							row += "<td colspan='1'>";
-							row += "<span style='font-weight:bold;'>Engineering Margin (%)</span><br /><span style='font-size:10px; color:#808080;'>(Determines the fixed margin.)</span><br />";
+							row += "<span style='font-weight:bold;'>Engineering Margin (%)</span><br /><span style='font-size:10px; color:#808080;'>(Determines the fixed margin)</span><br />";
 							row += "<span class='edit-panel'>";
 							row += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
 							row += "</span>";
@@ -4165,7 +4258,7 @@ var Settings = Module.extend({
 							break;	
 						case "off_equip_up" :
 							row += "<td colspan='1'>";
-							row += "<span style='font-weight:bold;'>Equipment Rental Margin (%)</span><br /><span style='font-size:10px; color:#808080;'>(Determines the fixed margin.)</span><br />";
+							row += "<span style='font-weight:bold;'>Equipment Rental Margin (%)</span><br /><span style='font-size:10px; color:#808080;'>(Determines the fixed margin)</span><br />";
 							row += "<span class='edit-panel'>";
 							row += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
 							row += "</span>";
@@ -4204,10 +4297,66 @@ var Settings = Module.extend({
 				// manually write the table
 				var color = ["light","dark"];
 				///////////////////////////////////////////
+				// franchise name
+				html += "<tr id='show-off_franchise_name' class='"+color[0]+"'>";
+				html += "<td colspan='1'>";
+				html += "<span style='font-weight:bold;'>Office Franchise Name</span><br /><span style='font-size:10px; color:#808080;'>(Your office-wide phone number)</span><br />";
+				html += "<span class='edit-panel'>";
+				html += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
+				html += "</span>";
+				html += "</td>";
+				html += "<td colspan='1' align='right'>"+json.data.off_franchise_name+"</td>";
+				html += "</tr>";
+				// edit franchise name
+				html += "<tr id='edit-off_franchise_name' style='display:none;' class='quick-edit "+color[0]+"'>";
+				html += "<td colspan='2'>";
+				html += "<form class='updateform' action='javascript:void(0);'>";
+				html +=	"<h1 class='addform-header'>Quick Edit</h1>";
+				html +=	"<br />";
+				html +=	"<div class='form-column'>";
+				html +=	"<label for='off_franchise_name'>Office Franchise Name</label>";
+				html +=	"<input class='required' type='text' id='off_franchise_name' value='"+json.data.off_franchise_name+"' />";
+				html +=	"</div>";
+				html +=	"<div class='clear'></div>";
+				html +=	"<br />";
+				html +=	"<input type='submit' title='Update' value='Update' />";
+				html +=	"<input type='submit' title='CancelQ' value='Cancel' style='margin-left:3px;' />";
+				html +=	"</form>";
+				html += "</td>";
+				html += "</tr>";
+				///////////////////////////////////////////
+				// license number
+				html += "<tr id='show-off_license_num' class='"+color[0]+"'>";
+				html += "<td colspan='1'>";
+				html += "<span style='font-weight:bold;'>Office Contractor License #</span><br /><span style='font-size:10px; color:#808080;'>(Your office-wide phone number)</span><br />";
+				html += "<span class='edit-panel'>";
+				html += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
+				html += "</span>";
+				html += "</td>";
+				html += "<td colspan='1' align='right'>"+json.data.off_license_num+"</td>";
+				html += "</tr>";
+				// edit license number
+				html += "<tr id='edit-off_license_num' style='display:none;' class='quick-edit "+color[0]+"'>";
+				html += "<td colspan='2'>";
+				html += "<form class='updateform' action='javascript:void(0);'>";
+				html +=	"<h1 class='addform-header'>Quick Edit</h1>";
+				html +=	"<br />";
+				html +=	"<div class='form-column'>";
+				html +=	"<label for='off_license_num'>Office Contractor License #</label>";
+				html +=	"<input class='required' type='text' id='off_license_num' value='"+json.data.off_license_num+"' />";
+				html +=	"</div>";
+				html +=	"<div class='clear'></div>";
+				html +=	"<br />";
+				html +=	"<input type='submit' title='Update' value='Update' />";
+				html +=	"<input type='submit' title='CancelQ' value='Cancel' style='margin-left:3px;' />";
+				html +=	"</form>";
+				html += "</td>";
+				html += "</tr>";
+				///////////////////////////////////////////
 				// phone
 				html += "<tr id='show-off_phone' class='"+color[0]+"'>";
 				html += "<td colspan='1'>";
-				html += "<span style='font-weight:bold;'>Office Phone Number</span><br /><span style='font-size:10px; color:#808080;'>(Your office-wide phone number.)</span><br />";
+				html += "<span style='font-weight:bold;'>Office Phone Number</span><br /><span style='font-size:10px; color:#808080;'>(Your office-wide phone number)</span><br />";
 				html += "<span class='edit-panel'>";
 				html += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
 				html += "</span>";
@@ -4235,7 +4384,7 @@ var Settings = Module.extend({
 				// email
 				html += "<tr id='show-off_email' class='"+color[0]+"'>";
 				html += "<td colspan='1'>";
-				html += "<span style='font-weight:bold;'>Office E-mail Address</span><br /><span style='font-size:10px; color:#808080;'>(Used for general inquiries.)</span><br />";
+				html += "<span style='font-weight:bold;'>Office E-mail Address</span><br /><span style='font-size:10px; color:#808080;'>(Used for general inquiries)</span><br />";
 				html += "<span class='edit-panel'>";
 				html += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
 				html += "</span>";
@@ -4263,7 +4412,7 @@ var Settings = Module.extend({
 				// manager's list
 				html += "<tr id='show-off_manager_list' class='"+color[0]+"'>";
 				html += "<td colspan='1'>";
-				html += "<span style='font-weight:bold;'>General Manager's List Address</span><br /><span style='font-size:10px; color:#808080;'>(This list receives monitoring requests and notifications.)</span><br />";
+				html += "<span style='font-weight:bold;'>General Manager's List Address</span><br /><span style='font-size:10px; color:#808080;'>(This list receives monitoring requests and notifications)</span><br />";
 				html += "<span class='edit-panel'>";
 				html += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
 				html += "</span>";
@@ -4291,7 +4440,7 @@ var Settings = Module.extend({
 				// cover letter
 				html += "<tr id='show-off_cover_letter' class='"+color[0]+"'>";
 				html += "<td colspan='1'>";
-				html += "<span style='font-weight:bold;'>Default Cover Letter</span><br /><span style='font-size:10px; color:#808080;'>(This is the generic text seen when creating proposals.)</span><br />";
+				html += "<span style='font-weight:bold;'>Default Cover Letter</span><br /><span style='font-size:10px; color:#808080;'>(This is the generic text seen when creating proposals)</span><br />";
 				html += "<span class='edit-panel'>";
 				html += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
 				html += "</span>";
@@ -4317,7 +4466,7 @@ var Settings = Module.extend({
 				// labor cost
 				html += "<tr id='show-off_labor_cost' class='"+color[0]+"'>";
 				html += "<td colspan='1'>";
-				html += "<span style='font-weight:bold;'>Labor Cost ($/hr)</span><br /><span style='font-size:10px; color:#808080;'>(Use this as an average.)</span><br />";
+				html += "<span style='font-weight:bold;'>Labor Cost ($/hr)</span><br /><span style='font-size:10px; color:#808080;'>(Use this as an average)</span><br />";
 				html += "<span class='edit-panel'>";
 				html += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
 				html += "</span>";
@@ -4345,7 +4494,7 @@ var Settings = Module.extend({
 				// labor price
 				html += "<tr id='show-off_labor_price' class='"+color[0]+"'>";
 				html += "<td colspan='1'>";
-				html += "<span style='font-weight:bold;'>Labor Price ($/hr)</span><br /><span style='font-size:10px; color:#808080;'>(Use this as an average.)</span><br />";
+				html += "<span style='font-weight:bold;'>Labor Price ($/hr)</span><br /><span style='font-size:10px; color:#808080;'>(Use this as an average)</span><br />";
 				html += "<span class='edit-panel'>";
 				html += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
 				html += "</span>";
@@ -4373,7 +4522,7 @@ var Settings = Module.extend({
 				// off-season
 				html += "<tr id='show-off_winter_up' class='"+color[0]+"'>";
 				html += "<td colspan='1'>";
-				html += "<span style='font-weight:bold;'>Off-Season Labor Up-Charge (%)</span><br /><span style='font-size:10px; color:#808080;'>(This effects total labor charge.)</span><br />";
+				html += "<span style='font-weight:bold;'>Off-Season Labor Up-Charge (%)</span><br /><span style='font-size:10px; color:#808080;'>(This effects total labor charge)</span><br />";
 				html += "<span class='edit-panel'>";
 				html += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
 				html += "</span>";
@@ -4401,7 +4550,7 @@ var Settings = Module.extend({
 				// others involved
 				html += "<tr id='show-off_others_up' class='"+color[0]+"'>";
 				html += "<td colspan='1'>";
-				html += "<span style='font-weight:bold;'>Contractor Coordination Labor Up-Charge (%)</span><br /><span style='font-size:10px; color:#808080;'>(This effects total labor charge.)</span><br />";
+				html += "<span style='font-weight:bold;'>Contractor Coordination Labor Up-Charge (%)</span><br /><span style='font-size:10px; color:#808080;'>(This effects total labor charge)</span><br />";
 				html += "<span class='edit-panel'>";
 				html += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
 				html += "</span>";
@@ -4429,7 +4578,7 @@ var Settings = Module.extend({
 				// inventory up-charge
 				html += "<tr id='show-off_inventory_up' class='"+color[0]+"'>";
 				html += "<td colspan='1'>";
-				html += "<span style='font-weight:bold;'>Material Cost Up-Charge (%)</span><br /><span style='font-size:10px; color:#808080;'>(This does NOT effect margins.)</span><br />";
+				html += "<span style='font-weight:bold;'>Material Cost Up-Charge (%)</span><br /><span style='font-size:10px; color:#808080;'>(This does NOT effect margins)</span><br />";
 				html += "<span class='edit-panel'>";
 				html += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
 				html += "</span>";
@@ -4457,7 +4606,7 @@ var Settings = Module.extend({
 				// non inventory up-charge
 				// html += "<tr id='show-off_non_inventory_up' class='"+color[0]+"'>";
 				// html += "<td colspan='1'>";
-				// html += "<span style='font-weight:bold;'>Non-Inventory Up-Charge (%)</span><br /><span style='font-size:10px; color:#808080;'>(This does NOT effect margins.)</span><br />";
+				// html += "<span style='font-weight:bold;'>Non-Inventory Up-Charge (%)</span><br /><span style='font-size:10px; color:#808080;'>(This does NOT effect margins)</span><br />";
 				// html += "<span class='edit-panel'>";
 				// html += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
 				// html += "</span>";
@@ -4485,7 +4634,7 @@ var Settings = Module.extend({
 				// inventory margin
 				html += "<tr id='show-off_inventory_margin' class='"+color[0]+"'>";
 				html += "<td colspan='1'>";
-				html += "<span style='font-weight:bold;'>Material Margin Percentage Adder (%)</span><br /><span style='font-size:10px; color:#808080;'>(In addition to item margins.)</span><br />";
+				html += "<span style='font-weight:bold;'>Material Margin Percentage Adder (%)</span><br /><span style='font-size:10px; color:#808080;'>(In addition to item margins)</span><br />";
 				html += "<span class='edit-panel'>";
 				html += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
 				html += "</span>";
@@ -4513,7 +4662,7 @@ var Settings = Module.extend({
 				// // non inventory margin
 				// html += "<tr id='show-off_non_inventory_margin' class='"+color[0]+"'>";
 				// html += "<td colspan='1'>";
-				// html += "<span style='font-weight:bold;'>Non-Inventory Margin (%)</span><br /><span style='font-size:10px; color:#808080;'>(In addition to item margins.)</span><br />";
+				// html += "<span style='font-weight:bold;'>Non-Inventory Margin (%)</span><br /><span style='font-size:10px; color:#808080;'>(In addition to item margins)</span><br />";
 				// html += "<span class='edit-panel'>";
 				// html += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
 				// html += "</span>";
@@ -4541,7 +4690,7 @@ var Settings = Module.extend({
 				// permit
 				html += "<tr id='show-off_permit_up' class='"+color[0]+"'>";
 				html += "<td colspan='1'>";
-				html += "<span style='font-weight:bold;'>Permit Margin (%)</span><br /><span style='font-size:10px; color:#808080;'>(Determines the fixed margin.)</span><br />";
+				html += "<span style='font-weight:bold;'>Permit Margin (%)</span><br /><span style='font-size:10px; color:#808080;'>(Determines the fixed margin)</span><br />";
 				html += "<span class='edit-panel'>";
 				html += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
 				html += "</span>";
@@ -4569,7 +4718,7 @@ var Settings = Module.extend({
 				// subcontractor
 				html += "<tr id='show-off_sub_up' class='"+color[0]+"'>";
 				html += "<td colspan='1'>";
-				html += "<span style='font-weight:bold;'>Engineering Margin (%)</span><br /><span style='font-size:10px; color:#808080;'>(Determines the fixed margin.)</span><br />";
+				html += "<span style='font-weight:bold;'>Engineering Margin (%)</span><br /><span style='font-size:10px; color:#808080;'>(Determines the fixed margin)</span><br />";
 				html += "<span class='edit-panel'>";
 				html += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
 				html += "</span>";
@@ -4597,7 +4746,7 @@ var Settings = Module.extend({
 				// equipment
 				html += "<tr id='show-off_equip_up' class='"+color[0]+"'>";
 				html += "<td colspan='1'>";
-				html += "<span style='font-weight:bold;'>Equipment Rental Margin (%)</span><br /><span style='font-size:10px; color:#808080;'>(Determines the fixed margin.)</span><br />";
+				html += "<span style='font-weight:bold;'>Equipment Rental Margin (%)</span><br /><span style='font-size:10px; color:#808080;'>(Determines the fixed margin)</span><br />";
 				html += "<span class='edit-panel'>";
 				html += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
 				html += "</span>";
@@ -5113,6 +5262,12 @@ var Customers = Module.extend({
 		$("input[title='Add']",$(t.el)).live("click",function() {
 			var ds = $(this).closest("form").postify();
 			if(ds=="") return false;
+			// email check
+			if((!$("#cus_email1",$(this).closest("form")).validate() && $("#cus_email1",$(this).closest("form")).val().trim()!="") ||
+				(!$("#cus_email2",$(this).closest("form")).validate() && $("#cus_email2",$(this).closest("form")).val().trim()!="")) {
+				alert("Please use a valid email address.");
+				return false;
+			}
 			ds += "cus_officeID="+$("#data").data("rep").rep_officeID+"&";
 			ds += "cus_repID="+$("#data").data("rep").ID+"&";
 			t.io.request(t,ds+"table="+t.dbTable+"&es_do=addCustomer");
@@ -5146,6 +5301,12 @@ var Customers = Module.extend({
 			t.currentRowID = this.parentNode.parentNode.parentNode.id.substring(8);
 			var ds = $(this).closest("form").postify();
 			if(ds=="") return false;
+			// email check
+			if((!$("#cus_email1",$(this).closest("form")).validate() && $("#cus_email1",$(this).closest("form")).val().trim()!="") ||
+				(!$("#cus_email2",$(this).closest("form")).validate() && $("#cus_email2",$(this).closest("form")).val().trim()!="")) {
+				alert("Please use a valid email address.");
+				return false;
+			}
 			t.io.request(t,ds+"id="+t.currentRowID+"&table="+t.dbTable+"&es_do=updateItem");
 		});
 		// trash link
@@ -5153,6 +5314,11 @@ var Customers = Module.extend({
 			t.currentRowID = this.parentNode.parentNode.parentNode.id.substring(3);
 			// get dependents
 			t.io.request(t,"caller="+t.dbTable+"&id="+t.currentRowID+"&tables=es_jobs,es_zones,es_proposals&columns=job_customerID,zon_customerID,pro_customerID&es_do=getDependents");
+		});
+		// test email
+		$(".email",$(t.el)).live("keyup",function() {
+			var tc = $(this).validate() ? "#404040" : "red";
+			$(this).css("color",tc);
 		});
 	},
   	show:function(holder) { this._super(holder); },
@@ -5206,11 +5372,11 @@ var Customers = Module.extend({
 						<label for='cus_fax'>Fax</label> \
 						<input class='input-short' type='text' id='cus_fax' value='' /> \
 						<label for='cus_email1'>Email 1</label> \
-						<input class='input-short' type='text' id='cus_email1' value='' /> \
+						<input class='input-short email' type='text' id='cus_email1' value='' /> \
 					</div> \
 					<div class='form-column-right'> \
 						<label for='cus_email2'>Email 2</label> \
-						<input class='input-short' type='text' id='cus_email2' value='' /> \
+						<input class='input-short email' type='text' id='cus_email2' value='' /> \
 						<label for='cus_address1'>Address 1</label> \
 						<input class='input-short' type='text' id='cus_address1' value='' /> \
 						<label for='cus_address2'>Address 2</label> \
@@ -5422,11 +5588,11 @@ var Customers = Module.extend({
 						<label for='cus_fax'>Fax</label> \
 						<input class='input-short' type='text' id='cus_fax' value='"+data.cus_fax+"' /> \
 						<label for='cus_email1'>Email 1</label> \
-						<input class='input-short' type='text' id='cus_email1' value='"+data.cus_email1+"' /> \
+						<input class='input-short email' type='text' id='cus_email1' value='"+data.cus_email1+"' /> \
 					</div> \
 					<div class='form-column-right'> \
 						<label for='cus_email2'>Email 2</label> \
-						<input class='input-short' type='text' id='cus_email2' value='"+data.cus_email2+"' /> \
+						<input class='input-short email' type='text' id='cus_email2' value='"+data.cus_email2+"' /> \
 						<label for='cus_address1'>Address 1</label> \
 						<input class='input-short' type='text' id='cus_address1' value='"+data.cus_address1+"' /> \
 						<label for='cus_address2'>Address 2</label> \

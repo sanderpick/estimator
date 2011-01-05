@@ -239,17 +239,17 @@ h1.add-proposal-section { font-size:14px; padding:0 0 15px 0; color:#5880C0; }
 
 #extra-nav-left { font-size:11px; margin:0 50% 0 400px; width:50%; }
 #extra-nav-left li { list-style-type:none; display:inline; padding:0 20px 0 0; }
-#extra-nav-left li a { text-decoration:none; font-style:normal; font-weight:bold; }
+#extra-nav-left li a { text-decoration:none; font-style:normal; font-weight:bold; color:#B1CD49; }
 #extra-nav-left li a:hover { color:#808080; }
 
 #extra-nav-right { font-size:11px; width:50%; float:right; }
 #extra-nav-right ul { text-align:right }
 #extra-nav-right li { list-style-type:none; display:inline; padding:0 0 0 20px; }
-#extra-nav-right li a { text-decoration:none; font-style:normal; font-weight:bold; }
+#extra-nav-right li a { text-decoration:none; font-style:normal; font-weight:bold; color:#B1CD49; }
 #extra-nav-right li a:hover { color:#808080; }
 
-.extra-nav-hover { color:#B1CD49; }
-
+a.extra-nav-selected { color:#000000 !important; cursor:default; }
+a.extra-nav-selected:hover { color:#000000 !important; }
 /*--------------------------footer*/ 
 #footer { display:none; width:100%; background:white; border-top:3px solid #b1cd49; padding:5px 0 5px 0; text-align:center; }
 

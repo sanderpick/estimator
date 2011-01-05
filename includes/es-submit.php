@@ -54,7 +54,7 @@ function login() {
 			$r['data2'] = array("location"=>$m->lastData()->off_city.", ".$m->lastData()->off_state,"city"=>$m->lastData()->off_city,"state"=>$m->lastData()->off_state,"zip"=>$m->lastData()->off_zip);
 		} else $r['data2'] = array("location"=>"unknown location","city"=>"","state"=>"","zip"=>"");
 		// get all offices for support
-		$m->getAll("es_offices","ID,off_city,off_state","ID");
+		$m->getAll("es_offices","ID,off_city,off_state,off_franchise_name","ID");
 		$r['data3'] = $m->lastData();
 	} else $r['did'] = "failed login";
 }
@@ -71,7 +71,7 @@ function resume() {
 				$r['data2'] = array("location"=>$m->lastData()->off_city.", ".$m->lastData()->off_state,"city"=>$m->lastData()->off_city,"state"=>$m->lastData()->off_state,"zip"=>$m->lastData()->off_zip);
 			} else $r['data2'] = array("location"=>"unknown location","city"=>"","state"=>"","zip"=>"");
 			// get all offices for support
-			$m->getAll("es_offices","ID,off_city,off_state","ID");
+			$m->getAll("es_offices","ID,off_city,off_state,off_franchise_name","ID");
 			$r['data3'] = $m->lastData();
 		} else $r['did'] = "cant resume";
 	} else $r['did'] = "cant resume";
@@ -265,7 +265,7 @@ function addOffice() {
 	$table = $_POST['table'];
 	unset($_POST['es_do'],$_POST['table']);
 	$off = $_POST;
-	$off['off_manager_list'] = strtolower(str_replace(" ","_",$off['off_city'])."_gm@lighthousesolar.com");
+	//$off['off_manager_list'] = strtolower(str_replace(" ","_",$off['off_city'])."_gm@lighthousesolar.com");
 	if($id=$m->addRow($table,$off)) {
 		// create office admin
 		$rep['rep_login'] = strtolower(str_replace(" ","_",$off['off_city']."_".$off['off_state']));

@@ -36,6 +36,9 @@ CREATE TABLE `es_offices` (
 	`off_email` varchar(60) NOT NULL default '',
 	`off_manager_list` varchar(60) NOT NULL default '',
 	
+	`off_franchise_name` varchar(100) NOT NULL default '',
+	`off_license_num` varchar(40) NOT NULL default '',
+	
 	`off_labor_cost` decimal(10,2),
 	`off_labor_price` decimal(10,2),
 	
