@@ -713,8 +713,21 @@ var Modules = Module.extend({
 		});
 		// add new
 		$("input[title='Add']",$(t.el)).live("click",function() {
-			var ds = $(this).closest("form").postify();
+			var ds = $(this).closest("form").postify("margin");
 			if(ds=="") return false;
+			// get price
+			var b = $("#mod_cost_basis",$(this).closest("form")).val();
+			var r = parseFloat($("#mod_stc",$(this).closest("form")).val());
+			var c = parseFloat($("#mod_cost",$(this).closest("form")).val());
+			if(b=="0") {
+				c *= r;
+				$("#mod_cost",$(this).closest("form")).val(c);
+				ds = $(this).closest("form").postify("margin");
+			}
+			var m = parseFloat($("#margin",$(this).closest("form")).val()) / 100;
+			var p = c / (1 - m);
+			ds += "mod_price="+p+"&";
+			// go to server
 			t.io.request(t,ds+"table="+t.dbTable+"&es_do=addItem");
 		});
 		// hover over rows
@@ -739,8 +752,21 @@ var Modules = Module.extend({
 		// update
 		$("input[title='Update']",$(t.el)).live("click",function() {
 			t.currentRowID = this.parentNode.parentNode.parentNode.id.substring(8);
-			var ds = $(this).closest("form").postify();
+			var ds = $(this).closest("form").postify("margin");
 			if(ds=="") return false;
+			// get price
+			var b = $("#mod_cost_basis",$(this).closest("form")).val();
+			var r = parseFloat($("#mod_stc",$(this).closest("form")).val());
+			var c = parseFloat($("#mod_cost",$(this).closest("form")).val());
+			if(b=="0") {
+				c *= r;
+				$("#mod_cost",$(this).closest("form")).val(c);
+				ds = $(this).closest("form").postify("margin");
+			}
+			var m = parseFloat($("#margin",$(this).closest("form")).val()) / 100;
+			var p = c / (1 - m);
+			ds += "mod_price="+p+"&";
+			// go to server
 			t.io.request(t,ds+"id="+t.currentRowID+"&table="+t.dbTable+"&es_do=updateItem");
 		});
 		// trash link
@@ -785,28 +811,41 @@ var Modules = Module.extend({
 						<input class='required' type='text' id='mod_model_num' value='' /> \
 						<label for='mod_desc'>Description</label> \
 						<input class='required' type='text' id='mod_desc' value='' /> \
+					</div> \
+					<div class='form-column'> \
 						<label for='mod_width'>Width (in)</label> \
 						<input class='required' type='text' id='mod_width' value='' /> \
 						<label for='mod_length'>Length (in)</label> \
 						<input class='required' type='text' id='mod_length' value='' /> \
-						<label for='mod_stc'>STC Rating (W)</label> \
-						<input class='required' type='text' id='mod_stc' value='' /> \
 					</div> \
 					<div class='form-column'> \
+						<label for='mod_stc'>STC Rating (W)</label> \
+						<input class='required' type='text' id='mod_stc' value='' /> \
 						<label for='mod_ptc'>PTC Rating (W)</label> \
 						<input class='required' type='text' id='mod_ptc' value='' /> \
+					</div> \
+					<div class='form-column'> \
 						<label for='mod_labor'>Base Install Labor (hrs)</label> \
 						<input class='required' type='text' id='mod_labor' value='' /> \
 						<label for='mod_unit'>Price Unit</label> \
 						<input class='required' type='text' id='mod_unit' value='' /> \
-						<label for='mod_cost'>Cost ($)</label> \
+					</div> \
+					<div class='form-column'> \
+						<label for='mod_cost_basis'>Cost Basis</label> \
+						<select class='required' id='mod_cost_basis'> \
+							<option value='0' selected='selected'>$/Watt</option> \
+							<option value='1'>fixed</option> \
+						</select> \
+						<label for='mod_cost'>Cost</label> \
 						<input class='required' type='text' id='mod_cost' value='' /> \
 					</div> \
 					<div class='form-column'> \
-						<label for='mod_price'>Price ($)</label> \
-						<input class='required' type='text' id='mod_price' value='' /> \
+						<label for='margin'>Margin (%)</label> \
+						<input class='required' type='text' id='margin' value='' /> \
 						<label for='mod_cutsheet_uri'>Cutsheet URI</label> \
 						<input type='text' id='mod_cutsheet_uri' value='' /> \
+					</div> \
+					<div class='form-column'> \
 						<label for='mod_cutsheet_t_uri'>Cutsheet Thumb URI</label> \
 						<input type='text' id='mod_cutsheet_t_uri' value='' /> \
 						<label for='mod_print_cutsheet_uri'>Cutsheet Print URI(s)</label> \
@@ -921,6 +960,15 @@ var Modules = Module.extend({
 		// create the edit row
 		var sel_yes = (data.active=="yes") ? "selected='selected'" : "";
 		var sel_no = (data.active=="no") ? "selected='selected'" : "";
+		// cost basis
+		var cost_watts = (data.mod_cost_basis=="0") ? "selected='selected'" : "";
+		var cost_fixed = (data.mod_cost_basis=="1") ? "selected='selected'" : "";
+		// margin
+		var margin = (100*(((parseFloat(data.mod_price) - parseFloat(data.mod_cost)) / parseFloat(data.mod_price)))).toFixed(2);
+		// cost 
+		if(data.mod_cost_basis=="0") 
+			data.mod_cost = (parseFloat(data.mod_cost) / parseFloat(data.mod_stc)).toFixed(2);
+		// html
 		var edit = "<td colspan='12'>";
 		edit += "<form class='updateform' action='javascript:void(0);'> \
 					<h1 class='addform-header'>Quick Edit</h1> \
@@ -930,28 +978,41 @@ var Modules = Module.extend({
 						<input class='required' type='text' id='mod_model_num' value='"+data.mod_model_num+"' /> \
 						<label for='mod_desc'>Description</label> \
 						<input class='required' type='text' id='mod_desc' value='"+data.mod_desc+"' /> \
+					</div> \
+					<div class='form-column'> \
 						<label for='mod_width'>Width (in)</label> \
 						<input class='required' type='text' id='mod_width' value='"+data.mod_width+"' /> \
 						<label for='mod_length'>Length (in)</label> \
 						<input class='required' type='text' id='mod_length' value='"+data.mod_length+"' /> \
-						<label for='mod_stc'>STC Rating (W)</label> \
-						<input class='required' type='text' id='mod_stc' value='"+data.mod_stc+"' /> \
 					</div> \
 					<div class='form-column'> \
+						<label for='mod_stc'>STC Rating (W)</label> \
+						<input class='required' type='text' id='mod_stc' value='"+data.mod_stc+"' /> \
 						<label for='mod_ptc'>PTC Rating (W)</label> \
 						<input class='required' type='text' id='mod_ptc' value='"+data.mod_ptc+"' /> \
+					</div> \
+					<div class='form-column'> \
 						<label for='mod_labor'>Base Install Labor (hrs)</label> \
 						<input class='required' type='text' id='mod_labor' value='"+data.mod_labor+"' /> \
 						<label for='mod_unit'>Price Unit</label> \
 						<input class='required' type='text' id='mod_unit' value='"+data.mod_unit+"' /> \
-						<label for='mod_cost'>Cost ($)</label> \
+					</div> \
+					<div class='form-column'> \
+						<label for='mod_cost_basis'>Cost Basis</label> \
+						<select class='required' id='mod_cost_basis'> \
+							<option value='0' "+cost_watts+">$/Watt</option> \
+							<option value='1' "+cost_fixed+">fixed</option> \
+						</select> \
+						<label for='mod_cost'>Cost</label> \
 						<input class='required' type='text' id='mod_cost' value='"+data.mod_cost+"' /> \
 					</div> \
 					<div class='form-column'> \
-						<label for='mod_price'>Price ($)</label> \
-						<input class='required' type='text' id='mod_price' value='"+data.mod_price+"' /> \
+						<label for='margin'>Margin (%)</label> \
+						<input class='required' type='text' id='margin' value='"+margin+"' /> \
 						<label for='mod_cutsheet_uri'>Cutsheet URI</label> \
 						<input type='text' id='mod_cutsheet_uri' value='"+data.mod_cutsheet_uri+"' /> \
+					</div> \
+					<div class='form-column'> \
 						<label for='mod_cutsheet_t_uri'>Cutsheet Thumb URI</label> \
 						<input type='text' id='mod_cutsheet_t_uri' value='"+data.mod_cutsheet_t_uri+"' /> \
 						<label for='mod_print_cutsheet_uri'>Cutsheet Print URI(s)</label> \
@@ -5277,6 +5338,8 @@ var Customers = Module.extend({
 			$("#"+this.parentNode.parentNode.id).addClass("selected-row");
 			$("#data").data("customer",this.parentNode.parentNode);
 			$(".dashboard-item-content",$(t.jobs.el)).html(t.jobs.itemForm($("#"+this.parentNode.parentNode.id).data("info")));
+			// go to it
+			$.scrollTo("#m_jobs",500);
 		});
 		// hover over rows
 		$("tr",$(t.el)).live("mouseenter",function() {
@@ -5405,6 +5468,8 @@ var Customers = Module.extend({
 				// show the list again
 				$(".dashboard-item-content",$(this.el)).html("");
 				this.io.request(this,"table="+this.dbTable+"&order="+this.dbOrder+"&wc=cus_officeID='"+$('#data').data('rep').rep_officeID+"'&es_do=browseAll");
+				// set flag for scroll
+				this.addingNew = true;
 				break;
 			case this.dbTable+" updated" :
 				$("#cus"+this.currentRowID).html(this.rowContent(json.data)).show();
@@ -5471,6 +5536,13 @@ var Customers = Module.extend({
 						zip:json.data[i].cus_zip,
 						country:json.data[i].cus_country
 					});
+				}
+				// check if adding new
+				if(this.addingNew) {
+					// clear flag
+					this.addingNew = false;
+					// go to it
+					$.scrollTo(this.el,500,{offset:61});
 				}
 				break;
 			case "no "+this.dbTable :
@@ -5853,6 +5925,8 @@ var Jobs = Module.extend({
 				// show the list again
 				$(".dashboard-item-content",$(this.el)).html("");
 				this.io.request(this,"table="+this.dbTable+"&order="+this.dbOrder+"&wc=job_officeID='"+$('#data').data('rep').rep_officeID+"'&es_do=browseAllJobs");
+				// set flag for scroll
+				this.addingNew = true;
 				break;
 			case this.dbTable+" updated" :
 				$("#edit-job"+this.currentRowID).html(this.editRowContent(json.data)).hide();
@@ -5917,6 +5991,13 @@ var Jobs = Module.extend({
 					$("#job"+json.data[i].ID).data("repID",json.data[i].job_repID);
 					$("#job"+json.data[i].ID).data("customerID",json.data[i].job_customerID);
 					$("#job"+json.data[i].ID).data("ID",json.data[i].ID);
+				}
+				// check if adding new
+				if(this.addingNew) {
+					// clear flag
+					this.addingNew = false;
+					// go to it
+					$.scrollTo(this.el,500,{offset:61});
 				}
 				break;
 			case "no "+this.dbTable :
@@ -6603,7 +6684,7 @@ var Zones = Module.extend({
 	rowContent:function(data,mod_desc,rac_desc) {
 		this._super();
 		// input field
-		var butts = "<div style='position:relative; top:5px;'>";
+		var butts = "<div style='position:relative; top:5px; right:-10px;'>";
 		butts += "<span id='zi-"+data.ID+"-holder' style='position:absolute; top:1px; right:3px; z-index:1;'>";
 		butts += "<input type='file' id='zi-"+data.ID+"' class='file-input' size='1' name='Filedata' style='opacity:0;' />";
 		butts += "</span>";
@@ -6633,10 +6714,10 @@ var Zones = Module.extend({
 		var rebate_desc = data.zon_rebate_desc!="" ? "("+data.zon_rebate_desc+")" : "";
 		// write it
 		var row = "<td style='border-top:1px solid #eee;'>";
-		row += "<div style='font-weight:bold; font-size:14px; padding:5px 0 0 10px; float:left;'>"+data.zon_name+"</div>";
+		row += "<div style='font-weight:bold; font-size:14px; padding:5px 0 0 0; float:left;'>"+data.zon_name+"</div>";
 		row += butts;
 		row += "<div class='clear'></div>";
-		row += "<table cellpadding='0' cellspacing='0' style='width:100%; margin:0; padding:10px;'>";
+		row += "<table cellpadding='0' cellspacing='0' style='width:100%; margin:10px 0 0 0; padding:10px;'>";
 		row += "<thead class='module-thead'>";
 		// Parameters and Layout
 		row += "<th colspan='3' style='padding:10px 0 5px 0; border-bottom:1px solid grey; font-weight:bold;'>Parameters:</th>";
@@ -6789,7 +6870,10 @@ var Proposals = Module.extend({
 		// new item -- controlled by customers
 		// cancel add
 		$("input[title='Cancel']",$(t.el)).live("click",function() {
+			// reload list
 			t.io.request(t,"table="+t.dbTable+"&order="+t.dbOrder+"&wc="+t.s.filter+"!!pro_officeID='"+$('#data').data('rep').rep_officeID+"'&"+t.itemFormOptions()+"&es_do=browseAllProposals");
+			// go to canceled job
+			$.scrollTo("#job"+$($("#data").data("job")).data("ID"),500);
 		});
 		// add new
 		$("input[title='Add']",$(t.el)).live("click",function() {
@@ -6801,8 +6885,13 @@ var Proposals = Module.extend({
 			var czID = "";
 			$(".choose-zones",$(t.el)).each(function(i) { if($(this).attr("checked")) czID += $(this).attr("id").substring(11)+","; });
 			if(czID=="") $("#pro_zones-label").css("color","red");
-			else $("#pro_zones-label").css("color","black");
-			if(ds=="" || czID=="") return false;
+			else $("#pro_zones-label").css("color","#5880C0");
+			// require inverter
+			var numI = $($("a[title='Add Inverter(s)']",$(t.el))[0].parentNode.nextElementSibling).children().length;
+			if(numI==0) $("#pro_inverter-label").css("color","red");
+			else $("#pro_inverter-label").css("color","#5880C0");
+			// check flags
+			if(ds=="" || czID=="" || numI==0) return false;
 			ds += "pro_officeID="+$($("#data").data("job")).data("officeID")+"&";
 			ds += "pro_repID="+$($("#data").data("job")).data("repID")+"&";
 			ds += "pro_customerID="+$($("#data").data("job")).data("customerID")+"&";
@@ -6823,8 +6912,13 @@ var Proposals = Module.extend({
 			var czID = "";
 			$(".choose-zones",$(t.el)).each(function(i) { if($(this).attr("checked")) czID += $(this).attr("id").substring(11)+","; });
 			if(czID=="") $("#pro_zones-label").css("color","red");
-			else $("#pro_zones-label").css("color","black");
-			if(ds=="" || czID=="") return false;
+			else $("#pro_zones-label").css("color","#5880C0");
+			// require inverter
+			var numI = $($("a[title='Add Inverter(s)']",$(t.el))[0].parentNode.nextElementSibling).children().length;
+			if(numI==0) $("#pro_inverter-label").css("color","red");
+			else $("#pro_inverter-label").css("color","#5880C0");
+			// check flags
+			if(ds=="" || czID=="" || numI==0) return false;
 			ds += "pro_officeID="+$($("#data").data("job")).data("officeID")+"&";
 			ds += "pro_repID="+$($("#data").data("job")).data("repID")+"&";
 			ds += "pro_customerID="+$($("#data").data("job")).data("customerID")+"&";
@@ -6871,6 +6965,8 @@ var Proposals = Module.extend({
 		$("input[title='CancelQ']",$(t.el)).live("click",function() {
 			$("#"+this.parentNode.parentNode.parentNode.id).hide();
 			$("#"+this.parentNode.parentNode.parentNode.id.substring(5)).show();
+			// go to it
+			$.scrollTo("#"+this.parentNode.parentNode.parentNode.id.substring(5),500);
 		});
 		// update
 		$("input[title='Update']",$(t.el)).live("click",function() {
@@ -6883,8 +6979,13 @@ var Proposals = Module.extend({
 			var czID = "";
 			$(".choose-zones",this.parentNode).each(function(i) { if($(this).attr("checked")) czID += $(this).attr("id").substring(11)+","; });
 			if(czID=="") $("#pro_zones-label-"+t.currentRowID).css("color","red");
-			else $("#pro_zones-label-"+t.currentRowID).css("color","black");
-			if(ds=="" || czID=="") return false;
+			else $("#pro_zones-label-"+t.currentRowID).css("color","#5880C0");
+			// require inverter
+			var numI = $($("a[title='Add Inverter(s)']",$(t.el))[0].parentNode.nextElementSibling).children().length;
+			if(numI==0) $("#pro_inverter-label-"+t.currentRowID).css("color","red");
+			else $("#pro_inverter-label-"+t.currentRowID).css("color","#5880C0");
+			// check flags
+			if(ds=="" || czID=="" || numI==0) return false;
 			ds += "pro_zones="+czID+"&";
 			ds += "pro_ref_sheets="+crfID+"&";
 			ds += $("#pro_credit"+t.currentRowID).attr("checked") ? "pro_credit=1&" : "pro_credit=0&";
@@ -6902,8 +7003,13 @@ var Proposals = Module.extend({
 			var czID = "";
 			$(".choose-zones",this.parentNode).each(function(i) { if($(this).attr("checked")) czID += $(this).attr("id").substring(11)+","; });
 			if(czID=="") $("#pro_zones-label-"+t.currentRowID).css("color","red");
-			else $("#pro_zones-label-"+t.currentRowID).css("color","black");
-			if(ds=="" || czID=="") return false;
+			else $("#pro_zones-label-"+t.currentRowID).css("color","#5880C0");
+			// require inverter
+			var numI = $($("a[title='Add Inverter(s)']",$(t.el))[0].parentNode.nextElementSibling).children().length;
+			if(numI==0) $("#pro_inverter-label-"+t.currentRowID).css("color","red");
+			else $("#pro_inverter-label-"+t.currentRowID).css("color","#5880C0");
+			// check flags
+			if(ds=="" || czID=="" || numI==0) return false;
 			ds += "pro_officeID="+$("#pro"+t.currentRowID).data("officeID")+"&";
 			ds += "pro_repID="+$("#pro"+t.currentRowID).data("repID")+"&";
 			ds += "pro_customerID="+$("#pro"+t.currentRowID).data("customerID")+"&";
@@ -7215,12 +7321,16 @@ var Proposals = Module.extend({
 				// show the list again
 				$(".dashboard-item-content",$(this.el)).html("");
 				this.io.request(this,"table="+this.dbTable+"&order="+this.dbOrder+"&wc="+this.s.filter+"!!pro_officeID='"+$('#data').data('rep').rep_officeID+"'&"+this.itemFormOptions()+"&es_do=browseAllProposals");
+				// set flag for scroll
+				this.addingNew = true;
 				break;
 			case this.dbTable+" updated" :
 				$("#pro"+this.currentRowID).html(this.rowContent(json.data,json.data2.rep)).show();
 				$("#edit-pro"+this.currentRowID).html(this.editRowContent(json.data,json.data2)).hide();
 				// get the calculations
 				this.io.request(this,"id="+this.currentRowID+"&es_do=getPropCalcs");
+				// go to it
+				$.scrollTo("#pro"+this.currentRowID,500);
 				break;
 			case this.dbTable+" deleted" :
 				// remove the rows
@@ -7248,6 +7358,8 @@ var Proposals = Module.extend({
 				$("#pro"+json.data.ID).data("jobID",json.data.pro_jobID);
 				// get the calculations
 				drafts.io.request(drafts,"id="+json.data.ID+"&es_do=getPropCalcs");
+				// go to it
+				$.scrollTo("#pro"+json.data.ID,500);
 				break;
 			case "invalid email" :
 				alert('Oops! '+json.data.action+' Proposal #'+json.data.pro+' failed.\n\nThis Proposal\'s Project, "'+json.data.job+'", has an invalid e-mail address. Please edit this Project and provide a valid e-mail address before '+json.data.action+' again.\n\n'+'');
@@ -7301,6 +7413,8 @@ var Proposals = Module.extend({
 				this.io.request(this,"id="+json.data.ID+"&es_do=getPropCalcs");
 				// send mail
 				this.io.request(this,"id="+json.data.ID+"&es_do=sendProposal");
+				// go to it
+				$.scrollTo("#pro"+json.data.ID,500);
 				break;
 			case this.dbTable+" published" :
 				// check structure
@@ -7346,6 +7460,8 @@ var Proposals = Module.extend({
 				this.io.request(this,"id="+json.data.ID+"&es_do=getPropCalcs");
 				// send mail
 				this.io.request(this,"id="+json.data.ID+"&es_do=sendProposal");
+				// go to it
+				$.scrollTo("#pro"+json.data.ID,500);
 				break;
 			case "sent proposal" : break;
 			case "found "+this.dbTable :
@@ -7392,6 +7508,13 @@ var Proposals = Module.extend({
 				// get the calculations
 				for(var i=0;i<json.data.length;i++) {
 					this.io.request(this,"id="+json.data[i].ID+"&es_do=getPropCalcs");
+				}
+				// check if adding new
+				if(this.addingNew) {
+					// clear flag
+					this.addingNew = false;
+					// go to it
+					$.scrollTo(this.el,500,{offset:61});
 				}
 				break;
 			case this.dbTable+" got calcs" :
@@ -7474,7 +7597,7 @@ var Proposals = Module.extend({
 								<br /> \
 								<div class='form-break'></div> \
 								<br />";
-					form +=		"<h1 class='add-proposal-section'>Inverters&nbsp;&nbsp;<a class='adder' title='Add Inverter(s)' href='javascript:void(0);'>+</a></h1> \
+					form +=		"<h1 class='add-proposal-section' id='pro_inverter-label'>Inverters&nbsp;&nbsp;<a class='adder' title='Add Inverter(s)' href='javascript:void(0);'>+</a></h1> \
 								<div> \
 									<div class='form-column' id='inverter_1'> \
 										<label style='padding-bottom:5px;' for='pro_inter_method_1'>Interconnection Method <a href='javascript:void(0);' title='Delete Inverter(s)' class='lesser' style='vertical-align:bottom; padding:0 0 0 5px;'>&#10005;</a></label> \
@@ -7773,7 +7896,7 @@ var Proposals = Module.extend({
 							.data("conn_comps",selects.pro_conn_comps)
 							.data("miscellaneous_materials",selects.pro_miscellaneous_materials);
 						// go to it
-						$.scrollTo(this.el);
+						$.scrollTo(this.el,500);
 				break;
 			//-----------------------------------//
 			default :
@@ -8192,7 +8315,7 @@ var Proposals = Module.extend({
 							<br /> \
 							<div class='form-break'></div> \
 							<br />";
-			edit +=			"<h1 class='add-proposal-section'>Inverters&nbsp;&nbsp;<a class='adder' title='Add Inverter(s)' href='javascript:void(0);'>+</a></h1> \
+			edit +=			"<h1 class='add-proposal-section' id='pro_inverter-label-"+data.ID+"'>Inverters&nbsp;&nbsp;<a class='adder' title='Add Inverter(s)' href='javascript:void(0);'>+</a></h1> \
 							<div> \
 								"+inverters_html+" \
 							</div> \
@@ -8559,8 +8682,7 @@ $(function() {
 					if(toRed.length != 0) toRed.css("color","red");
 					else $("h1[id='"+this.id+"-label']").css("color","red");
 					valid = false; 
-				}
-				else if(this.id!=exclude
+				} else if(this.id!=exclude
 						&& this.type!="radio"
 						&& this.className!="choose-zones"
 						&& this.className!="choose-ref_sheets"
