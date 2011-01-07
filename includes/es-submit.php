@@ -54,7 +54,7 @@ function login() {
 			$r['data2'] = array("location"=>$m->lastData()->off_city.", ".$m->lastData()->off_state,"city"=>$m->lastData()->off_city,"state"=>$m->lastData()->off_state,"zip"=>$m->lastData()->off_zip);
 		} else $r['data2'] = array("location"=>"unknown location","city"=>"","state"=>"","zip"=>"");
 		// get all offices for support
-		$m->getAll("es_offices","ID,off_city,off_state","ID");
+		$m->getAll("es_offices","ID,off_city,off_state,off_franchise_name","ID");
 		$r['data3'] = $m->lastData();
 	} else $r['did'] = "failed login";
 }
@@ -71,7 +71,7 @@ function resume() {
 				$r['data2'] = array("location"=>$m->lastData()->off_city.", ".$m->lastData()->off_state,"city"=>$m->lastData()->off_city,"state"=>$m->lastData()->off_state,"zip"=>$m->lastData()->off_zip);
 			} else $r['data2'] = array("location"=>"unknown location","city"=>"","state"=>"","zip"=>"");
 			// get all offices for support
-			$m->getAll("es_offices","ID,off_city,off_state","ID");
+			$m->getAll("es_offices","ID,off_city,off_state,off_franchise_name","ID");
 			$r['data3'] = $m->lastData();
 		} else $r['did'] = "cant resume";
 	} else $r['did'] = "cant resume";
@@ -109,6 +109,29 @@ function browseAll() {
 	if($m->getAll($table,"*",$order,$wc)) {
 		$r['did'] = "found ".$table;
 		$r['data'] = $m->lastData();
+	} else $r['did'] = "no ".$table;
+}
+
+// get an entire table and return the office name
+function browseAllSortOffice() {
+	global $m,$r;
+	$table = $_POST['table'];
+	$order = $_POST['order'];
+	if(isset($_POST['wc'])) {
+		$_POST['wc'] = stripslashes($_POST['wc']);
+		$wc = str_replace("!!"," AND ",$_POST['wc']);
+		$wc = str_replace("::"," OR ",$wc);
+	} else $wc = NULL;
+	if($m->getAll($table,"*",$order,$wc)) {
+		$r['did'] = "found ".$table;
+		$r['data'] = $m->lastData();
+		foreach($r['data'] as $row) {
+			if($row->officeID!="0") {
+				if($m->getRow("es_offices",$row->officeID)) {
+					$r['data2']['office'][] = $m->lastData()->off_city.", ".$m->lastData()->off_state;
+				} else $r['data2']['office'][] = "not found";
+			} else $r['data2']['office'][] = "All";
+		}
 	} else $r['did'] = "no ".$table;
 }
 
@@ -202,9 +225,21 @@ function browseAllProposals() {
 	$menus = explode(",",$_POST['menus']);
 	$sources = explode(",",$_POST['sources']);
 	$columns = explode(",",$_POST['columns']);
+	//
+	if(isset($_POST['wcs'])) {
+		$_POST['wcs'] = stripslashes($_POST['wcs']);
+		$wcs = str_replace("!!"," AND ",$_POST['wcs']);
+		$wcs = str_replace("::"," OR ",$wcs);
+		$clauses = explode(",",$wcs);
+	} else $clauses = array_fill(0,count($menus),"");
+	foreach($clauses as $k=>$c) {
+		if($c!="") $c = "active='1' && ".$c;
+		else $c = "active='1'";
+	}
+	//
 	for($i=0;$i<count($menus);$i++) {
 		if($sources[$i]!="es_zones" && $sources[$i]!="es_jobs") {
-			if($m->getAll($sources[$i],$columns[$i],"ID","active='1'")) {
+			if($m->getAll($sources[$i],$columns[$i],"ID",$clauses[$i])) {
 				$r['data2'][$menus[$i]] = $m->lastData();
 			}
 		}
@@ -230,7 +265,7 @@ function addOffice() {
 	$table = $_POST['table'];
 	unset($_POST['es_do'],$_POST['table']);
 	$off = $_POST;
-	$off['off_manager_list'] = strtolower(str_replace(" ","_",$off['off_city'])."_gm@lighthousesolar.com");
+	//$off['off_manager_list'] = strtolower(str_replace(" ","_",$off['off_city'])."_gm@lighthousesolar.com");
 	if($id=$m->addRow($table,$off)) {
 		// create office admin
 		$rep['rep_login'] = strtolower(str_replace(" ","_",$off['off_city']."_".$off['off_state']));
@@ -339,21 +374,178 @@ function addProposal() {
 			unset($pro[$key]);
 		}
 	}
-	// parse monitors
-	$pro['pro_data_monitors'] = "";
-	$pro['pro_data_monitor_types'] = "";
+	// parse credits
+	$pro['pro_credit_amnt'] = "";
+	$pro['pro_credit_desc'] = "";
+	$pro['pro_credit_type'] = "";
 	foreach($pro as $key=>$val) {
-		if(substr($key,0,18)=="pro_data_monitors_") {
-			$pro['pro_data_monitors'] .= $val.",";
+		if(substr($key,0,16)=="pro_credit_amnt_") {
+			$pro['pro_credit_amnt'] .= $val.",";
 			unset($pro[$key]);
-		} else if(substr($key,0,23)=="pro_data_monitor_types_") {
-			$pro['pro_data_monitor_types'] .= $val.",";
+		} else if(substr($key,0,16)=="pro_credit_desc_") {
+			$pro['pro_credit_desc'] .= $val.",";
+			unset($pro[$key]);
+		} else if(substr($key,0,16)=="pro_credit_type_") {
+			$pro['pro_credit_type'] .= $val.",";
 			unset($pro[$key]);
 		}
 	}
-	// get name
-	$m->getRow('es_jobs',$pro['pro_jobID']);
-	$pro['pro_name'] = $m->lastData()->job_name;
+	// parse monitors
+	$monitors = array();
+	$monitor_types = array();
+	$monitor_qntys = array();
+	foreach($pro as $key=>$val) {
+		if(substr($key,0,18)=="pro_data_monitors_") {
+			array_push($monitors,$val);
+			unset($pro[$key]);
+		} else if(substr($key,0,23)=="pro_data_monitor_types_") {
+			array_push($monitor_types,$val);
+			unset($pro[$key]);
+		} else if(substr($key,0,23)=="pro_data_monitor_qntys_") {
+			array_push($monitor_qntys,$val);
+			unset($pro[$key]);
+		}
+	}
+	// add monitors if duplicate
+	for($i=0;$i<count($monitors);$i++) {
+		for($j=0;$j<count($monitors);$j++) {
+			if($monitors[$j]==$monitors[$i] && $monitor_types[$j]==$monitor_types[$i] && $i!=$j && $monitors[$i]!=NULL && $monitors[$j]!=NULL) {
+				$monitor_qntys[$i] += $monitor_qntys[$j];
+				$monitors[$j] = NULL;
+				$monitor_types[$j] = NULL;
+				$monitor_qntys[$j] = NULL;
+			}
+		}
+	}
+	$monitors = array_values(array_filter($monitors,"strlen"));
+	$monitor_types = array_values(array_filter($monitor_types,"strlen"));
+	$monitor_qntys = array_values(array_filter($monitor_qntys,"strlen"));
+	// write monitors
+	$pro['pro_data_monitors'] = "";
+	$pro['pro_data_monitor_types'] = "";
+	$pro['pro_data_monitor_qntys'] = "";
+	for($i=0;$i<count($monitors);$i++) {
+		$pro['pro_data_monitors'] .= $monitors[$i].",";
+		$pro['pro_data_monitor_types'] .= $monitor_types[$i].",";
+		$pro['pro_data_monitor_qntys'] .= $monitor_qntys[$i].",";
+	}
+	// parse additional mounting materials
+	$mounting_mats = array();
+	$mounting_mat_types = array();
+	$mounting_mat_qntys = array();
+	foreach($pro as $key=>$val) {
+		if(substr($key,0,22)=="pro_add_mounting_mats_") {
+			array_push($mounting_mats,$val);
+			unset($pro[$key]);
+		} else if(substr($key,0,27)=="pro_add_mounting_mat_types_") {
+			array_push($mounting_mat_types,$val);
+			unset($pro[$key]);
+		} else if(substr($key,0,27)=="pro_add_mounting_mat_qntys_") {
+			array_push($mounting_mat_qntys,$val);
+			unset($pro[$key]);
+		}
+	}
+	// add mounting mats if duplicate
+	for($i=0;$i<count($mounting_mats);$i++) {
+		for($j=0;$j<count($mounting_mats);$j++) {
+			if($mounting_mats[$j]==$mounting_mats[$i] && $mounting_mat_types[$j]==$mounting_mat_types[$i] && $i!=$j && $mounting_mats[$i]!=NULL && $mounting_mats[$j]!=NULL) {
+				$mounting_mat_qntys[$i] += $mounting_mat_qntys[$j];
+				$mounting_mats[$j] = NULL;
+				$mounting_mat_types[$j] = NULL;
+				$mounting_mat_qntys[$j] = NULL;
+			}
+		}
+	}
+	$mounting_mats = array_values(array_filter($mounting_mats,"strlen"));
+	$mounting_mat_types = array_values(array_filter($mounting_mat_types,"strlen"));
+	$mounting_mat_qntys = array_values(array_filter($mounting_mat_qntys,"strlen"));
+	// write mounting mats
+	$pro['pro_add_mounting_mats'] = "";
+	$pro['pro_add_mounting_mat_types'] = "";
+	$pro['pro_add_mounting_mat_qntys'] = "";
+	for($i=0;$i<count($mounting_mats);$i++) {
+		$pro['pro_add_mounting_mats'] .= $mounting_mats[$i].",";
+		$pro['pro_add_mounting_mat_types'] .= $mounting_mat_types[$i].",";
+		$pro['pro_add_mounting_mat_qntys'] .= $mounting_mat_qntys[$i].",";
+	}
+	// parse conduit and wire runs
+	$conn_comps = array();
+	$conn_comp_types = array();
+	$conn_comp_qntys = array();
+	foreach($pro as $key=>$val) {
+		if(substr($key,0,15)=="pro_conn_comps_") {
+			array_push($conn_comps,$val);
+			unset($pro[$key]);
+		} else if(substr($key,0,20)=="pro_conn_comp_types_") {
+			array_push($conn_comp_types,$val);
+			unset($pro[$key]);
+		} else if(substr($key,0,20)=="pro_conn_comp_qntys_") {
+			array_push($conn_comp_qntys,$val);
+			unset($pro[$key]);
+		}
+	}
+	// add conduit and wire runs if duplicate
+	for($i=0;$i<count($conn_comps);$i++) {
+		for($j=0;$j<count($conn_comps);$j++) {
+			if($conn_comps[$j]==$conn_comps[$i] && $conn_comp_types[$j]==$conn_comp_types[$i] && $i!=$j && $conn_comps[$i]!=NULL && $conn_comps[$j]!=NULL) {
+				$conn_comp_qntys[$i] += $conn_comp_qntys[$j];
+				$conn_comps[$j] = NULL;
+				$conn_comp_types[$j] = NULL;
+				$conn_comp_qntys[$j] = NULL;
+			}
+		}
+	}
+	$conn_comps = array_values(array_filter($conn_comps,"strlen"));
+	$conn_comp_types = array_values(array_filter($conn_comp_types,"strlen"));
+	$conn_comp_qntys = array_values(array_filter($conn_comp_qntys,"strlen"));
+	// write conduit and wire runs
+	$pro['pro_conn_comps'] = "";
+	$pro['pro_conn_comp_types'] = "";
+	$pro['pro_conn_comp_qntys'] = "";
+	for($i=0;$i<count($conn_comps);$i++) {
+		$pro['pro_conn_comps'] .= $conn_comps[$i].",";
+		$pro['pro_conn_comp_types'] .= $conn_comp_types[$i].",";
+		$pro['pro_conn_comp_qntys'] .= $conn_comp_qntys[$i].",";
+	}
+	// parse miscellaneous materials
+	$miscellaneous_materials = array();
+	$miscellaneous_material_types = array();
+	$miscellaneous_material_qntys = array();
+	foreach($pro as $key=>$val) {
+		if(substr($key,0,28)=="pro_miscellaneous_materials_") {
+			array_push($miscellaneous_materials,$val);
+			unset($pro[$key]);
+		} else if(substr($key,0,33)=="pro_miscellaneous_material_types_") {
+			array_push($miscellaneous_material_types,$val);
+			unset($pro[$key]);
+		} else if(substr($key,0,33)=="pro_miscellaneous_material_qntys_") {
+			array_push($miscellaneous_material_qntys,$val);
+			unset($pro[$key]);
+		}
+	}
+	// add miscellaneous materials if duplicate
+	for($i=0;$i<count($miscellaneous_materials);$i++) {
+		for($j=0;$j<count($miscellaneous_materials);$j++) {
+			if($miscellaneous_materials[$j]==$miscellaneous_materials[$i] && $miscellaneous_material_types[$j]==$miscellaneous_material_types[$i] && $i!=$j && $miscellaneous_materials[$i]!=NULL && $miscellaneous_materials[$j]!=NULL) {
+				$miscellaneous_material_qntys[$i] += $miscellaneous_material_qntys[$j];
+				$miscellaneous_materials[$j] = NULL;
+				$miscellaneous_material_types[$j] = NULL;
+				$miscellaneous_material_qntys[$j] = NULL;
+			}
+		}
+	}
+	$miscellaneous_materials = array_values(array_filter($miscellaneous_materials,"strlen"));
+	$miscellaneous_material_types = array_values(array_filter($miscellaneous_material_types,"strlen"));
+	$miscellaneous_material_qntys = array_values(array_filter($miscellaneous_material_qntys,"strlen"));
+	// write miscellaneous materials
+	$pro['pro_miscellaneous_materials'] = "";
+	$pro['pro_miscellaneous_material_types'] = "";
+	$pro['pro_miscellaneous_material_qntys'] = "";
+	for($i=0;$i<count($miscellaneous_materials);$i++) {
+		$pro['pro_miscellaneous_materials'] .= $miscellaneous_materials[$i].",";
+		$pro['pro_miscellaneous_material_types'] .= $miscellaneous_material_types[$i].",";
+		$pro['pro_miscellaneous_material_qntys'] .= $miscellaneous_material_qntys[$i].",";
+	}
 	// set date
 	$pro['pro_date'] = date('Y-m-d H:i:s');
 	// make link
@@ -553,7 +745,7 @@ function updateCells() {
 	}
 }
 
-// update item - customer
+// update item
 function updateItem() {
 	global $m,$r;
 	$table = $_POST['table'];
@@ -563,6 +755,25 @@ function updateItem() {
 		if($m->getRow($table,$id)) {
 			$r['did'] = $table." updated";
 			$r['data'] = $m->lastData();
+		} else $r['did'] = "failed ".$table." update";
+	} else $r['did'] = "failed ".$table." update";
+}
+
+// update item and return office name
+function updateItemSortOffice() {
+	global $m,$r;
+	$table = $_POST['table'];
+	$id = $_POST['id'];
+	unset($_POST['es_do'],$_POST['table'],$_POST['id']);
+	if($m->updateRow($table,$id,$_POST)) {
+		if($m->getRow($table,$id)) {
+			$r['did'] = $table." updated";
+			$r['data'] = $m->lastData();
+			if($r['data']->officeID!="0") {
+				if($m->getRow("es_offices",$r['data']->officeID)) {
+					$r['data2']['office'] = $m->lastData()->off_city.", ".$m->lastData()->off_state;
+				} else $r['data2']['office'] = "not found";
+			} else $r['data2']['office'] = "All";
 		} else $r['did'] = "failed ".$table." update";
 	} else $r['did'] = "failed ".$table." update";
 }
@@ -671,6 +882,19 @@ function updateProposal() {
 	$menus = explode(",",$_POST['menus']);
 	$sources = explode(",",$_POST['sources']);
 	$columns = explode(",",$_POST['columns']);
+	//
+	if(isset($_POST['wcs'])) {
+		$_POST['wcs'] = stripslashes($_POST['wcs']);
+		$wcs = str_replace("!!"," AND ",$_POST['wcs']);
+		$wcs = str_replace("::"," OR ",$wcs);
+		$clauses = explode(",",$wcs);
+		unset($_POST['wcs']);
+	} else $clauses = array_fill(0,count($menus),"");
+	foreach($clauses as $c) {
+		if($c!="") $c = "active='1' && ".$c;
+		else $c = "active='1'";
+	}
+	//
 	unset($_POST['es_do'],$_POST['table'],$_POST['id'],$_POST['menus'],$_POST['sources'],$_POST['columns']);
 	$pro = $_POST;
 	// parse interconnections
@@ -709,17 +933,177 @@ function updateProposal() {
 			unset($pro[$key]);
 		}
 	}
-	// parse monitors
-	$pro['pro_data_monitors'] = "";
-	$pro['pro_data_monitor_types'] = "";
+	// parse credits
+	$pro['pro_credit_amnt'] = "";
+	$pro['pro_credit_desc'] = "";
+	$pro['pro_credit_type'] = "";
 	foreach($pro as $key=>$val) {
-		if(substr($key,0,18)=="pro_data_monitors_") {
-			$pro['pro_data_monitors'] .= $val.",";
+		if(substr($key,0,16)=="pro_credit_amnt_") {
+			$pro['pro_credit_amnt'] .= $val.",";
 			unset($pro[$key]);
-		} else if(substr($key,0,23)=="pro_data_monitor_types_") {
-			$pro['pro_data_monitor_types'] .= $val.",";
+		} else if(substr($key,0,16)=="pro_credit_desc_") {
+			$pro['pro_credit_desc'] .= $val.",";
+			unset($pro[$key]);
+		} else if(substr($key,0,16)=="pro_credit_type_") {
+			$pro['pro_credit_type'] .= $val.",";
 			unset($pro[$key]);
 		}
+	}
+	// parse monitors
+	$monitors = array();
+	$monitor_types = array();
+	$monitor_qntys = array();
+	foreach($pro as $key=>$val) {
+		if(substr($key,0,18)=="pro_data_monitors_") {
+			array_push($monitors,$val);
+			unset($pro[$key]);
+		} else if(substr($key,0,23)=="pro_data_monitor_types_") {
+			array_push($monitor_types,$val);
+			unset($pro[$key]);
+		} else if(substr($key,0,23)=="pro_data_monitor_qntys_") {
+			array_push($monitor_qntys,$val);
+			unset($pro[$key]);
+		}
+	}
+	// add monitors if duplicate
+	for($i=0;$i<count($monitors);$i++) {
+		for($j=0;$j<count($monitors);$j++) {
+			if($monitors[$j]==$monitors[$i] && $monitor_types[$j]==$monitor_types[$i] && $i!=$j && $monitors[$i]!=NULL && $monitors[$j]!=NULL) {
+				$monitor_qntys[$i] += $monitor_qntys[$j];
+				$monitors[$j] = NULL;
+				$monitor_types[$j] = NULL;
+				$monitor_qntys[$j] = NULL;
+			}
+		}
+	}
+	$monitors = array_values(array_filter($monitors,"strlen"));
+	$monitor_types = array_values(array_filter($monitor_types,"strlen"));
+	$monitor_qntys = array_values(array_filter($monitor_qntys,"strlen"));
+	// write monitors
+	$pro['pro_data_monitors'] = "";
+	$pro['pro_data_monitor_types'] = "";
+	$pro['pro_data_monitor_qntys'] = "";
+	for($i=0;$i<count($monitors);$i++) {
+		$pro['pro_data_monitors'] .= $monitors[$i].",";
+		$pro['pro_data_monitor_types'] .= $monitor_types[$i].",";
+		$pro['pro_data_monitor_qntys'] .= $monitor_qntys[$i].",";
+	}
+	// parse additional mounting materials
+	$mounting_mats = array();
+	$mounting_mat_types = array();
+	$mounting_mat_qntys = array();
+	foreach($pro as $key=>$val) {
+		if(substr($key,0,22)=="pro_add_mounting_mats_") {
+			array_push($mounting_mats,$val);
+			unset($pro[$key]);
+		} else if(substr($key,0,27)=="pro_add_mounting_mat_types_") {
+			array_push($mounting_mat_types,$val);
+			unset($pro[$key]);
+		} else if(substr($key,0,27)=="pro_add_mounting_mat_qntys_") {
+			array_push($mounting_mat_qntys,$val);
+			unset($pro[$key]);
+		}
+	}
+	// add mounting mats if duplicate
+	for($i=0;$i<count($mounting_mats);$i++) {
+		for($j=0;$j<count($mounting_mats);$j++) {
+			if($mounting_mats[$j]==$mounting_mats[$i] && $mounting_mat_types[$j]==$mounting_mat_types[$i] && $i!=$j && $mounting_mats[$i]!=NULL && $mounting_mats[$j]!=NULL) {
+				$mounting_mat_qntys[$i] += $mounting_mat_qntys[$j];
+				$mounting_mats[$j] = NULL;
+				$mounting_mat_types[$j] = NULL;
+				$mounting_mat_qntys[$j] = NULL;
+			}
+		}
+	}
+	$mounting_mats = array_values(array_filter($mounting_mats,"strlen"));
+	$mounting_mat_types = array_values(array_filter($mounting_mat_types,"strlen"));
+	$mounting_mat_qntys = array_values(array_filter($mounting_mat_qntys,"strlen"));
+	// write mounting mats
+	$pro['pro_add_mounting_mats'] = "";
+	$pro['pro_add_mounting_mat_types'] = "";
+	$pro['pro_add_mounting_mat_qntys'] = "";
+	for($i=0;$i<count($mounting_mats);$i++) {
+		$pro['pro_add_mounting_mats'] .= $mounting_mats[$i].",";
+		$pro['pro_add_mounting_mat_types'] .= $mounting_mat_types[$i].",";
+		$pro['pro_add_mounting_mat_qntys'] .= $mounting_mat_qntys[$i].",";
+	}
+	// parse conduit and wire runs
+	$conn_comps = array();
+	$conn_comp_types = array();
+	$conn_comp_qntys = array();
+	foreach($pro as $key=>$val) {
+		if(substr($key,0,15)=="pro_conn_comps_") {
+			array_push($conn_comps,$val);
+			unset($pro[$key]);
+		} else if(substr($key,0,20)=="pro_conn_comp_types_") {
+			array_push($conn_comp_types,$val);
+			unset($pro[$key]);
+		} else if(substr($key,0,20)=="pro_conn_comp_qntys_") {
+			array_push($conn_comp_qntys,$val);
+			unset($pro[$key]);
+		}
+	}
+	// add conduit and wire runs if duplicate
+	for($i=0;$i<count($conn_comps);$i++) {
+		for($j=0;$j<count($conn_comps);$j++) {
+			if($conn_comps[$j]==$conn_comps[$i] && $conn_comp_types[$j]==$conn_comp_types[$i] && $i!=$j && $conn_comps[$i]!=NULL && $conn_comps[$j]!=NULL) {
+				$conn_comp_qntys[$i] += $conn_comp_qntys[$j];
+				$conn_comps[$j] = NULL;
+				$conn_comp_types[$j] = NULL;
+				$conn_comp_qntys[$j] = NULL;
+			}
+		}
+	}
+	$conn_comps = array_values(array_filter($conn_comps,"strlen"));
+	$conn_comp_types = array_values(array_filter($conn_comp_types,"strlen"));
+	$conn_comp_qntys = array_values(array_filter($conn_comp_qntys,"strlen"));
+	// write conduit and wire runs
+	$pro['pro_conn_comps'] = "";
+	$pro['pro_conn_comp_types'] = "";
+	$pro['pro_conn_comp_qntys'] = "";
+	for($i=0;$i<count($conn_comps);$i++) {
+		$pro['pro_conn_comps'] .= $conn_comps[$i].",";
+		$pro['pro_conn_comp_types'] .= $conn_comp_types[$i].",";
+		$pro['pro_conn_comp_qntys'] .= $conn_comp_qntys[$i].",";
+	}
+	// parse miscellaneous materials
+	$miscellaneous_materials = array();
+	$miscellaneous_material_types = array();
+	$miscellaneous_material_qntys = array();
+	foreach($pro as $key=>$val) {
+		if(substr($key,0,28)=="pro_miscellaneous_materials_") {
+			array_push($miscellaneous_materials,$val);
+			unset($pro[$key]);
+		} else if(substr($key,0,33)=="pro_miscellaneous_material_types_") {
+			array_push($miscellaneous_material_types,$val);
+			unset($pro[$key]);
+		} else if(substr($key,0,33)=="pro_miscellaneous_material_qntys_") {
+			array_push($miscellaneous_material_qntys,$val);
+			unset($pro[$key]);
+		}
+	}
+	// add miscellaneous materials if duplicate
+	for($i=0;$i<count($miscellaneous_materials);$i++) {
+		for($j=0;$j<count($miscellaneous_materials);$j++) {
+			if($miscellaneous_materials[$j]==$miscellaneous_materials[$i] && $miscellaneous_material_types[$j]==$miscellaneous_material_types[$i] && $i!=$j && $miscellaneous_materials[$i]!=NULL && $miscellaneous_materials[$j]!=NULL) {
+				$miscellaneous_material_qntys[$i] += $miscellaneous_material_qntys[$j];
+				$miscellaneous_materials[$j] = NULL;
+				$miscellaneous_material_types[$j] = NULL;
+				$miscellaneous_material_qntys[$j] = NULL;
+			}
+		}
+	}
+	$miscellaneous_materials = array_values(array_filter($miscellaneous_materials,"strlen"));
+	$miscellaneous_material_types = array_values(array_filter($miscellaneous_material_types,"strlen"));
+	$miscellaneous_material_qntys = array_values(array_filter($miscellaneous_material_qntys,"strlen"));
+	// write miscellaneous materials
+	$pro['pro_miscellaneous_materials'] = "";
+	$pro['pro_miscellaneous_material_types'] = "";
+	$pro['pro_miscellaneous_material_qntys'] = "";
+	for($i=0;$i<count($miscellaneous_materials);$i++) {
+		$pro['pro_miscellaneous_materials'] .= $miscellaneous_materials[$i].",";
+		$pro['pro_miscellaneous_material_types'] .= $miscellaneous_material_types[$i].",";
+		$pro['pro_miscellaneous_material_qntys'] .= $miscellaneous_material_qntys[$i].",";
 	}
 	// update date
 	$pro['pro_date'] = date('Y-m-d H:i:s');
@@ -741,7 +1125,7 @@ function updateProposal() {
 				$r['data2']['pro_zones'.$r['data']->ID] = $m->lastData();
 			}
 		} else if($sources[$i]=="es_jobs") {  }
-		else if($m->getAll($sources[$i],$columns[$i],"ID","active='1'")) {
+		else if($m->getAll($sources[$i],$columns[$i],"ID",$clauses[$i])) {
 			$r['data2'][$menus[$i]] = $m->lastData();
 		} //else $r['did'] = "failed ".$table." options";
 	}
@@ -773,6 +1157,18 @@ function cloneProposal() {
 	$menus = explode(",",$_POST['menus']);
 	$sources = explode(",",$_POST['sources']);
 	$columns = explode(",",$_POST['columns']);
+	//
+	if(isset($_POST['wcs'])) {
+		$_POST['wcs'] = stripslashes($_POST['wcs']);
+		$wcs = str_replace("!!"," AND ",$_POST['wcs']);
+		$wcs = str_replace("::"," OR ",$wcs);
+		$clauses = explode(",",$wcs);
+	} else $clauses = array_fill(0,count($menus),"");
+	foreach($clauses as $c) {
+		if($c!="") $c = "active='1' && ".$c;
+		else $c = "active='1'";
+	}
+	//
 	// get target pro
 	$m->getRow($table,$tid);
 	$clone = array();
@@ -820,7 +1216,7 @@ function cloneProposal() {
 				$r['data2']['pro_zones'.$r['data']->ID] = $m->lastData();
 			}
 		} else if($sources[$i]=="es_jobs") {  }
-		else if($m->getAll($sources[$i],$columns[$i],"ID","active='1'")) {
+		else if($m->getAll($sources[$i],$columns[$i],"ID",$clauses[$i])) {
 			$r['data2'][$menus[$i]] = $m->lastData();
 		} //else $r['did'] = "failed ".$table." options";
 	}
@@ -860,9 +1256,21 @@ function submitProposal() {
 			$menus = explode(",",$_POST['menus']);
 			$sources = explode(",",$_POST['sources']);
 			$columns = explode(",",$_POST['columns']);
+			//
+			if(isset($_POST['wcs'])) {
+				$_POST['wcs'] = stripslashes($_POST['wcs']);
+				$wcs = str_replace("!!"," AND ",$_POST['wcs']);
+				$wcs = str_replace("::"," OR ",$wcs);
+				$clauses = explode(",",$wcs);
+			} else $clauses = array_fill(0,count($menus),"");
+			foreach($clauses as $c) {
+				if($c!="") $c = "active='1' && ".$c;
+				else $c = "active='1'";
+			}
+			//
 			for($i=0;$i<count($menus);$i++) {
 				if($sources[$i]!="es_zones" && $sources[$i]!="es_jobs") {
-					if($m->getAll($sources[$i],$columns[$i],"ID","active='1'")) {
+					if($m->getAll($sources[$i],$columns[$i],"ID",$clauses[$i])) {
 						$r['data2'][$menus[$i]] = $m->lastData();
 					}
 				}
@@ -1024,6 +1432,18 @@ function getOptions() {
 	$menus = explode(",",$_POST['menus']);
 	$sources = explode(",",$_POST['sources']);
 	$columns = explode(",",$_POST['columns']);
+	//
+	if(isset($_POST['wcs'])) {
+		$_POST['wcs'] = stripslashes($_POST['wcs']);
+		$wcs = str_replace("!!"," AND ",$_POST['wcs']);
+		$wcs = str_replace("::"," OR ",$wcs);
+		$clauses = explode(",",$wcs);
+	} else $clauses = array_fill(0,count($menus),"");
+	foreach($clauses as $c) {
+		if($c!="") $c = "active='1' && ".$c;
+		else $c = "active='1'";
+	}
+	//
 	for($i=0;$i<count($menus);$i++) {
 		if($sources[$i]=="es_zones") {
 			$jobID = $_POST['jobID'];
@@ -1037,7 +1457,7 @@ function getOptions() {
 				$r['did'] = "got ".$table." options";
 				$r['data']['pro_name'] = $m->lastData()->$columns[$i];
 			}
-		} else if($m->getAll($sources[$i],$columns[$i],"ID","active='1'")) {
+		} else if($m->getAll($sources[$i],$columns[$i],"ID",$clauses[$i])) {
 			$r['did'] = "got ".$table." options";
 			$r['data'][$menus[$i]] = $m->lastData();
 		} else $r['did'] = "failed ".$table." options";
@@ -1049,14 +1469,27 @@ function getOptions() {
 		if($m->getRow("es_customers",$job->job_customerID)) $cus = $m->lastData();
 		if($m->getRow("es_reps",$job->job_repID)) $rep = $m->lastData();
 		// write TO
-		$customer_title = $cus->cus_company!="" ? $cus->cus_company : $cus->cus_name_first." ".$cus->cus_name_last;
-		$job_title = $job->job_company!="" ? $job->job_company : ($job->job_contact!="" ? $job->job_contact : $customer_title);
-		// write letter
+		$customer_title = $cus->cus_name_first." ".$cus->cus_name_last;
+		$job_title = $job->job_contact!="" ? 
+						$job->job_contact : 
+						($customer_title!="" ?
+							$customer_title :
+							($job->job_company!="" ? 
+								$job->job_company :
+								$cus->cus_company));
+		// write letter - HTML
+		// $cover_letter = "Dear ".$job_title.",\n\n".$off->off_cover_letter;
+		// $cover_letter .= "\n\nYours truly,\n".$rep->rep_name_first." ".$rep->rep_name_last.", <em>".$rep->rep_title."</em>\n\n";
+		// $cover_letter .= "<a href='".$E->LHS_LOC."' target='_blank'><strong>Lighthouse</strong>solar</a>\n";
+		// $cover_letter .= $off->off_city.", ".$off->off_state." ".$off->off_zip."\n";
+		// $cover_letter .= "<a href='mailto:".$rep->rep_email."'>".$rep->rep_email."</a> (e)\n";
+		// $cover_letter .= $rep->rep_phone!="" ? $rep->rep_phone." (p)" : $off->off_phone." (p)";
+		////
 		$cover_letter = "Dear ".$job_title.",\n\n".$off->off_cover_letter;
-		$cover_letter .= "\n\nYours truly,\n".$rep->rep_name_first." ".$rep->rep_name_last.", <em>".$rep->rep_title."</em>\n\n";
-		$cover_letter .= "<a href='".$E->LHS_LOC."' target='_blank'><strong>Lighthouse</strong>solar</a>\n";
+		$cover_letter .= "\n\nYours truly,\n".$rep->rep_name_first." ".$rep->rep_name_last.", ".$rep->rep_title."\n\n";
+		$cover_letter .= "Lighthousesolar\n";
 		$cover_letter .= $off->off_city.", ".$off->off_state." ".$off->off_zip."\n";
-		$cover_letter .= "<a href='mailto:".$rep->rep_email."'>".$rep->rep_email."</a> (e)\n";
+		$cover_letter .= $rep->rep_email." (e)\n";
 		$cover_letter .= $rep->rep_phone!="" ? $rep->rep_phone." (p)" : $off->off_phone." (p)";
 		// done
 		$r['did'] = "got ".$table." options";
@@ -1071,8 +1504,8 @@ function makeZone($zone,$officeID) {
 	$m->getRow('es_offices',$officeID);
 	$labor_unit_cost = $m->lastData()->off_labor_cost;
 	$labor_unit_price = $m->lastData()->off_labor_price;
-	$off_inventory_up = $m->lastData()->off_inventory_up;
-	$off_inventory_margin = $m->lastData()->off_inventory_margin;
+	//$off_inventory_up = $m->lastData()->off_inventory_up;
+	//$off_inventory_margin = $m->lastData()->off_inventory_margin;
 	$pvwatts_data = $zone['zon_pvwatts']!="" ? explode(":",$zone['zon_pvwatts']) : explode(":",$m->lastData()->off_pvwatts);
 	// determine mode from array type
 	switch($zone['zon_type']) {
@@ -1168,21 +1601,21 @@ function makeZone($zone,$officeID) {
 	$m->getRow('es_mounting_mediums',$zone['zon_mounting_medium'],"med_value");
 	$racking_medium_labor_hrs = $m->lastData()->med_labor;
 	// calc module costs
-	$module_cost = $module_unit_cost*$zone['zon_num_modules']*(1 + $off_inventory_up*0.01);
-	$module_price = $module_unit_price*$zone['zon_num_modules']*(1 + $off_inventory_up*0.01);
-	$module_price += $module_price*$off_inventory_margin*0.01;
+	$module_cost = $module_unit_cost*$zone['zon_num_modules'];//*(1 + $off_inventory_up*0.01);
+	$module_price = $module_unit_price*$zone['zon_num_modules'];//*(1 + $off_inventory_up*0.01);
+	//$module_price += $module_price*$off_inventory_margin*0.01;
 	// calc racking costs
 	$racking_unit_length = 2*(((1-($zone['zon_per_landscape']/100))*$module_width)+(($zone['zon_per_landscape']/100)*$module_length))/12;
 	$racking_length = $racking_unit_length*$zone['zon_num_modules']*1.1;
-	$racking_cost = $racking_length*$racking_cost_ft*(1 + $off_inventory_up*0.01);
-	$racking_price = $racking_length*$racking_price_ft*(1 + $off_inventory_up*0.01);
-	$racking_price += $racking_price*$off_inventory_margin*0.01;
+	$racking_cost = $racking_length*$racking_cost_ft;//*(1 + $off_inventory_up*0.01);
+	$racking_price = $racking_length*$racking_price_ft;//*(1 + $off_inventory_up*0.01);
+	//$racking_price += $racking_price*$off_inventory_margin*0.01;
 	// calc connection costs
 	$num_connections = $zone['zon_support_dist']!=0 ? ceil($racking_length/$zone['zon_support_dist']) : 0;
 	$racking_method_labor_hrs = $racking_method_labor_hrs*$num_connections;
-	$connection_cost = $num_connections*$racking_method_cost_x*(1 + $off_inventory_up*0.01);
-	$connection_price = $num_connections*$racking_method_price_x*(1 + $off_inventory_up*0.01);
-	$connection_price += $connection_price*$off_inventory_margin*0.01;
+	$connection_cost = $num_connections*$racking_method_cost_x;//*(1 + $off_inventory_up*0.01);
+	$connection_price = $num_connections*$racking_method_price_x;//*(1 + $off_inventory_up*0.01);
+	//$connection_price += $connection_price*$off_inventory_margin*0.01;
 	// labor costs
 	$per_landscape_labor_hrs = 0; //$zone['zon_per_landscape']*0.005;
 	//$num_cont_arrays_labor_hrs = $zone['zon_num_cont_arrays'] > 8 ? 1 : ($zone['zon_num_cont_arrays']*0.125)-0.125;
@@ -1250,17 +1683,177 @@ function peakProposal() {
 			unset($pro[$key]);
 		}
 	}
-	// parse monitors
-	$pro['pro_data_monitors'] = "";
-	$pro['pro_data_monitor_types'] = "";
+	// parse credits
+	$pro['pro_credit_amnt'] = "";
+	$pro['pro_credit_desc'] = "";
+	$pro['pro_credit_type'] = "";
 	foreach($pro as $key=>$val) {
-		if(substr($key,0,18)=="pro_data_monitors_") {
-			$pro['pro_data_monitors'] .= $val.",";
+		if(substr($key,0,16)=="pro_credit_amnt_") {
+			$pro['pro_credit_amnt'] .= $val.",";
 			unset($pro[$key]);
-		} else if(substr($key,0,23)=="pro_data_monitor_types_") {
-			$pro['pro_data_monitor_types'] .= $val.",";
+		} else if(substr($key,0,16)=="pro_credit_desc_") {
+			$pro['pro_credit_desc'] .= $val.",";
+			unset($pro[$key]);
+		} else if(substr($key,0,16)=="pro_credit_type_") {
+			$pro['pro_credit_type'] .= $val.",";
 			unset($pro[$key]);
 		}
+	}
+	// parse monitors
+	$monitors = array();
+	$monitor_types = array();
+	$monitor_qntys = array();
+	foreach($pro as $key=>$val) {
+		if(substr($key,0,18)=="pro_data_monitors_") {
+			array_push($monitors,$val);
+			unset($pro[$key]);
+		} else if(substr($key,0,23)=="pro_data_monitor_types_") {
+			array_push($monitor_types,$val);
+			unset($pro[$key]);
+		} else if(substr($key,0,23)=="pro_data_monitor_qntys_") {
+			array_push($monitor_qntys,$val);
+			unset($pro[$key]);
+		}
+	}
+	// add monitors if duplicate
+	for($i=0;$i<count($monitors);$i++) {
+		for($j=0;$j<count($monitors);$j++) {
+			if($monitors[$j]==$monitors[$i] && $monitor_types[$j]==$monitor_types[$i] && $i!=$j && $monitors[$i]!=NULL && $monitors[$j]!=NULL) {
+				$monitor_qntys[$i] += $monitor_qntys[$j];
+				$monitors[$j] = NULL;
+				$monitor_types[$j] = NULL;
+				$monitor_qntys[$j] = NULL;
+			}
+		}
+	}
+	$monitors = array_values(array_filter($monitors,"strlen"));
+	$monitor_types = array_values(array_filter($monitor_types,"strlen"));
+	$monitor_qntys = array_values(array_filter($monitor_qntys,"strlen"));
+	// write monitors
+	$pro['pro_data_monitors'] = "";
+	$pro['pro_data_monitor_types'] = "";
+	$pro['pro_data_monitor_qntys'] = "";
+	for($i=0;$i<count($monitors);$i++) {
+		$pro['pro_data_monitors'] .= $monitors[$i].",";
+		$pro['pro_data_monitor_types'] .= $monitor_types[$i].",";
+		$pro['pro_data_monitor_qntys'] .= $monitor_qntys[$i].",";
+	}
+	// parse additional mounting materials
+	$mounting_mats = array();
+	$mounting_mat_types = array();
+	$mounting_mat_qntys = array();
+	foreach($pro as $key=>$val) {
+		if(substr($key,0,22)=="pro_add_mounting_mats_") {
+			array_push($mounting_mats,$val);
+			unset($pro[$key]);
+		} else if(substr($key,0,27)=="pro_add_mounting_mat_types_") {
+			array_push($mounting_mat_types,$val);
+			unset($pro[$key]);
+		} else if(substr($key,0,27)=="pro_add_mounting_mat_qntys_") {
+			array_push($mounting_mat_qntys,$val);
+			unset($pro[$key]);
+		}
+	}
+	// add mounting mats if duplicate
+	for($i=0;$i<count($mounting_mats);$i++) {
+		for($j=0;$j<count($mounting_mats);$j++) {
+			if($mounting_mats[$j]==$mounting_mats[$i] && $mounting_mat_types[$j]==$mounting_mat_types[$i] && $i!=$j && $mounting_mats[$i]!=NULL && $mounting_mats[$j]!=NULL) {
+				$mounting_mat_qntys[$i] += $mounting_mat_qntys[$j];
+				$mounting_mats[$j] = NULL;
+				$mounting_mat_types[$j] = NULL;
+				$mounting_mat_qntys[$j] = NULL;
+			}
+		}
+	}
+	$mounting_mats = array_values(array_filter($mounting_mats,"strlen"));
+	$mounting_mat_types = array_values(array_filter($mounting_mat_types,"strlen"));
+	$mounting_mat_qntys = array_values(array_filter($mounting_mat_qntys,"strlen"));
+	// write mounting mats
+	$pro['pro_add_mounting_mats'] = "";
+	$pro['pro_add_mounting_mat_types'] = "";
+	$pro['pro_add_mounting_mat_qntys'] = "";
+	for($i=0;$i<count($mounting_mats);$i++) {
+		$pro['pro_add_mounting_mats'] .= $mounting_mats[$i].",";
+		$pro['pro_add_mounting_mat_types'] .= $mounting_mat_types[$i].",";
+		$pro['pro_add_mounting_mat_qntys'] .= $mounting_mat_qntys[$i].",";
+	}
+	// parse conduit and wire runs
+	$conn_comps = array();
+	$conn_comp_types = array();
+	$conn_comp_qntys = array();
+	foreach($pro as $key=>$val) {
+		if(substr($key,0,15)=="pro_conn_comps_") {
+			array_push($conn_comps,$val);
+			unset($pro[$key]);
+		} else if(substr($key,0,20)=="pro_conn_comp_types_") {
+			array_push($conn_comp_types,$val);
+			unset($pro[$key]);
+		} else if(substr($key,0,20)=="pro_conn_comp_qntys_") {
+			array_push($conn_comp_qntys,$val);
+			unset($pro[$key]);
+		}
+	}
+	// add conduit and wire runs if duplicate
+	for($i=0;$i<count($conn_comps);$i++) {
+		for($j=0;$j<count($conn_comps);$j++) {
+			if($conn_comps[$j]==$conn_comps[$i] && $conn_comp_types[$j]==$conn_comp_types[$i] && $i!=$j && $conn_comps[$i]!=NULL && $conn_comps[$j]!=NULL) {
+				$conn_comp_qntys[$i] += $conn_comp_qntys[$j];
+				$conn_comps[$j] = NULL;
+				$conn_comp_types[$j] = NULL;
+				$conn_comp_qntys[$j] = NULL;
+			}
+		}
+	}
+	$conn_comps = array_values(array_filter($conn_comps,"strlen"));
+	$conn_comp_types = array_values(array_filter($conn_comp_types,"strlen"));
+	$conn_comp_qntys = array_values(array_filter($conn_comp_qntys,"strlen"));
+	// write conduit and wire runs
+	$pro['pro_conn_comps'] = "";
+	$pro['pro_conn_comp_types'] = "";
+	$pro['pro_conn_comp_qntys'] = "";
+	for($i=0;$i<count($conn_comps);$i++) {
+		$pro['pro_conn_comps'] .= $conn_comps[$i].",";
+		$pro['pro_conn_comp_types'] .= $conn_comp_types[$i].",";
+		$pro['pro_conn_comp_qntys'] .= $conn_comp_qntys[$i].",";
+	}
+	// parse miscellaneous materials
+	$miscellaneous_materials = array();
+	$miscellaneous_material_types = array();
+	$miscellaneous_material_qntys = array();
+	foreach($pro as $key=>$val) {
+		if(substr($key,0,28)=="pro_miscellaneous_materials_") {
+			array_push($miscellaneous_materials,$val);
+			unset($pro[$key]);
+		} else if(substr($key,0,33)=="pro_miscellaneous_material_types_") {
+			array_push($miscellaneous_material_types,$val);
+			unset($pro[$key]);
+		} else if(substr($key,0,33)=="pro_miscellaneous_material_qntys_") {
+			array_push($miscellaneous_material_qntys,$val);
+			unset($pro[$key]);
+		}
+	}
+	// add miscellaneous materials if duplicate
+	for($i=0;$i<count($miscellaneous_materials);$i++) {
+		for($j=0;$j<count($miscellaneous_materials);$j++) {
+			if($miscellaneous_materials[$j]==$miscellaneous_materials[$i] && $miscellaneous_material_types[$j]==$miscellaneous_material_types[$i] && $i!=$j && $miscellaneous_materials[$i]!=NULL && $miscellaneous_materials[$j]!=NULL) {
+				$miscellaneous_material_qntys[$i] += $miscellaneous_material_qntys[$j];
+				$miscellaneous_materials[$j] = NULL;
+				$miscellaneous_material_types[$j] = NULL;
+				$miscellaneous_material_qntys[$j] = NULL;
+			}
+		}
+	}
+	$miscellaneous_materials = array_values(array_filter($miscellaneous_materials,"strlen"));
+	$miscellaneous_material_types = array_values(array_filter($miscellaneous_material_types,"strlen"));
+	$miscellaneous_material_qntys = array_values(array_filter($miscellaneous_material_qntys,"strlen"));
+	// write miscellaneous materials
+	$pro['pro_miscellaneous_materials'] = "";
+	$pro['pro_miscellaneous_material_types'] = "";
+	$pro['pro_miscellaneous_material_qntys'] = "";
+	for($i=0;$i<count($miscellaneous_materials);$i++) {
+		$pro['pro_miscellaneous_materials'] .= $miscellaneous_materials[$i].",";
+		$pro['pro_miscellaneous_material_types'] .= $miscellaneous_material_types[$i].",";
+		$pro['pro_miscellaneous_material_qntys'] .= $miscellaneous_material_qntys[$i].",";
 	}
 	// for statics compatability
 	$pro['pro_published'] = 0;
@@ -1400,10 +1993,10 @@ function sendProposal() {
 		$details .= "PPW Gross: $".$figures['ppw_gross']."/W\n";
 		$details .= "PPW Net: $".$figures['ppw_net']."/W\n";
 		$details .= "Permit Margin: ".$figures['permit_margin']."\n";
-		$details .= "Subcontractor Margin: ".$figures['sub_margin']."\n";
+		$details .= "Engineering Margin: ".$figures['sub_margin']."\n";
 		$details .= "Equipment Margin: ".$figures['equip_margin']."\n";
 		$details .= "Installation Labor Margin: ".$figures['install_labor_margin']."\n";
-		$details .= "Inventory Margin: ".$figures['inventory_margin']."\n";
+		$details .= "Material Cost Margin: ".$figures['inventory_margin']."\n";
 		$details .= "Non-Inventory Margin: ".$figures['non_inventory_margin']."\n\n";
 		$details .= "Total Margin: ".$figures['total_margin']."\n\n";
 		$sm_email .= $details;

@@ -2,15 +2,13 @@
 <html lang="en">
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-	<meta name="description" content="Solar System Estimator" />
 	<title>Einstein Estimator - Lighthouse Solar</title>
-	<link rel="icon" href="favicon.ico" type="image/x-icon" />
 	<link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
-	<link rel="shortcut icon" href="http://lighthousesolar.ld/estimator/favicon.ico" />
-	<link rel="icon" href="http://lighthousesolar.ld/estimator/favicon.ico" />
-	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
 	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
 	<link rel="stylesheet" href="css/jquery.fancybox-1.3.1.css" type="text/css" media="screen" />
+	<meta name="description" content="Solar System Estimator" />
+	<!--<script type="text/javascript" src="js/jquery.min.js"></script>-->
+	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js"></script>
 	<script type="text/javascript" src="js/jquery.scrollTo-min.js"></script>
 	<script type="text/javascript" src="js/jquery.fancybox-1.3.1.pack.js"></script>
 	<script type="text/javascript" src="js/date.format.js"></script>
