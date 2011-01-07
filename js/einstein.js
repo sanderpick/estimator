@@ -8708,8 +8708,12 @@ $(function() {
 			if(e.shiftKey==1) return false;
 			// ignore if they press other keys
 			// strange because code: 39 is the down key AND ' key... and DEL also equals .
-			if(!e.ctrlKey && !e.metaKey && code!=13 && code!=9 && code!=8 && code!=36 && code!=37 && code!=38 && (code!=39 || (code==39 && character=="'")) && code!=40 && code!=91)
+			if(!e.ctrlKey && !e.metaKey && code!=13 && code!=9 && code!=8 && code!=36 && code!=37 && code!=38 && (code!=39 || (code==39 && character=="'")) && code!=40 && code!=91) {
+				if ( (code >= 96 ) && (code <= 105) || code == 110  ) {
+					return true;
+				}
 				return (character.match(/[1234567890]/g)) ? true : false;
+			}
 			else return true;
 		},
 		validate:function() {
