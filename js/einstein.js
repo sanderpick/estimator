@@ -136,10 +136,12 @@ var IO = Class.extend({
   			type:"POST",
   			url:s.server,
   			data:d,
-			dataType:"json",
+			dataType:"text",
 			complete:function(request) { },
-  			success:function(json) {
+  			success:function(text) {
 				s.loading(false);
+				text = text.replace(/'/g,"&#39;");
+				var json = $.parseJSON( text );
 				if(json.error==undefined) {
 					s.caller.receive(json);
 				} else s.error(json.error);
