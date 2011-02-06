@@ -6390,7 +6390,7 @@ var Zones = Module.extend({
 			// iframe event handling
 			var uploaded = function(e) {
 				// remove events
-				$("f-"+ref).bind("load",uploaded);
+				$("#f-"+ref).unbind("load",uploaded);
 				// show image
 				var big_src = $("#f-"+ref).contents().find("body").html()+"_sized_800.jpg";
 				var small_src = $("#f-"+ref).contents().find("body").html()+"_thumb.jpg";
@@ -6415,7 +6415,7 @@ var Zones = Module.extend({
 					$("#view-job"+t.jobID).data("jc-disabled",false);
 				}, 1000);
 			}
-			$("f-"+ref).unbind("load",uploaded);
+			$("#f-"+ref).bind("load",uploaded);
 			// get ids
 			var row = this.parentNode.parentNode.parentNode.parentNode;
 			var oid = $(row).data("officeID");
