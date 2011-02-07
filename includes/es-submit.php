@@ -178,7 +178,12 @@ function browseAllZones() {
 			// rebate dollars to watts
 			$m->getRow('es_modules',$zon->zon_module,"mod_model_num");
 			$mod_watts = $m->lastData()->mod_stc;
-			$zon->zon_rebate = $zon->zon_rebate / ($zon->zon_num_modules * $mod_watts);
+			//$zon->zon_rebate = $zon->zon_rebate / ($zon->zon_num_modules * $mod_watts);
+			if ( ($zon->zon_num_modules * $mod_watts) == 0 ) {
+				$zon->zon_rebate = 0;
+			} else {
+				$zon->zon_rebate = $zon->zon_rebate / ($zon->zon_num_modules * $mod_watts);
+			}
 			// get material descriptions
 			$r['data2']['mod_desc'][] = $m->lastData()->mod_desc;
 			$m->getRow('es_racking',$zon->zon_racking,"rac_model_num");
