@@ -812,7 +812,7 @@ function updateJob() {
 			} else $r['did'] = "failed ".$table." update";
 			if($m->getRow("es_reps",$r['data']->job_repID)) {
 				$r['data2']['rep'] = $m->lastData()->rep_name_first." ".$m->lastData()->rep_name_last;
-			} else $r['did'] = "failed ".$table." update";
+			} $r['data2']['rep'] = "";
 		} else $r['did'] = "failed ".$table." update";
 	} else $r['did'] = "failed ".$table." update";
 }
