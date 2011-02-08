@@ -233,6 +233,11 @@ function estimate($pro,$publish=FALSE) {
 		$install_labor_total_hrs = $pro_install_labor_hrs + $add_labor_hrs + $winter_labor_hrs + $others_labor_hrs;
 		$install_labor_total_cost = $pro_install_labor_cost + $add_labor_cost + $winter_labor_cost + $others_labor_cost;
 		$install_labor_total_price = $pro_install_labor_price + $add_labor_price + $winter_labor_price + $others_labor_price;
+		// discount
+		if($pro->pro_discount_hidden) {
+			$pro_discount =  0;
+			$install_labor_total_price -= $pro->pro_discount;
+		} else $pro_discount = $pro->pro_discount;
 		############################################################################################################
 		// inventory items from zones
 		$inventory_cost = $pro_module_cost + $pro_racking_cost + $pro_mounting_cost; 
@@ -266,7 +271,7 @@ function estimate($pro,$publish=FALSE) {
 		$tax_price = ceil($pro->pro_taxrate * ($inventory_price + $non_inventory_price)) / 100;
 		// total -- does not include permit or tax
 		$cost = $install_labor_total_cost + $inventory_cost + $non_inventory_cost + $sub_cost + $equip_cost;
-		$price = $install_labor_total_price + $inventory_price + $non_inventory_price + $sub_price + $equip_price + $pro->pro_inspection - $pro->pro_discount;
+		$price = $install_labor_total_price + $inventory_price + $non_inventory_price + $sub_price + $equip_price + $pro->pro_inspection - $pro_discount;
 		// parse additional rebates
 		$add_rebate_types = explode(",",substr($pro->pro_rebate_type,0,-1));
 		$add_rebate_amnts = explode(",",substr($pro->pro_rebate_amnt,0,-1));
@@ -356,7 +361,7 @@ function estimate($pro,$publish=FALSE) {
 			'cus_price' => $cus_price,
 			'cus_after_credit' => $cus_price - $credit - $pro_rebate_abl - $pro_add_credits,
 			'ppw_cus_net' => round($ppw_cus_net * 100) / 100,
-			'credits_total' => $pro_rebate_bbl + $pro_rebate_abl + $pro->pro_discount,
+			'credits_total' => $pro_rebate_bbl + $pro_rebate_abl + $pro_discount,
 			'fees_total' => $permit_price + $sub_price + $equip_price + $pro->pro_inspection
 		);
 		// publish ?

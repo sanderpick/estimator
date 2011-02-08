@@ -6902,6 +6902,7 @@ var Proposals = Module.extend({
 			ds += "pro_ref_sheets="+crfID+"&";
 			ds += $("#pro_credit").attr("checked") ? "pro_credit=1&" : "pro_credit=0&";
 			ds += $("#pro_incentive").attr("checked") ? "pro_incentive=1&" : "pro_incentive=0&";
+			ds += $("#pro_discount_hidden").attr("checked") ? "pro_discount_hidden=1&" : "pro_discount_hidden=0&";
 			t.io.request(t,ds+"table="+t.dbTable+"&es_do=addProposal");
 		});
 		// preview
@@ -6929,6 +6930,7 @@ var Proposals = Module.extend({
 			ds += "pro_ref_sheets="+crfID+"&";
 			ds += $("#pro_credit").attr("checked") ? "pro_credit=1&" : "pro_credit=0&";
 			ds += $("#pro_incentive").attr("checked") ? "pro_incentive=1&" : "pro_incentive=0&";
+			ds += $("#pro_discount_hidden").attr("checked") ? "pro_discount_hidden=1&" : "pro_discount_hidden=0&";
 			t.currentForm = $(this).closest("form");
 			t.io.request(t,ds+"table="+t.dbTable+"&es_do=peakProposal");
 		});
@@ -6992,6 +6994,7 @@ var Proposals = Module.extend({
 			ds += "pro_ref_sheets="+crfID+"&";
 			ds += $("#pro_credit"+t.currentRowID).attr("checked") ? "pro_credit=1&" : "pro_credit=0&";
 			ds += $("#pro_incentive"+t.currentRowID).attr("checked") ? "pro_incentive=1&" : "pro_incentive=0&";
+			ds += $("#pro_discount_hidden"+t.currentRowID).attr("checked") ? "pro_discount_hidden=1&" : "pro_discount_hidden=0&";
 			t.io.request(t,ds+"id="+t.currentRowID+"&table="+t.dbTable+"&"+t.itemFormOptions()+"&es_do=updateProposal");
 		});
 		// preview update
@@ -7020,6 +7023,7 @@ var Proposals = Module.extend({
 			ds += "pro_ref_sheets="+crfID+"&";
 			ds += $("#pro_credit"+t.currentRowID).attr("checked") ? "pro_credit=1&" : "pro_credit=0&";
 			ds += $("#pro_incentive"+t.currentRowID).attr("checked") ? "pro_incentive=1&" : "pro_incentive=0&";
+			ds += $("#pro_discount_hidden"+t.currentRowID).attr("checked") ? "pro_discount_hidden=1&" : "pro_discount_hidden=0&";
 			t.currentForm = $(this).closest("form");
 			t.io.request(t,ds+"table="+t.dbTable+"&es_do=peakProposal");
 		});
@@ -7791,6 +7795,9 @@ var Proposals = Module.extend({
 										<td class='pro-td'> \
 											<input class='pro-input' type='text' id='pro_discount_desc' value='' title='Discount Description' /> \
 										</td> \
+										<td class='pro-td'> \
+											<input style='display:inline;' type='checkbox' class='no-postify' id='pro_discount_hidden' value='' /> <span style='color:gray;'>Hide discount (effects labor costs)</span> \
+										</td> \
 									</tr> \
 								</table> \
 								<div class='clear'></div> \
@@ -8262,6 +8269,7 @@ var Proposals = Module.extend({
 		var pro_winter_selects = (data.pro_winter==1) ? "<option value='1' selected='selected'>yes</option><option value='0'>no</option>" : "<option value='1'>yes</option><option value='0' selected='selected'>no</option>";
 		var pro_others_involved_selects = (data.pro_others_involved==1) ? "<option value='1' selected='selected'>yes</option><option value='0'>no</option>" : "<option value='1'>yes</option><option value='0' selected='selected'>no</option>";
 		// check boxes
+		var pro_discount_hidden_checked = (data.pro_discount_hidden==1) ? "checked='checked'" : "";
 		var pro_credit_checked = (data.pro_credit==1) ? "checked='checked'" : "";
 		var pro_incentive_checked = (data.pro_incentive==1) ? "checked='checked'" : "";
 		var pro_incentive_display = (data.pro_incentive==1) ? "" : "display:none;";
@@ -8494,6 +8502,9 @@ var Proposals = Module.extend({
 									</td> \
 									<td class='pro-td'> \
 										<input class='pro-input' type='text' id='pro_discount_desc' value='"+data.pro_discount_desc+"' title='Discount Description' /> \
+									</td> \
+									<td class='pro-td'> \
+										<input style='display:inline;' type='checkbox' class='no-postify' id='pro_discount_hidden"+data.ID+"' value='' "+pro_discount_hidden_checked+" /> <span style='color:gray;'>Hide discount (effects labor costs)</span> \
 									</td> \
 								</tr> \
 							</table> \

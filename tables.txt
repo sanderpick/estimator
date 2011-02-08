@@ -295,6 +295,7 @@ CREATE TABLE `es_proposals` (
 	`pro_fluctuation` decimal(10,2),
 	`pro_discount` decimal(10,2),
 	`pro_discount_desc` varchar(255) NOT NULL default '',
+	`pro_discount_hidden` int(1) NOT NULL default '0',
   # `pro_misc_materials` decimal(10,2) NOT NULL default '0.0',
   # `pro_misc_materials_up` decimal(10,2) NOT NULL default '0.0',
   # `pro_misc_materials_desc` varchar(255) NOT NULL default '',
