@@ -238,6 +238,11 @@ function estimate($pro,$publish=FALSE) {
 			$pro_discount =  0;
 			$install_labor_total_price -= $pro->pro_discount;
 		} else $pro_discount = $pro->pro_discount;
+		// extra fee
+		if($pro->pro_extra_hidden) {
+			$pro_extra_fee =  0;
+			$install_labor_total_price += $pro->pro_extra_fee+$pro->pro_extra_fee*$off->off_sub_up*0.01;
+		} else $pro_extra_fee = $pro->pro_extra_fee;
 		############################################################################################################
 		// inventory items from zones
 		$inventory_cost = $pro_module_cost + $pro_racking_cost + $pro_mounting_cost; 
@@ -262,7 +267,7 @@ function estimate($pro,$publish=FALSE) {
 		// fees
 		$permit_cost = $pro->pro_permit_fee; // not included in total
 		$permit_price = $permit_cost * (1 + $off->off_permit_up * 0.01);
-		$sub_cost = $pro->pro_extra_fee + $pro->pro_engin_fee;
+		$sub_cost = $pro_extra_fee + $pro->pro_engin_fee;
 		$sub_price = $sub_cost * (1 + $off->off_sub_up * 0.01);
 		$equip_cost = $pro->pro_equip_rental;
 		$equip_price = $equip_cost * (1 + $off->off_equip_up * 0.01);
