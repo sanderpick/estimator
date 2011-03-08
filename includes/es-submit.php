@@ -25,7 +25,7 @@ switch($tld[1]) {
 $E->push("EINSTEIN_SMTP_SERVER","ssl://smtp.gmail.com");
 $E->push("EINSTEIN_SMTP_PORT",465);
 $E->push("EINSTEIN_SMTP_USER","lhadmin@lighthousesolar.com");
-$E->push("EINSTEIN_SMTP_PASS","l1gh7h0u53!");
+$E->push("EINSTEIN_SMTP_PASS","l1gh7h0u53?");
 $E->push("EINSTEIN_SMTP_FROM","lhadmin@lighthousesolar.com");
 $E->push("LHS_LOC","http://lighthousesolar.com");
 #——————————————————————————————–—————————————————————–– INIT MANAGER
