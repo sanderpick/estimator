@@ -5740,7 +5740,7 @@ var Jobs = Module.extend({
 			$("#"+id.substring(5)).show();
 			t.lastPanel = "";
 			t.currentRowID = id.substring(8);
-			t.io.request(t,"id="+t.currentRowID+"&table="+t.dbTable+"&es_do=refreshJob");
+			t.io.request(t,"id="+t.currentRowID+"&table="+t.dbTable+"&es_do=refreshJob"+"&job_officeID="+$('#data').data('rep').rep_officeID );
 		});
 		// show new proposal
 		$("input[title='CreateProposal']",$(t.el)).live("click",function() {
@@ -5783,7 +5783,7 @@ var Jobs = Module.extend({
 			$("#"+this.parentNode.parentNode.parentNode.id).hide();
 			$("#"+t.lastPanel+this.parentNode.parentNode.parentNode.id.substring(5)).show();
 		});
-		// add new
+		// submit updated data
 		$("input[title='Update']",$(t.el)).live("click",function() {
 			t.currentRowID = this.parentNode.parentNode.parentNode.id.substring(8);
 			if(t.lastPanel=="view-") $("#view-job"+t.currentRowID).data("zones").clear();
@@ -5794,7 +5794,10 @@ var Jobs = Module.extend({
 				alert("Please use a valid email address.");
 				return false;
 			}
-			t.io.request(t,ds+"id="+t.currentRowID+"&table="+t.dbTable+"&es_do=updateJob");
+			// do a check here to see if checkbox is clicked, if it is
+			// call special function to update rep on all spawned proposals
+			//t.io.request(t,ds+"id="+t.currentRowID+"&table="+t.dbTable+"&es_do=updateJob"+"&job_officeID="+$($("#data").data("customer")).data("officeID") );
+			t.io.request(t,ds+"id="+t.currentRowID+"&table="+t.dbTable+"&es_do=updateJob"+"&job_officeID="+$('#data').data('rep').rep_officeID );
 		});
 		// trash link
 		$("a[title='Trash']",$(t.el)).live("click",function() {
@@ -5837,6 +5840,7 @@ var Jobs = Module.extend({
 			this.show(".dashboard-main"); 
 		}
 		// get all
+		//this.io.request(this,"table="+this.dbTable+"&order="+this.dbOrder+"&wc=job_officeID='"+$('#data').data('rep').rep_officeID+"'&es_do=browseAllJobs"+"&super_loc="+$('#extra-nav-right a.extra-nav-selected').attr('id').substring(3) );
 		this.io.request(this,"table="+this.dbTable+"&order="+this.dbOrder+"&wc=job_officeID='"+$('#data').data('rep').rep_officeID+"'&es_do=browseAllJobs");
 	},
 	clear:function() { this._super(); },
@@ -5931,7 +5935,7 @@ var Jobs = Module.extend({
 				this.addingNew = true;
 				break;
 			case this.dbTable+" updated" :
-				$("#edit-job"+this.currentRowID).html(this.editRowContent(json.data)).hide();
+				$("#edit-job"+this.currentRowID).html(this.editRowContent(json.data,json.data2)).hide();
 				$("#job"+this.currentRowID).html(this.rowContent(json.data,json.data2.customer,json.data2.rep));
 				$("#view-job"+this.currentRowID).html(this.viewRowContent(json.data,json.data2.customer,json.data2.rep));
 				$("#"+this.lastPanel+"job"+this.currentRowID).show();
@@ -5974,7 +5978,7 @@ var Jobs = Module.extend({
 					html += this.rowContent(json.data[i],json.data2.customer[i],json.data2.rep[i]);
 					html += "</tr>";
 					html += "<tr id='edit-job"+json.data[i].ID+"' style='display:none;' class='quick-edit "+color[(i+1)%2]+"'>";
-					html += this.editRowContent(json.data[i]);
+					html += this.editRowContent(json.data[i],json.data2);
 					html += "</tr>";
 					html += "<tr id='view-job"+json.data[i].ID+"' style='display:none;' class='quick-view "+color[(i+1)%2]+"'>";
 					html += this.viewRowContent(json.data[i],json.data2.customer[i],json.data2.rep[i]);
@@ -6097,8 +6101,14 @@ var Jobs = Module.extend({
 		row += "<td colspan='1' align='right'><input type='submit' title='CreateProposal' "+prop_butt_vis+" value='+ Proposal' /><input type='submit' title='Configure' value='Configure' /></td>";
 		return row;
 	},
-	editRowContent:function(data) {
+	editRowContent:function(data,data2) {
 		this._super();
+		var selects = {};
+		var rep_select_menu = "";
+		for(rep_pair in data2["rep_define"]) {
+			var selected = (data.job_repID==data2["rep_define"][rep_pair][0]) ? "selected='selected'" : "";
+			rep_select_menu += "<option value='"+data2["rep_define"][rep_pair][0]+"' "+selected+">"+data2["rep_define"][rep_pair][1]+"</option>";
+		}
 		// create the edit row
 		var edit = "<td colspan='5'>";
 		edit += "<form class='updateform' action='javascript:void(0);'> \
@@ -6136,12 +6146,16 @@ var Jobs = Module.extend({
 						<label for='job_state'>State</label> \
 						<input class='required' type='text' id='job_state' value='"+data.job_state+"' /> \
 					</div> \
-					<div class='form-column-right'> \
+					<div class='form-column'> \
 						<label for='job_zip'>Zip</label> \
 						<input class='required' type='text' id='job_zip' value='"+data.job_zip+"' /> \
 						<label for='job_country'>Country</label> \
 						<input type='text' id='job_country' value='"+data.job_country+"' /> \
 					</div> \
+					<div class='form-column-right'> \
+						<label for='job_repID'>Rep.</label> \
+						<select class='required' id='job_repID'>"+rep_select_menu+"</select> \
+				</div> \
 					<div class='clear'></div> \
 					<br /> \
 					<label style='font-weight:bold; padding-bottom:5px;'>Monthly Usage Data From Utility Bill (kWh)</label> \
@@ -6895,7 +6909,7 @@ var Proposals = Module.extend({
 			// check flags
 			if(ds=="" || czID=="" || numI==0) return false;
 			ds += "pro_officeID="+$($("#data").data("job")).data("officeID")+"&";
-			ds += "pro_repID="+$($("#data").data("job")).data("repID")+"&";
+			// ds += "pro_repID="+$($("#data").data("job")).data("repID")+"&";
 			ds += "pro_customerID="+$($("#data").data("job")).data("customerID")+"&";
 			ds += "pro_jobID="+$($("#data").data("job")).data("ID")+"&";
 			ds += "pro_zones="+czID+"&";
@@ -7576,15 +7590,27 @@ var Proposals = Module.extend({
 				if(!selects["pro_data_monitors"]) selects["pro_data_monitors"] = "<option value='' selected='selected'>--select--</option>";
 				// cover letter
 				var default_cover_letter = json.data.pro_cover_letter;
+				// create select contents
+				var reps_select = "";
+				for(values in json.data2.rep_define) {
+					var jobID = json.data.ID;
+					var selected = (json.data2.rep==json.data2.rep_define[values][1]) ? "selected='selected'" : "";
+					reps_select += "<option value='"+json.data2.rep_define[values][0]+"' "+selected+">"+json.data2.rep_define[values][1]+"</option>";
+				}
+				selects["rep_select"] = reps_select;
 				// make the form
 				var form = "<form class='addproposalform' action='javascript:void(0);'> \
 								<div class='form-break'></div> \
 								<br />";
-					form += 	"<h1 class='add-proposal-section' id='pro_name-label'>Your Proposal Name</h1> \
+					form += 	"<div class='form-column' id='pro_name-column'> \
+								<h1 class='add-proposal-section' id='pro_name-label'>Your Proposal Name</h1> \
 								<input class='required input-long' type='text' id='pro_name' value='"+json.data.pro_name+"' /> \
-								<br /> \
-								<div class='form-break'></div> \
-								<br />";
+								<br /></div> \
+								<div class='form-column' id='pro_name-column2'>Select Rep. \
+								<select class='required' id='pro_repID'>"+selects.rep_select+"</select> \
+								</div> \
+								<div class='clear'></div> \
+								<div class='form-break'></div>";
 					form +=		"<h1 class='add-proposal-section'>Cover Letter</h1> \
 								<textarea id='pro_cover_letter' style='width:65%; height:200px;'>"+default_cover_letter+"</textarea> \
 								<div class='clear'></div> \
@@ -8299,6 +8325,15 @@ var Proposals = Module.extend({
 		$("#data").data("add_mounting_mats",selects.pro_add_mounting_mats);
 		$("#data").data("conn_comps",selects.pro_conn_comps);
 		$("#data").data("miscellaneous_materials",selects.pro_miscellaneous_materials);
+		// create select contents
+		var reps_select = "";
+		for(values in data2.rep_define) {
+			var jobID = data.ID;
+			var selected = (data2.rep_w_id[jobID]==data2.rep_define[values][1]) ? "selected='selected'" : "";
+			reps_select += "<option value='"+data2.rep_define[values][0]+"' "+selected+">"+data2.rep_define[values][1]+"</option>";
+		}
+		
+		selects["rep_select"] = reps_select;
 		// create the quick edit form
 		var edit = "<td colspan='10'>";
 			edit += 	"<form class='updateproposalform' action='javascript:void(0);'>";
@@ -8306,9 +8341,14 @@ var Proposals = Module.extend({
 							<br /> \
 							<div class='form-break'></div> \
 							<br />";
-			edit +=			"<h1 class='add-proposal-section' id='pro_name-label'>Your Proposal Name</h1> \
+			edit +=			"<div class='form-column' id='pro_name-column'> \
+							<h1 class='add-proposal-section' id='pro_name-label'>Your Proposal Name</h1> \
 							<input class='required input-long' type='text' id='pro_name' value='"+data.pro_name+"' /> \
-							<br /> \
+							<br /></div> \
+							<div class='form-column' id='pro_name-column2'>Select Rep. \
+							<select class='required' id='pro_repID'>"+selects.rep_select+"</select> \
+							</div> \
+							<div class='clear'></div> \
 							<div class='form-break'></div> \
 							<br />";
 			edit +=			"<h1 class='add-proposal-section'>Cover Letter</h1> \

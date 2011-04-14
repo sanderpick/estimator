@@ -156,6 +156,23 @@ function browseAllJobs() {
 				$r['data2']['rep'][] = $m->lastData()->rep_name_first." ".$m->lastData()->rep_name_last;
 			} else $r['data2']['rep'][] = "";
 		}
+		// If job_officeID='#' is present in the args
+		if ( isset( $_POST['wc'] ) ) {
+			if ( substr($_POST['wc'], 0, 12 ) == "job_officeID" ) {
+				$officeID = substr( $_POST['wc'], 13 );	// remove variable name from string
+				$officeID = str_replace( "'", "", $officeID );  // remove trailing '
+				
+				// Select all reps for this office
+				if ( $m->getAll( "es_reps", "ID,rep_name_first,rep_name_last", "ID", "rep_officeID='".$officeID."'" ) ) {
+					// Add all resulting reps to data2 array in a new array 'rep_define', for later use by javascript objects
+					foreach ( $m->lastData() as $rep_definition ) {
+						$rep_definition = (array)$rep_definition;
+						$r['data2']['rep_define'][] = array( $rep_definition["ID"], $rep_definition["rep_name_first"] . " " . $rep_definition["rep_name_last"] );
+					}
+				}
+								
+			}	
+		}
 	} else $r['did'] = "no ".$table;
 }
 
@@ -214,6 +231,7 @@ function browseAllProposals() {
 	if($m->getAll($table,"*",$order,$wc)) {
 		$r['did'] = "found ".$table;
 		$r['data'] = $m->lastData();
+		$officeID = "";
 		foreach($r['data'] as $pro) {
 			if($pro->pro_published!=1) {
 				$jobID = $pro->pro_jobID;
@@ -222,8 +240,21 @@ function browseAllProposals() {
 				} else $r['did'] = "failed ".$table." options";
 			}
 			if($m->getRow("es_reps",$pro->pro_repID)) {
+				$r['data2']['rep_w_id'][$pro->ID][] = $m->lastData()->rep_name_first." ".$m->lastData()->rep_name_last;
+				$officeID = $m->lastData()->rep_officeID;
+			} else $r['data2']['rep_w_id'][$pro->ID][] = "";
+			if($m->getRow("es_reps",$pro->pro_repID)) {
 				$r['data2']['rep'][] = $m->lastData()->rep_name_first." ".$m->lastData()->rep_name_last;
 			} else $r['data2']['rep'][] = "";
+			
+		}
+		// Select all reps for this office
+		if ( $m->getAll( "es_reps", "ID,rep_name_first,rep_name_last", "ID", "rep_officeID='".$officeID."'" ) ) {
+			// Add all resulting reps to data2 array in a new array 'rep_define', for later use by javascript objects
+			foreach ( $m->lastData() as $rep_definition ) {
+				$rep_definition = (array)$rep_definition;
+				$r['data2']['rep_define'][] = array( $rep_definition["ID"], $rep_definition["rep_name_first"] . " " . $rep_definition["rep_name_last"] );
+			}
 		}
 	} else $r['did'] = "no ".$table;
 	// get proposal menu options
@@ -807,7 +838,7 @@ function updateJob() {
 	global $m,$r;
 	$table = $_POST['table'];
 	$id = $_POST['id'];
-	unset($_POST['es_do'],$_POST['table'],$_POST['id']);
+	unset($_POST['es_do'],$_POST['table'],$_POST['id'],$_POST['job_update_rep_all']);
 	if($m->updateRow($table,$id,$_POST)) {
 		if($m->getRow($table,$id)) {
 			$r['did'] = $table." updated";
@@ -817,8 +848,21 @@ function updateJob() {
 			} else $r['did'] = "failed ".$table." update";
 			if($m->getRow("es_reps",$r['data']->job_repID)) {
 				$r['data2']['rep'] = $m->lastData()->rep_name_first." ".$m->lastData()->rep_name_last;
-			} $r['data2']['rep'] = "";
+			} else $r['data2']['rep'] = "";
 		} else $r['did'] = "failed ".$table." update";
+		// If job_officeID='#' is present in the args
+		if ( isset( $_POST['job_officeID'] ) ) {
+			$officeID = $_POST['job_officeID'];	// remove variable name from string
+			
+			// Select all reps for this office
+			if ( $m->getAll( "es_reps", "ID,rep_name_first,rep_name_last", "ID", "rep_officeID='".$officeID."'" ) ) {
+				// Add all resulting reps to data2 array in a new array 'rep_define', for later use by javascript objects
+				foreach ( $m->lastData() as $rep_definition ) {
+					$rep_definition = (array)$rep_definition;
+					$r['data2']['rep_define'][] = array( $rep_definition["ID"], $rep_definition["rep_name_first"] . " " . $rep_definition["rep_name_last"] );
+				}
+			}
+		}
 	} else $r['did'] = "failed ".$table." update";
 }
 
@@ -1119,9 +1163,45 @@ function updateProposal() {
 			$r['data'] = $m->lastData();
 			if($m->getRow("es_reps",$r['data']->pro_repID)) {
 				$r['data2']['rep'] = $m->lastData()->rep_name_first." ".$m->lastData()->rep_name_last;
+				$r['data2']['rep_w_id'][$id][] = $r['data2']['rep'];
+				$officeID = $m->lastData()->rep_officeID;
 			} else $r['data2']['rep'] = "";
+			// Select all reps for this office
+			if ( $m->getAll( "es_reps", "ID,rep_name_first,rep_name_last", "ID", "rep_officeID='".$officeID."'" ) ) {
+				// Add all resulting reps to data2 array in a new array 'rep_define', for later use by javascript objects
+				foreach ( $m->lastData() as $rep_definition ) {
+					$rep_definition = (array)$rep_definition;
+					$r['data2']['rep_define'][] = array( $rep_definition["ID"], $rep_definition["rep_name_first"] . " " . $rep_definition["rep_name_last"] );
+				}
+			}
 		} else $r['did'] = "failed ".$table." update";
 	} else $r['did'] = "failed ".$table." update";
+/*
+		foreach($r['data'] as $pro) {
+			if($pro->pro_published!=1) {
+				$jobID = $pro->pro_jobID;
+				if($m->getAll("es_zones","ID,zon_name,zon_size","ID","zon_jobID='$jobID'")) {
+					$r['data2']['pro_zones'.$pro->ID] = $m->lastData();
+				} else $r['did'] = "failed ".$table." options";
+			}
+			if($m->getRow("es_reps",$pro->pro_repID)) {
+				$r['data2']['rep_w_id'][$pro->ID][] = $m->lastData()->rep_name_first." ".$m->lastData()->rep_name_last;
+				$officeID = $m->lastData()->rep_officeID;
+			} else $r['data2']['rep_w_id'][$pro->ID][] = "";
+			if($m->getRow("es_reps",$pro->pro_repID)) {
+				$r['data2']['rep'][] = $m->lastData()->rep_name_first." ".$m->lastData()->rep_name_last;
+			} else $r['data2']['rep'][] = "";
+			
+		}
+		// Select all reps for this office
+		if ( $m->getAll( "es_reps", "ID,rep_name_first,rep_name_last", "ID", "rep_officeID='".$officeID."'" ) ) {
+			// Add all resulting reps to data2 array in a new array 'rep_define', for later use by javascript objects
+			foreach ( $m->lastData() as $rep_definition ) {
+				$rep_definition = (array)$rep_definition;
+				$r['data2']['rep_define'][] = array( $rep_definition["ID"], $rep_definition["rep_name_first"] . " " . $rep_definition["rep_name_last"] );
+			}
+		}
+*/	
 	// get proposal menu options
 	for($i=0;$i<count($menus);$i++) {
 		if($sources[$i]=="es_zones") {
@@ -1151,6 +1231,19 @@ function refreshJob() {
 		if($m->getRow("es_reps",$r['data']->job_repID)) {
 			$r['data2']['rep'] = $m->lastData()->rep_name_first." ".$m->lastData()->rep_name_last;
 		} else $r['did'] = "failed ".$table." update";
+		// If job_officeID='#' is present in the args
+		if ( isset( $_POST['job_officeID'] ) ) {
+			$officeID = $_POST['job_officeID'];	// remove variable name from string
+			
+			// Select all reps for this office
+			if ( $m->getAll( "es_reps", "ID,rep_name_first,rep_name_last", "ID", "rep_officeID='".$officeID."'" ) ) {
+				// Add all resulting reps to data2 array in a new array 'rep_define', for later use by javascript objects
+				foreach ( $m->lastData() as $rep_definition ) {
+					$rep_definition = (array)$rep_definition;
+					$r['data2']['rep_define'][] = array( $rep_definition["ID"], $rep_definition["rep_name_first"] . " " . $rep_definition["rep_name_last"] );
+				}
+			}
+		}		
 	} else $r['did'] = "failed ".$table." update";
 }
 
@@ -1458,6 +1551,25 @@ function getOptions() {
 			}
 		} else if($sources[$i]=="es_jobs") {
 			$jobID = $_POST['jobID'];
+			$officeID = $_POST['offID'];
+			$r['data']['ID'] = $jobID;			
+			
+			if($m->getRow( "es_jobs", $jobID )) {
+				$job = $m->lastData();
+			} else $r['did'] = "empty ".$table;
+			if($m->getRow("es_reps",$job->job_repID)) {
+				$r['data2']['rep'][] = $m->lastData()->rep_name_first." ".$m->lastData()->rep_name_last;
+			} else $r['did'] = "empty ".$table;
+			
+			// Select all reps for this office
+			if ( $m->getAll( "es_reps", "ID,rep_name_first,rep_name_last", "ID", "rep_officeID='".$officeID."'" ) ) {
+				// Add all resulting reps to data2 array in a new array 'rep_define', for later use by javascript objects
+				foreach ( $m->lastData() as $rep_definition ) {
+					$rep_definition = (array)$rep_definition;
+					$r['data2']['rep_define'][] = array( $rep_definition["ID"], $rep_definition["rep_name_first"] . " " . $rep_definition["rep_name_last"] );
+				}
+			}
+						
 			if($m->getRow($sources[$i],$jobID)) {
 				$r['did'] = "got ".$table." options";
 				$r['data']['pro_name'] = $m->lastData()->$columns[$i];
@@ -1491,11 +1603,13 @@ function getOptions() {
 		// $cover_letter .= $rep->rep_phone!="" ? $rep->rep_phone." (p)" : $off->off_phone." (p)";
 		////
 		$cover_letter = "Dear ".$job_title.",\n\n".$off->off_cover_letter;
+		/*
 		$cover_letter .= "\n\nYours truly,\n".$rep->rep_name_first." ".$rep->rep_name_last.", ".$rep->rep_title."\n\n";
 		$cover_letter .= "Lighthousesolar\n";
 		$cover_letter .= $off->off_city.", ".$off->off_state." ".$off->off_zip."\n";
 		$cover_letter .= $rep->rep_email." (e)\n";
 		$cover_letter .= $rep->rep_phone!="" ? $rep->rep_phone." (p)" : $off->off_phone." (p)";
+		*/
 		// done
 		$r['did'] = "got ".$table." options";
 		$r['data']['pro_cover_letter'] = $cover_letter;
