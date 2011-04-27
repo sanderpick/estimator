@@ -4342,6 +4342,29 @@ var Settings = Module.extend({
 							edit +=	"</form>";
 							edit += "</td>";
 							break;	
+						case "off_sys_rate_increase" :
+							row += "<td colspan='1'>";
+							row += "<span style='font-weight:bold;'>Annual Utility Rate Increase (%)</span><br /><span style='font-size:10px; color:#808080;'></span><br />";
+							row += "<span class='edit-panel'>";
+							row += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
+							row += "</span>";
+							row += "</td>";
+							row += "<td colspan='1' align='right'>"+json.data.off_sys_rate_increase+"</td>";
+							edit += "<td colspan='2'>";
+							edit += "<form class='updateform' action='javascript:void(0);'>";
+							edit +=	"<h1 class='addform-header'>Quick Edit</h1>";
+							edit +=	"<br />";
+							edit +=	"<div class='form-column'>";
+							edit +=	"<label for='off_sys_rate_increase'>Annual Utility Rate Increase (%)</label>";
+							edit +=	"<input class='required' type='text' id='off_sys_rate_increase' value='"+json.data.off_sys_rate_increase+"' />";
+							edit +=	"</div>";
+							edit +=	"<div class='clear'></div>";
+							edit +=	"<br />";
+							edit +=	"<input type='submit' title='Update' value='Update' />";
+							edit +=	"<input type='submit' title='CancelQ' value='Cancel' style='margin-left:3px;' />";
+							edit +=	"</form>";
+							edit += "</td>";
+							break;	
 					}
 					$("#show-"+setting).html($(row)).show();
 					$("#edit-"+setting).html($(edit)).hide();
@@ -4825,6 +4848,34 @@ var Settings = Module.extend({
 				html +=	"<div class='form-column'>";
 				html +=	"<label for='off_equip_up'>Equipment Rental Margin (%)</label>";
 				html +=	"<input class='required' type='text' id='off_equip_up' value='"+json.data.off_equip_up+"' />";
+				html +=	"</div>";
+				html +=	"<div class='clear'></div>";
+				html +=	"<br />";
+				html +=	"<input type='submit' title='Update' value='Update' />";
+				html +=	"<input type='submit' title='CancelQ' value='Cancel' style='margin-left:3px;' />";
+				html +=	"</form>";
+				html += "</td>";
+				html += "</tr>";
+				///////////////////////////////////////////
+				// system rate increase
+				html += "<tr id='show-off_sys_rate_increase' class='"+color[0]+"'>";
+				html += "<td colspan='1'>";
+				html += "<span style='font-weight:bold;'>Annual Utility Rate Increase (%)</span><br /><span style='font-size:10px; color:#808080;'></span><br />";
+				html += "<span class='edit-panel'>";
+				html += "<a href='javascript:void(0);' class='edit-link' title='Edit'>Edit</a>";
+				html += "</span>";
+				html += "</td>";
+				html += "<td colspan='1' align='right'>"+json.data.off_sys_rate_increase+"</td>";
+				html += "</tr>";
+				// edit system rate increase
+				html += "<tr id='edit-off_sys_rate_increase' style='display:none;' class='quick-edit "+color[0]+"'>";
+				html += "<td colspan='2'>";
+				html += "<form class='updateform' action='javascript:void(0);'>";
+				html +=	"<h1 class='addform-header'>Quick Edit</h1>";
+				html +=	"<br />";
+				html +=	"<div class='form-column'>";
+				html +=	"<label for='off_sys_rate_increase'>Annual Utility Rate Increase (%)</label>";
+				html +=	"<input class='required' type='text' id='off_sys_rate_increase' value='"+json.data.off_sys_rate_increase+"' />";
 				html +=	"</div>";
 				html +=	"<div class='clear'></div>";
 				html +=	"<br />";
